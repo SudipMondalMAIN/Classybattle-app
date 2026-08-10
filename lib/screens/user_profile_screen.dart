@@ -91,7 +91,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.bgBottom,
       body: SafeArea(child: _buildBody()),
     );
   }
@@ -263,7 +263,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void _openReportSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.bgBottom,
       isScrollControlled: true,
       builder: (_) => _ReportSheet(
         playerName: _profile?.displayLabel ?? 'this player',

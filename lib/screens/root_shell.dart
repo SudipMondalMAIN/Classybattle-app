@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 import '../widgets/bottom_nav.dart';
-import '../widgets/glass.dart';
 import 'home_screen.dart';
 import 'tournaments_screen.dart';
 import 'leaderboard_screen.dart';
@@ -28,11 +28,9 @@ class _RootShellState extends State<RootShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      extendBody: true,
-      body: GlassBackground(
-        child: IndexedStack(index: _index, children: _screens),
-      ),
+      backgroundColor: AppColors.bgBottom,
+      extendBody: false,
+      body: IndexedStack(index: _index, children: _screens),
       bottomNavigationBar: BottomNav(currentIndex: _index, onTap: (i) => setState(() => _index = i)),
     );
   }

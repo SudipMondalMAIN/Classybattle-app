@@ -3,24 +3,24 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Base backgrounds
-  static const Color bgTop = Color(0xFF120B26);
-  static const Color bgBottom = Color(0xFF0A0714);
-  static const Color surface = Color(0xFF1B1330);
-  static const Color surfaceLight = Color(0xFF241A3E);
-  static const Color card = Color(0xFF1E1636);
-  static const Color cardBorder = Color(0xFF352A54);
+  // Base backgrounds (deep navy-black, matching reference screens)
+  static const Color bgTop = Color(0xFF0F0F1E);
+  static const Color bgBottom = Color(0xFF07070F);
+  static const Color surface = Color(0xFF14131F);
+  static const Color surfaceLight = Color(0xFF1C1A2B);
+  static const Color card = Color(0xFF15141F);
+  static const Color cardBorder = Color(0xFF272536);
 
-  // Brand gradient (purple -> pink/blue accents)
-  static const Color purple = Color(0xFF7B2FF7);
-  static const Color purpleDeep = Color(0xFF5B1FD6);
+  // Brand gradient (indigo -> violet accents)
+  static const Color purple = Color(0xFF6C5CE7);
+  static const Color purpleDeep = Color(0xFF5A3FD6);
   static const Color pink = Color(0xFFE23FE0);
-  static const Color blue = Color(0xFF3F8CFF);
+  static const Color blue = Color(0xFF4B6BFB);
   static const Color cyan = Color(0xFF33E1FF);
 
-  static const Color textPrimary = Color(0xFFF5F3FA);
-  static const Color textSecondary = Color(0xFFA79BC4);
-  static const Color textMuted = Color(0xFF6F6390);
+  static const Color textPrimary = Color(0xFFF5F4F8);
+  static const Color textSecondary = Color(0xFF8D8AA0);
+  static const Color textMuted = Color(0xFF64617A);
 
   static const Color success = Color(0xFF2ED573);
   static const Color danger = Color(0xFFFF4D6D);
@@ -28,7 +28,7 @@ class AppColors {
   static const Color gold = Color(0xFFFFC93C);
 
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [purpleDeep, blue],
+    colors: [Color(0xFF7A5CF0), Color(0xFF5B3FD6)],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
