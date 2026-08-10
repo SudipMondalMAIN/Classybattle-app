@@ -1,16 +1,19 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_theme.dart';
+import '../providers/auth_provider.dart';
 import 'root_shell.dart';
+import 'auth/login_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   // Logo entrance: scale + fade
   late final AnimationController _introController;
   late final Animation<double> _logoScale;
@@ -42,13 +45,27 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     _introController.forward();
 
-    // Hand off to the app shell once the intro has played out.
-    Future.delayed(const Duration(milliseconds: 2600), () {
+    // Hand off to login or the app shell once the intro has played out,
+    // depending on whether a saved session (refresh token) exists.
+    Future.delayed(const Duration(milliseconds: 2600), () async {
       if (!mounted) return;
+      // Auth state is restored async at AuthController construction; give it
+      // a beat to finish reading secure storage.
+      var authState = ref.read(authControllerProvider);
+      var attempts = 0;
+      while (authState.status == AuthStatus.unknown && attempts < 20) {
+        await Future.delayed(const Duration(milliseconds: 50));
+        authState = ref.read(authControllerProvider);
+        attempts++;
+      }
+      if (!mounted) return;
+      final destination = authState.status == AuthStatus.authenticated
+          ? const RootShell()
+          : const LoginScreen();
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
-          pageBuilder: (_, anim, __) => FadeTransition(opacity: anim, child: const RootShell()),
+          pageBuilder: (_, anim, __) => FadeTransition(opacity: anim, child: destination),
         ),
       );
     });

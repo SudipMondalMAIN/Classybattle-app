@@ -1,12 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_theme.dart';
+import '../providers/auth_provider.dart';
+import 'auth/login_screen.dart';
+import 'game_profiles_screen.dart';
 import 'my_tournaments_screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
+  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text('Logout', style: TextStyle(color: AppColors.textPrimary)),
+        content: const Text('Tumi ki logout korte chao?',
+            style: TextStyle(color: AppColors.textSecondary)),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Na', style: TextStyle(color: AppColors.textSecondary))),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Hae, Logout', style: TextStyle(color: AppColors.danger))),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(authControllerProvider.notifier).logout();
+      if (context.mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       bottom: false,
       child: ListView(
@@ -98,11 +131,15 @@ class ProfileScreen extends StatelessWidget {
           _menuItem(context, Icons.emoji_events_rounded, 'My Tournaments',
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyTournamentsScreen()))),
           _menuItem(context, Icons.groups_rounded, 'My Team'),
+          _menuItem(context, Icons.videogame_asset_rounded, 'Game Profiles',
+              onTap: () => Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => const GameProfilesScreen()))),
           _menuItem(context, Icons.account_balance_wallet_rounded, 'Wallet'),
           _menuItem(context, Icons.star_rounded, 'Achievements'),
           _menuItem(context, Icons.settings_rounded, 'Settings'),
           _menuItem(context, Icons.help_outline_rounded, 'Support'),
-          _menuItem(context, Icons.logout_rounded, 'Logout', danger: true),
+          _menuItem(context, Icons.logout_rounded, 'Logout',
+              danger: true, onTap: () => _confirmLogout(context, ref)),
         ],
       ),
     );
