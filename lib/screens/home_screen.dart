@@ -10,8 +10,15 @@ import '../providers/auth_provider.dart';
 import '../services/tournament_service.dart';
 import '../services/wallet_service.dart';
 import '../widgets/common.dart';
+import '../widgets/glass.dart';
+import 'add_money_screen.dart';
+import 'leaderboard_screen.dart';
+import 'notifications_screen.dart';
+import 'profile_screen.dart';
 import 'tournament_detail_screen.dart';
 import 'tournaments_screen.dart';
+import 'game_profiles_screen.dart';
+import 'wallet_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -31,6 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   String? _error;
   List<Tournament> _live = [];
   List<Tournament> _featured = [];
+  List<Tournament> _upcoming = [];
   Map<String, Game> _games = {};
   double? _walletBalance;
 
@@ -49,6 +57,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final results = await Future.wait([
         _tournamentService.list(status: 'ongoing', pageSize: 5),
         _tournamentService.list(isFeatured: true, pageSize: 5),
+        _tournamentService.list(status: 'upcoming', pageSize: 5),
         GameCache.instance.byId(),
         _walletService.getWallet(),
       ]);
@@ -56,8 +65,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       setState(() {
         _live = results[0] as List<Tournament>;
         _featured = results[1] as List<Tournament>;
-        _games = results[2] as Map<String, Game>;
-        _walletBalance = (results[3] as Wallet).availableBalance;
+        _upcoming = results[2] as List<Tournament>;
+        _games = results[3] as Map<String, Game>;
+        _walletBalance = (results[4] as Wallet).availableBalance;
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -91,11 +101,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
           children: [
-            _buildTopBar(),
-            const SizedBox(height: 18),
-            _buildGreeting(user?.fullName),
-            const SizedBox(height: 18),
+            _buildTopBar(user?.fullName),
+            const SizedBox(height: 16),
             _buildBanner(),
+            const SizedBox(height: 16),
+            _buildQuickActions(),
             const SizedBox(height: 22),
             SectionHeader(
               title: 'Live Tournaments',
@@ -106,18 +116,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (_live.isEmpty)
               const _EmptyRow(text: 'No live tournaments right now')
             else
-              ..._live.map((t) => _LiveTournamentCard(t: t, gameName: _gameName(t.gameId))),
-            const SizedBox(height: 10),
+              SizedBox(
+                height: 190,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _live.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => _LiveTournamentCard(t: _live[i], gameName: _gameName(_live[i].gameId)),
+                ),
+              ),
+            const SizedBox(height: 22),
             SectionHeader(
-              title: 'Featured Tournaments',
+              title: 'Upcoming Tournaments',
               action: 'View All',
               onAction: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen())),
             ),
             const SizedBox(height: 12),
-            if (_featured.isEmpty)
-              const _EmptyRow(text: 'No featured tournaments right now')
+            if (_upcoming.isEmpty)
+              const _EmptyRow(text: 'No upcoming tournaments right now')
             else
-              ..._featured.map((t) => _FeaturedTournamentCard(t: t, gameName: _gameName(t.gameId))),
+              ..._upcoming.map((t) => _UpcomingTournamentCard(t: t, gameName: _gameName(t.gameId))),
+            const SizedBox(height: 22),
+            const _HowItWorks(),
           ],
         ),
       ),
@@ -150,131 +170,133 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(String? fullName) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.sm),
+          padding: const EdgeInsets.all(6),
+          child: ShaderMask(
+            shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
+            child: const Icon(Icons.shield_rounded, color: Colors.white, size: 26),
           ),
-          child: const Icon(Icons.menu_rounded, color: AppColors.textPrimary, size: 20),
         ),
-        const SizedBox(width: 10),
-        const Text('ClassyBattle',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        const SizedBox(width: 6),
+        RichText(
+          text: const TextSpan(
+            style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+            children: [
+              TextSpan(text: 'Classy', style: TextStyle(color: AppColors.textPrimary)),
+              TextSpan(text: 'Battle', style: TextStyle(color: AppColors.purple)),
+            ],
+          ),
+        ),
         const Spacer(),
-        Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              child: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 20),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMoneyScreen())),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: AppColors.cardBorder),
             ),
-            Positioned(
-              right: -2,
-              top: -2,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(color: AppColors.danger, shape: BoxShape.circle),
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.account_balance_wallet_rounded, color: AppColors.gold, size: 14),
+                const SizedBox(width: 5),
+                Text('₹${formatMoney(_walletBalance ?? 0)}',
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                const SizedBox(width: 6),
+                const Icon(Icons.add_circle_rounded, color: AppColors.purple, size: 16),
+              ],
             ),
-          ],
+          ),
         ),
         const SizedBox(width: 10),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen())),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: const Icon(Icons.notifications_none_rounded, color: AppColors.textPrimary, size: 18),
+              ),
+              Positioned(
+                right: -1,
+                top: -1,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.purple,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.bgBottom, width: 1.5),
+                  ),
+                ),
+              ),
+            ],
           ),
-          child: Text('₹${formatMoney(_walletBalance ?? 0)}',
-              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          child: Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              (fullName == null || fullName.trim().isEmpty) ? '?' : fullName.trim()[0].toUpperCase(),
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w800),
+            ),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildGreeting(String? fullName) {
-    final displayName = (fullName == null || fullName.trim().isEmpty) ? 'Player' : fullName.split(' ').first;
-    return Row(
-      children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(Icons.face_retouching_natural_rounded, color: Colors.white),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Hi, $displayName 👋',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-            const Text('Welcome back!', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-          ],
-        ),
-      ],
-    );
-  }
+  List<Tournament> get _bannerItems => _featured.isNotEmpty ? _featured : _live;
 
   Widget _buildBanner() {
+    final items = _bannerItems;
+    final count = items.isEmpty ? 1 : items.length;
     return Column(
       children: [
         SizedBox(
-          height: 170,
+          height: 240,
           child: PageView.builder(
             controller: _bannerController,
             onPageChanged: (i) => setState(() => _bannerIndex = i),
-            itemCount: 4,
-            itemBuilder: (context, i) => Container(
-              margin: const EdgeInsets.only(right: 0),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF3A1A6B), Color(0xFF1A1330)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('CLASSYBATTLE',
-                      style: TextStyle(color: AppColors.danger, fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1)),
-                  ShaderMask(
-                    shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
-                    child: const Text('COMPETE',
-                        style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
-                  ),
-                  const Text('& WIN BIG',
-                      style: TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700, letterSpacing: 2)),
-                  const Spacer(),
-                  GradientButton(
-                    label: 'EXPLORE',
-                    height: 36,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen())),
-                  ),
-                ],
-              ),
-            ),
+            itemCount: count,
+            itemBuilder: (context, i) {
+              final t = items.isEmpty ? null : items[i];
+              final gameName = t == null ? 'BGMI' : _gameName(t.gameId);
+              return _BannerCard(
+                tournament: t,
+                gameName: gameName,
+                onJoin: () {
+                  if (t == null) return;
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => TournamentDetailScreen(tournamentId: t.id)));
+                },
+              );
+            },
           ),
         ),
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(4, (i) {
+          children: List.generate(count, (i) {
             final active = i == _bannerIndex;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
@@ -289,6 +311,232 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildQuickActions() {
+    final items = [
+      (Icons.sports_esports_rounded, 'All Games', AppColors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GameProfilesScreen()))),
+      (Icons.emoji_events_rounded, 'Tournaments', AppColors.gold, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen()))),
+      (Icons.card_giftcard_rounded, 'Rewards', AppColors.success, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()))),
+      (Icons.shield_rounded, 'Leaderboard', AppColors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardScreen()))),
+    ];
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      borderRadius: AppRadius.xl,
+      blur: 16,
+      opacity: 0.06,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: items.map((it) {
+          final (icon, label, color, onTap) = it;
+          return GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Column(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.16),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: color.withValues(alpha: 0.4)),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(height: 8),
+                Text(label,
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 11, fontWeight: FontWeight.w600)),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _BannerCard extends StatelessWidget {
+  final Tournament? tournament;
+  final String gameName;
+  final VoidCallback onJoin;
+  const _BannerCard({required this.tournament, required this.gameName, required this.onJoin});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = tournament;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF3A1A6B), Color(0xFF15101F)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            bottom: -10,
+            top: 10,
+            child: Icon(Icons.military_tech_rounded, size: 170, color: Colors.white.withValues(alpha: 0.06)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.circle, color: AppColors.danger, size: 8),
+                  const SizedBox(width: 4),
+                  const Text('LIVE',
+                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(gameName.toUpperCase(),
+                  style: const TextStyle(color: AppColors.purple, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+              const SizedBox(height: 2),
+              Text(
+                t != null ? t.title.toUpperCase() : 'SUMMER',
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
+              ),
+              ShaderMask(
+                shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
+                child: const Text('CHAMPIONSHIP',
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1)),
+              ),
+              const SizedBox(height: 6),
+              const Text('Win Exciting Prizes',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 14),
+              GradientButton(label: 'Join Now', height: 40, onTap: onJoin),
+            ],
+          ),
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 150,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('PRIZE POOL',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 13),
+                      const SizedBox(width: 4),
+                      Text('₹${formatMoney(t?.prizePool ?? 50000)}',
+                          style: const TextStyle(color: AppColors.gold, fontSize: 15, fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('REGISTRATIONS',
+                      style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+                  const SizedBox(height: 2),
+                  Text(
+                    t != null ? '${t.currentPlayers} / ${t.maxPlayers}' : '256 / 512',
+                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HowItWorks extends StatelessWidget {
+  const _HowItWorks();
+
+  static const _steps = [
+    ('1', 'Register', 'Join tournament'),
+    ('2', 'Compete', 'Play your matches'),
+    ('3', 'Score', 'Top the leaderboard'),
+    ('4', 'Win', 'Get exciting prizes'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('How It Works?',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        const SizedBox(height: 18),
+        Row(
+          children: List.generate(_steps.length * 2 - 1, (i) {
+            if (i.isOdd) {
+              return const Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 34),
+                  child: _DashedLine(),
+                ),
+              );
+            }
+            final step = _steps[i ~/ 2];
+            return Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(gradient: AppColors.primaryGradient, shape: BoxShape.circle),
+                  alignment: Alignment.center,
+                  child: Text(step.$1, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+                ),
+                const SizedBox(height: 8),
+                Text(step.$2, style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                SizedBox(
+                  width: 78,
+                  child: Text(step.$3,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.textMuted, fontSize: 10)),
+                ),
+              ],
+            );
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class _DashedLine extends StatelessWidget {
+  const _DashedLine();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dashWidth = 5.0;
+        const dashSpace = 4.0;
+        final dashCount = (constraints.maxWidth / (dashWidth + dashSpace)).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(dashCount, (_) {
+            return Container(
+              width: dashWidth,
+              height: 2,
+              margin: const EdgeInsets.symmetric(horizontal: dashSpace / 2),
+              color: AppColors.purple.withValues(alpha: 0.5),
+            );
+          }),
+        );
+      },
     );
   }
 }
@@ -317,48 +565,75 @@ class _LiveTournamentCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TournamentDetailScreen(tournamentId: t.id))),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
+        width: 210,
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           gradient: AppColors.cardGradient,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.danger.withValues(alpha: 0.35)),
+          border: Border.all(color: AppColors.cardBorder),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GameIcon(game: gameName),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+            Row(
+              children: [
+                const Icon(Icons.circle, color: AppColors.danger, size: 8),
+                const SizedBox(width: 4),
+                const Text('LIVE', style: TextStyle(color: AppColors.danger, fontSize: 10, fontWeight: FontWeight.w800)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(gameName.toUpperCase(),
+                style: const TextStyle(color: AppColors.purple, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
+            const SizedBox(height: 2),
+            Text(t.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.circle, color: AppColors.danger, size: 8),
-                      const SizedBox(width: 4),
-                      const Text('LIVE', style: TextStyle(color: AppColors.danger, fontSize: 10, fontWeight: FontWeight.w800)),
-                      const SizedBox(width: 8),
-                      Text(gameName, style: const TextStyle(color: AppColors.textMuted, fontSize: 10, fontWeight: FontWeight.w700)),
+                      const Text('Prize Pool', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
+                      Row(
+                        children: [
+                          const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 12),
+                          const SizedBox(width: 3),
+                          Text('₹${formatMoney(t.prizePool)}',
+                              style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(t.title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 4),
-                  Text('Prize Pool ₹${formatMoney(t.prizePool)}   Entry Fee ₹${formatMoney(t.entryFee)}',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
-                ],
-              ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    const Text('Entries', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
+                    Text('${t.currentPlayers} / ${t.maxPlayers}',
+                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ],
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            const Spacer(),
+            const SizedBox(height: 10),
+            Row(
               children: [
-                Text('${t.currentPlayers}/${t.maxPlayers}',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
+                const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 13),
+                const SizedBox(width: 4),
+                const Expanded(
+                  child: Text('Live now', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                ),
                 GradientButton(
-                  label: 'VIEW',
-                  height: 32,
+                  label: 'Join',
+                  height: 28,
                   fontSize: 11,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TournamentDetailScreen(tournamentId: t.id))),
                 ),
               ],
@@ -370,13 +645,19 @@ class _LiveTournamentCard extends StatelessWidget {
   }
 }
 
-class _FeaturedTournamentCard extends StatelessWidget {
+class _UpcomingTournamentCard extends StatelessWidget {
   final Tournament t;
   final String gameName;
-  const _FeaturedTournamentCard({required this.t, required this.gameName});
+  const _UpcomingTournamentCard({required this.t, required this.gameName});
 
   @override
   Widget build(BuildContext context) {
+    final date = t.publishedAt;
+    final dateLabel = date != null ? '${date.day} ${_month(date.month)}, ${date.year}' : 'TBA';
+    final timeLabel = date != null
+        ? '${date.hour % 12 == 0 ? 12 : date.hour % 12}:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}'
+        : '--';
+
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TournamentDetailScreen(tournamentId: t.id))),
       child: Container(
@@ -388,16 +669,33 @@ class _FeaturedTournamentCard extends StatelessWidget {
           border: Border.all(color: AppColors.cardBorder),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GameIcon(game: gameName, size: 54),
+            GameIcon(game: gameName, size: 60),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(t.title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+                  Text(gameName.toUpperCase(),
+                      style: const TextStyle(color: AppColors.purple, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
                   const SizedBox(height: 2),
-                  Text(gameName, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                  Text(t.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, color: AppColors.textMuted, size: 12),
+                      const SizedBox(width: 4),
+                      Text(dateLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                      const SizedBox(width: 10),
+                      const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 12),
+                      const SizedBox(width: 4),
+                      Text(timeLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -405,9 +703,16 @@ class _FeaturedTournamentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 const Text('Prize Pool', style: TextStyle(color: AppColors.textMuted, fontSize: 10)),
-                Text('₹${formatMoney(t.prizePool)}', style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Text('Entry ₹${formatMoney(t.entryFee)}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+                Text('₹${formatMoney(t.prizePool)}',
+                    style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 6),
+                GradientButton(
+                  label: 'Join',
+                  height: 30,
+                  fontSize: 11,
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => TournamentDetailScreen(tournamentId: t.id))),
+                ),
               ],
             ),
           ],
@@ -415,4 +720,8 @@ class _FeaturedTournamentCard extends StatelessWidget {
       ),
     );
   }
+
+  static String _month(int m) => const [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ][m - 1];
 }

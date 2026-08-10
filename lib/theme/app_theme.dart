@@ -28,7 +28,7 @@ class AppColors {
   static const Color gold = Color(0xFFFFC93C);
 
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [purple, pink],
+    colors: [purpleDeep, blue],
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
   );
