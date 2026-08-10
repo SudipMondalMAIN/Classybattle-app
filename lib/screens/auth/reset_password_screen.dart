@@ -39,7 +39,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         newPassword: _passwordCtrl.text,
       );
       if (!mounted) return;
-      showAuthSnack(context, 'Password reset হয়ে গেছে, login koro', isError: false);
+      showAuthSnack(context, 'Password reset successful, please login', isError: false);
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
@@ -76,8 +76,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     label: 'New Password',
                     obscure: _obscure,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password dao';
-                      if (v.length < 8) return 'Kom pokkhe 8 character';
+                      if (v == null || v.isEmpty) return 'Enter your password';
+                      if (v.length < 8) return 'At least 8 characters';
                       return null;
                     },
                     suffix: IconButton(
@@ -96,7 +96,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                             child: CircularProgressIndicator(color: AppColors.purple),
                           ),
                         )
-                      : GradientButton(label: 'Password Set Koro', height: 52, onTap: _submit),
+                      : GradientButton(label: 'Set Password', height: 52, onTap: _submit),
                 ],
               ),
             ),

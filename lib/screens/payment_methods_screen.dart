@@ -51,7 +51,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     try {
       await _service.delete(m.id);
       if (!mounted) return;
-      showAuthSnack(context, 'Payment method remove kora hoyeche', isError: false);
+      showAuthSnack(context, 'Payment method removed', isError: false);
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -292,7 +292,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                 AuthTextField(
                   controller: _nameController,
                   label: 'Account Holder Name',
-                  validator: (v) => (v == null || v.trim().length < 2) ? 'Naam dao' : null,
+                  validator: (v) => (v == null || v.trim().length < 2) ? 'Enter a name' : null,
                 ),
                 const SizedBox(height: 14),
                 if (_type == PaymentMethodType.upi)
@@ -301,7 +301,7 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                     label: 'UPI ID (e.g. name@bank)',
                     validator: (v) =>
                         (v == null || !RegExp(r'^[\w.\-]{2,256}@[a-zA-Z]{2,64}$').hasMatch(v.trim()))
-                            ? 'Valid UPI ID dao'
+                            ? 'Enter a valid UPI ID'
                             : null,
                   )
                 else ...[
@@ -309,14 +309,14 @@ class _AddPaymentMethodDialogState extends State<_AddPaymentMethodDialog> {
                     controller: _accountController,
                     label: 'Account Number',
                     keyboardType: TextInputType.number,
-                    validator: (v) => (v == null || v.trim().length < 6) ? 'Valid account number dao' : null,
+                    validator: (v) => (v == null || v.trim().length < 6) ? 'Enter a valid account number' : null,
                   ),
                   const SizedBox(height: 14),
                   AuthTextField(
                     controller: _ifscController,
                     label: 'IFSC Code',
                     validator: (v) => (v == null || !RegExp(r'^[A-Za-z]{4}0[A-Za-z0-9]{6}$').hasMatch(v.trim()))
-                        ? 'Valid IFSC dao'
+                        ? 'Enter a valid IFSC code'
                         : null,
                   ),
                 ],

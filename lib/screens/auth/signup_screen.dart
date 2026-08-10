@@ -74,20 +74,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                   ),
                   const Text(
-                    'Account banao',
+                    'Create account',
                     style: TextStyle(
                         fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'ClassyBattle e tournament khela shuru koro',
+                    'Start playing tournaments on ClassyBattle',
                     style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 28),
                   AuthTextField(
                     controller: _nameCtrl,
                     label: 'Full Name',
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Name dao' : null,
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your name' : null,
                   ),
                   const SizedBox(height: 16),
                   AuthTextField(
@@ -95,8 +95,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Email dao';
-                      if (!v.contains('@')) return 'Valid email dao';
+                      if (v == null || v.trim().isEmpty) return 'Enter your email';
+                      if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
                   ),
@@ -104,12 +104,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   AuthTextField(
                     controller: _phoneCtrl,
                     label: 'Phone Number',
-                    hint: '10-digit number (country code lagbe na)',
+                    hint: '10-digit number (no country code needed)',
                     keyboardType: TextInputType.phone,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Phone number dao';
+                      if (v == null || v.trim().isEmpty) return 'Enter your phone number';
                       final digits = v.replaceAll(RegExp(r'\D'), '');
-                      if (digits.length < 10) return 'Valid 10-digit number dao';
+                      if (digits.length < 10) return 'Enter a valid 10-digit number';
                       return null;
                     },
                   ),
@@ -119,8 +119,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     label: 'Password',
                     obscure: _obscure,
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Password dao';
-                      if (v.length < 8) return 'Kom pokkhe 8 character';
+                      if (v == null || v.isEmpty) return 'Enter your password';
+                      if (v.length < 8) return 'At least 8 characters';
                       return null;
                     },
                     suffix: IconButton(

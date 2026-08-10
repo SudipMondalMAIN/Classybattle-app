@@ -76,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Login kore tournament e join koro',
+                      'Login to join tournaments',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                     ),
@@ -86,8 +86,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       label: 'Email',
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
-                        if (v == null || v.trim().isEmpty) return 'Email dao';
-                        if (!v.contains('@')) return 'Valid email dao';
+                        if (v == null || v.trim().isEmpty) return 'Enter your email';
+                        if (!v.contains('@')) return 'Enter a valid email';
                         return null;
                       },
                     ),
@@ -97,7 +97,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       label: 'Password',
                       obscure: _obscure,
                       validator: (v) =>
-                          (v == null || v.isEmpty) ? 'Password dao' : null,
+                          (v == null || v.isEmpty) ? 'Enter your password' : null,
                       suffix: IconButton(
                         icon: Icon(
                           _obscure ? Icons.visibility_off : Icons.visibility,
@@ -112,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
                         ),
-                        child: const Text('Password vule gecho?',
+                        child: const Text('Forgot password?',
                             style: TextStyle(color: AppColors.pink, fontSize: 12)),
                       ),
                     ),
@@ -133,13 +133,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Account nei?',
+                        const Text('Don\'t have an account?',
                             style: TextStyle(color: AppColors.textSecondary)),
                         TextButton(
                           onPressed: () => Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const SignupScreen()),
                           ),
-                          child: const Text('Sign up koro',
+                          child: const Text('Sign up',
                               style: TextStyle(
                                   color: AppColors.cyan, fontWeight: FontWeight.w700)),
                         ),

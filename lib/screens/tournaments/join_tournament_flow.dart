@@ -60,7 +60,7 @@ Future<Participant?> runJoinTournamentFlow(
     );
     if (context.mounted) Navigator.of(context).pop(); // close loading
     if (context.mounted) {
-      showAuthSnack(context, 'Tournament e join hoye gecho!', isError: false);
+      showAuthSnack(context, 'You have joined the tournament!', isError: false);
     }
     return participant;
   } on ApiException catch (e) {

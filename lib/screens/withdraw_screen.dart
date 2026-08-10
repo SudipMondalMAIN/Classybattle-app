@@ -87,7 +87,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
     final wallet = _wallet;
     if (method == null || wallet == null) return;
     if (_amount <= 0) {
-      setState(() => _submitError = 'Valid amount dao');
+      setState(() => _submitError = 'Enter a valid amount');
       return;
     }
     if (_amount > wallet.availableBalance) {
@@ -102,7 +102,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
       await _withdrawalService.requestWithdrawal(paymentMethodId: method.id, amount: _amount);
       if (!mounted) return;
       _amountController.clear();
-      showAuthSnack(context, 'Withdrawal request submit hoyeche!', isError: false);
+      showAuthSnack(context, 'Withdrawal request submitted!', isError: false);
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -117,7 +117,7 @@ class _WithdrawScreenState extends State<WithdrawScreen> {
     try {
       await _withdrawalService.cancel(w.id);
       if (!mounted) return;
-      showAuthSnack(context, 'Withdrawal request cancel kora hoyeche', isError: false);
+      showAuthSnack(context, 'Withdrawal request cancelled', isError: false);
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;

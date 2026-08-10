@@ -71,7 +71,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: AppColors.textPrimary)),
                   const SizedBox(height: 8),
                   const Text(
-                    'Email dao, OTP pathiye dicchi',
+                    'Enter your email, we\'ll send you an OTP',
                     style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 28),
@@ -80,8 +80,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     label: 'Email',
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Email dao';
-                      if (!v.contains('@')) return 'Valid email dao';
+                      if (v == null || v.trim().isEmpty) return 'Enter your email';
+                      if (!v.contains('@')) return 'Enter a valid email';
                       return null;
                     },
                   ),

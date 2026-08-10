@@ -74,7 +74,7 @@ class _GameProfilesScreenState extends State<GameProfilesScreen> {
               : _profiles.isEmpty
                   ? const Center(
                       child: Text(
-                        'Ekhono kono game profile save koroni.\nEkta tournament join korle automatic add hobe.',
+                        'No game profiles saved yet.\nJoining a tournament will add one automatically.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: AppColors.textSecondary),
                       ),

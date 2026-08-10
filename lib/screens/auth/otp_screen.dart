@@ -65,7 +65,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     if (!mounted) return;
     setState(() => _resending = false);
     if (ok) {
-      showAuthSnack(context, 'OTP abar pathano hoyeche', isError: false);
+      showAuthSnack(context, 'OTP resent', isError: false);
       _startCooldown();
     } else {
       showAuthSnack(context, ref.read(authControllerProvider).error ?? 'Resend failed');
@@ -74,7 +74,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _verify() async {
     if (_otpCtrl.text.trim().length < 4) {
-      showAuthSnack(context, 'Valid OTP dao');
+      showAuthSnack(context, 'Enter a valid OTP');
       return;
     }
     setState(() => _loading = true);
@@ -127,12 +127,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                   icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 12),
-                const Text('OTP Verify koro',
+                const Text('Verify OTP',
                     style: TextStyle(
                         fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
                 Text(
-                  '${widget.email} e ekta OTP pathano hoyeche',
+                  'An OTP has been sent to ${widget.email}',
                   style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                 ),
                 const SizedBox(height: 32),
@@ -149,7 +149,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                           child: CircularProgressIndicator(color: AppColors.purple),
                         ),
                       )
-                    : GradientButton(label: 'Verify Koro', height: 52, onTap: _verify),
+                    : GradientButton(label: 'Verify', height: 52, onTap: _verify),
                 const SizedBox(height: 16),
                 Center(
                   child: _cooldown > 0

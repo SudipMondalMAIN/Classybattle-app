@@ -87,13 +87,13 @@ class _GameProfileDialogState extends State<GameProfileDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                isEdit ? '${widget.game.name} Profile Edit Koro' : '${widget.game.name} Profile Dao',
+                isEdit ? 'Edit ${widget.game.name} Profile' : 'Add ${widget.game.name} Profile',
                 style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 4),
               const Text(
-                'Ekbar save korle ei game er sob tournament e ar lagbe na',
+                'Save once and use it for every tournament in this game',
                 style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 20),
@@ -104,7 +104,7 @@ class _GameProfileDialogState extends State<GameProfileDialog> {
                   keyboardType:
                       field.type == 'number' ? TextInputType.number : TextInputType.text,
                   validator: field.required
-                      ? (v) => (v == null || v.trim().isEmpty) ? '${field.label} dao' : null
+                      ? (v) => (v == null || v.trim().isEmpty) ? '${field.label} is required' : null
                       : null,
                 ),
                 const SizedBox(height: 14),

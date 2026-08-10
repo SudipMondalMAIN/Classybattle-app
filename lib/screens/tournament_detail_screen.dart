@@ -77,7 +77,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     try {
       await _tournamentService.cancelRegistration(widget.tournamentId);
       if (!mounted) return;
-      showAuthSnack(context, 'Registration cancel kore dewa hoyeche', isError: false);
+      showAuthSnack(context, 'Registration has been cancelled', isError: false);
       _load();
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -369,7 +369,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         return Text(
           t.rules?.trim().isNotEmpty == true
               ? t.rules!
-              : 'Ei tournament er jonno alada kono rules dewa hoyni. General fair-play rules follow koro.',
+              : 'No specific rules have been set for this tournament. Please follow general fair-play rules.',
           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.8),
         );
       case 2:

@@ -15,16 +15,16 @@ class ApiException implements Exception {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      return ApiException('Server e connect kora jaini. Internet ba server check koro.');
+      return ApiException('Could not connect to server. Check your internet or server status.');
     }
     if (e.type == DioExceptionType.connectionError) {
-      return ApiException('Network error — internet connection check koro.');
+      return ApiException('Network error — check your internet connection.');
     }
 
     final status = e.response?.statusCode;
     final data = e.response?.data;
 
-    String msg = 'Kichu ekta vul hoyeche. Abar chesta koro.';
+    String msg = 'Something went wrong. Please try again.';
     if (data is Map && data['detail'] != null) {
       final detail = data['detail'];
       if (detail is String) {
