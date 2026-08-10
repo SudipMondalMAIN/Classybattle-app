@@ -39,7 +39,11 @@ class AppHeader extends StatelessWidget {
             onTap: onBack ?? () => Navigator.maybePop(context),
             child: const Padding(
               padding: EdgeInsets.only(right: 10),
-              child: Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary, size: 24),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                color: AppColors.textPrimary,
+                size: 24,
+              ),
             ),
           ),
           Expanded(
@@ -48,24 +52,38 @@ class AppHeader extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
-                  fontSize: 19, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                fontSize: 19,
+                fontWeight: FontWeight.w800,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
         ] else ...[
           Container(
             padding: const EdgeInsets.all(4),
             child: ShaderMask(
-              shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
-              child: const Icon(Icons.shield_rounded, color: Colors.white, size: 26),
+              shaderCallback: (rect) =>
+                  AppColors.primaryGradient.createShader(rect),
+              child: const Icon(
+                Icons.shield_rounded,
+                color: Colors.white,
+                size: 26,
+              ),
             ),
           ),
           const SizedBox(width: 6),
-          const RichText(
+          RichText(
             text: TextSpan(
               style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
               children: [
-                TextSpan(text: 'Classy', style: TextStyle(color: AppColors.textPrimary)),
-                TextSpan(text: 'Battle', style: TextStyle(color: AppColors.purple)),
+                TextSpan(
+                  text: 'Classy',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+                TextSpan(
+                  text: 'Battle',
+                  style: TextStyle(color: AppColors.purple),
+                ),
               ],
             ),
           ),
@@ -105,13 +123,26 @@ class WalletChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.account_balance_wallet_outlined, color: AppColors.purple, size: 15),
+            const Icon(
+              Icons.account_balance_wallet_outlined,
+              color: AppColors.purple,
+              size: 15,
+            ),
             const SizedBox(width: 6),
-            Text('₹${formatMoney(balance)}',
-                style: const TextStyle(
-                    color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(
+              '₹${formatMoney(balance)}',
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(width: 6),
-            const Icon(Icons.add_circle_rounded, color: AppColors.purple, size: 16),
+            const Icon(
+              Icons.add_circle_rounded,
+              color: AppColors.purple,
+              size: 16,
+            ),
           ],
         ),
       ),
@@ -123,7 +154,11 @@ class _IconBadgeButton extends StatelessWidget {
   final IconData icon;
   final bool showDot;
   final VoidCallback? onTap;
-  const _IconBadgeButton({required this.icon, this.showDot = false, this.onTap});
+  const _IconBadgeButton({
+    required this.icon,
+    this.showDot = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +175,10 @@ class _IconBadgeButton extends StatelessWidget {
               child: Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(color: AppColors.purple, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: AppColors.purple,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
         ],
@@ -169,7 +207,11 @@ class _AvatarButton extends StatelessWidget {
               gradient: AppColors.primaryGradient,
               border: Border.all(color: AppColors.cardBorder, width: 1.5),
             ),
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.person_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
           if (showOnlineDot)
             Positioned(
