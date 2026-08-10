@@ -59,10 +59,13 @@ class AppTheme {
         secondary: AppColors.pink,
         surface: AppColors.surface,
       ),
-      fontFamily: 'Roboto',
       textTheme: base.textTheme.apply(
+        fontFamily: 'Roboto',
         bodyColor: AppColors.textPrimary,
         displayColor: AppColors.textPrimary,
+      ),
+      primaryTextTheme: base.primaryTextTheme.apply(
+        fontFamily: 'Roboto',
       ),
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,

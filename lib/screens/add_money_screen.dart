@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../core/api_exception.dart';
 import '../models/payment.dart';
 import '../services/payment_service.dart';
@@ -338,7 +339,13 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.qr_code_2_rounded, size: 140, color: Colors.black87),
+                QrImageView(
+                  data: quote.qrPayload,
+                  version: QrVersions.auto,
+                  size: 156,
+                  backgroundColor: Colors.white,
+                  gapless: false,
+                ),
                 const SizedBox(height: 6),
                 Text(quote.upiId, style: const TextStyle(color: Colors.black54, fontSize: 10)),
               ],
