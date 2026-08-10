@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
-import '../models/mock_data.dart';
+import '../models/tournament.dart';
 
 class GradientButton extends StatelessWidget {
   final String label;
@@ -22,31 +22,35 @@ class GradientButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final disabled = onTap == null;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        height: height,
-        width: width,
-        padding: padding,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
-          borderRadius: BorderRadius.circular(AppRadius.pill),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.purple.withValues(alpha: 0.4),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
+      child: Opacity(
+        opacity: disabled ? 0.5 : 1,
+        child: Container(
+          height: height,
+          width: width,
+          padding: padding,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.purple.withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: fontSize,
+              letterSpacing: 0.3,
             ),
-          ],
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: fontSize,
-            letterSpacing: 0.3,
           ),
         ),
       ),
@@ -102,18 +106,38 @@ class StatusPill extends StatelessWidget {
   }
 }
 
+/// Maps a backend tournament `status` value to a display label + color.
+class TournamentStatusStyle {
+  final String label;
+  final Color color;
+  const TournamentStatusStyle(this.label, this.color);
+
+  factory TournamentStatusStyle.of(String status) {
+    switch (status) {
+      case 'live':
+        return const TournamentStatusStyle('LIVE', AppColors.danger);
+      case 'completed':
+        return const TournamentStatusStyle('COMPLETED', AppColors.textMuted);
+      case 'cancelled':
+        return const TournamentStatusStyle('CANCELLED', AppColors.textMuted);
+      case 'scheduled':
+      default:
+        return const TournamentStatusStyle('REGISTRATION OPEN', AppColors.success);
+    }
+  }
+}
+
 class GameIcon extends StatelessWidget {
   final String game;
   final double size;
-  const GameIcon({super.key, required this.game, this.size: 44});
+  const GameIcon({super.key, required this.game, this.size = 44});
 
   Color get _color {
-    switch (game) {
+    switch (game.toUpperCase()) {
       case 'BGMI':
         return AppColors.warning;
       case 'CODM':
         return AppColors.blue;
-      case 'Valorant':
       case 'VALORANT':
         return AppColors.pink;
       default:
@@ -122,12 +146,11 @@ class GameIcon extends StatelessWidget {
   }
 
   IconData get _icon {
-    switch (game) {
+    switch (game.toUpperCase()) {
       case 'BGMI':
         return Icons.military_tech_rounded;
       case 'CODM':
         return Icons.gps_fixed_rounded;
-      case 'Valorant':
       case 'VALORANT':
         return Icons.grid_view_rounded;
       default:
@@ -157,7 +180,7 @@ class SlotProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratio = (filled / total).clamp(0.0, 1.0);
+    final ratio = total == 0 ? 0.0 : (filled / total).clamp(0.0, 1.0);
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: Container(
@@ -173,15 +196,32 @@ class SlotProgressBar extends StatelessWidget {
   }
 }
 
+String formatMoney(num v) {
+  if (v == v.roundToDouble()) return v.toInt().toString();
+  return v.toStringAsFixed(2);
+}
+
 class TournamentListCard extends StatelessWidget {
   final Tournament t;
+  final String gameName;
   final VoidCallback? onTap;
   final VoidCallback? onJoin;
+  final bool joined;
 
-  const TournamentListCard({super.key, required this.t, this.onTap, this.onJoin});
+  const TournamentListCard({
+    super.key,
+    required this.t,
+    required this.gameName,
+    this.onTap,
+    this.onJoin,
+    this.joined = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final statusStyle = TournamentStatusStyle.of(t.status);
+    final canJoin = t.status == 'scheduled' && !t.isFull && !joined;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -197,13 +237,13 @@ class TournamentListCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                GameIcon(game: t.game),
+                GameIcon(game: gameName),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(t.game,
+                      Text(gameName.toUpperCase(),
                           style: const TextStyle(
                               fontSize: 10,
                               color: AppColors.textMuted,
@@ -219,8 +259,8 @@ class TournamentListCard extends StatelessWidget {
                   ),
                 ),
                 StatusPill(
-                    text: t.status == TournamentStatus.live ? 'LIVE' : 'REGISTRATION OPEN',
-                    color: t.status == TournamentStatus.live ? AppColors.danger : AppColors.success),
+                    text: joined ? 'JOINED' : statusStyle.label,
+                    color: joined ? AppColors.purple : statusStyle.color),
               ],
             ),
             const SizedBox(height: 14),
@@ -234,7 +274,7 @@ class TournamentListCard extends StatelessWidget {
                       const Text('Prize Pool',
                           style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
                       const SizedBox(height: 2),
-                      Text('₹${t.prizePool}',
+                      Text('₹${formatMoney(t.prizePool)}',
                           style: const TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.gold)),
                     ],
@@ -247,7 +287,7 @@ class TournamentListCard extends StatelessWidget {
                       const Text('Entry Fee',
                           style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
                       const SizedBox(height: 2),
-                      Text('₹${t.entryFee}',
+                      Text('₹${formatMoney(t.entryFee)}',
                           style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -260,13 +300,10 @@ class TournamentListCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(t.status == TournamentStatus.live ? 'Slots' : 'Starts In',
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                      const Text('Slots',
+                          style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
                       const SizedBox(height: 2),
-                      Text(
-                          t.status == TournamentStatus.live
-                              ? '${t.slotsFilled}/${t.slotsTotal}'
-                              : t.startsIn,
+                      Text('${t.currentPlayers}/${t.maxPlayers}',
                           style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
@@ -274,16 +311,17 @@ class TournamentListCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                GradientButton(label: 'JOIN', onTap: onJoin, height: 36, fontSize: 12),
+                if (joined)
+                  const StatusPill(text: 'JOINED', color: AppColors.purple)
+                else
+                  GradientButton(label: 'JOIN', onTap: canJoin ? onJoin : null, height: 36, fontSize: 12),
               ],
             ),
-            if (t.status != TournamentStatus.live) ...[
-              const SizedBox(height: 10),
-              SlotProgressBar(filled: t.slotsFilled, total: t.slotsTotal),
-              const SizedBox(height: 4),
-              Text('${t.slotsFilled}/${t.slotsTotal} slots filled',
-                  style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
-            ],
+            const SizedBox(height: 10),
+            SlotProgressBar(filled: t.currentPlayers, total: t.maxPlayers),
+            const SizedBox(height: 4),
+            Text('${t.currentPlayers}/${t.maxPlayers} slots filled',
+                style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
           ],
         ),
       ),

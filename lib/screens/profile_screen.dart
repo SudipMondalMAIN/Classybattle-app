@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import 'auth/login_screen.dart';
 import 'game_profiles_screen.dart';
 import 'my_tournaments_screen.dart';
+import 'payment_methods_screen.dart';
+import 'withdraw_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -134,7 +136,10 @@ class ProfileScreen extends ConsumerWidget {
           _menuItem(context, Icons.videogame_asset_rounded, 'Game Profiles',
               onTap: () => Navigator.push(
                   context, MaterialPageRoute(builder: (_) => const GameProfilesScreen()))),
-          _menuItem(context, Icons.account_balance_wallet_rounded, 'Wallet'),
+          _menuItem(context, Icons.account_balance_wallet_rounded, 'Withdraw',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WithdrawScreen()))),
+          _menuItem(context, Icons.credit_card_rounded, 'Payment Methods',
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentMethodsScreen()))),
           _menuItem(context, Icons.star_rounded, 'Achievements'),
           _menuItem(context, Icons.settings_rounded, 'Settings'),
           _menuItem(context, Icons.help_outline_rounded, 'Support'),

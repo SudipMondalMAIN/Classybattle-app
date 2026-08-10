@@ -6,6 +6,7 @@ import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import 'add_money_screen.dart';
+import 'withdraw_screen.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -157,11 +158,10 @@ class _WalletScreenState extends State<WalletScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Withdrawals coming soon')),
-                        );
-                      },
+                      onTap: wallet.isFrozen
+                          ? null
+                          : () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WithdrawScreen()))
+                              .then((_) => _load()),
                       child: Container(
                         height: 44,
                         alignment: Alignment.center,

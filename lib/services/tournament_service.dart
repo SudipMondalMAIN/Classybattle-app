@@ -15,6 +15,7 @@ class TournamentService {
     String? status,
     String? search,
     bool? isFeatured,
+    String? gameId,
   }) async {
     try {
       final res = await _dio.get('/tournaments', queryParameters: {
@@ -23,6 +24,7 @@ class TournamentService {
         if (status != null) 'status': status,
         if (search != null && search.isNotEmpty) 'search': search,
         if (isFeatured != null) 'is_featured': isFeatured,
+        if (gameId != null) 'game_id': gameId,
       });
       final items = res.data['items'] as List;
       return items.map((e) => Tournament.fromJson(e)).toList();
