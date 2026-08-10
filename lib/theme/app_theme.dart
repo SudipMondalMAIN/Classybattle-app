@@ -44,6 +44,10 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // Glassmorphism accents (iOS-style frosted glass)
+  static const Color glassBorder = Color(0x33FFFFFF); // white @ 20%
+  static const Color glassHighlight = Color(0x1AFFFFFF); // white @ 10%
 }
 
 class AppTheme {

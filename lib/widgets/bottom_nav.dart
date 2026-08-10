@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'glass.dart';
 
 class BottomNav extends StatelessWidget {
   final int currentIndex;
@@ -17,45 +18,60 @@ class BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.cardBorder, width: 1),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(_items.length, (i) {
-          final isCenter = i == 2;
-          final selected = currentIndex == i;
-          if (isCenter) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      child: GlassContainer(
+        borderRadius: AppRadius.pill,
+        blur: 24,
+        opacity: 0.14,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        border: Border.all(color: AppColors.glassBorder, width: 1.2),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(_items.length, (i) {
+            final isCenter = i == 2;
+            final selected = currentIndex == i;
+            if (isCenter) {
+              return GestureDetector(
+                onTap: () => onTap(i),
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.purple.withValues(alpha: 0.55),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1),
+                  ),
+                  child: Icon(_items[i].$1, color: Colors.white, size: 24),
+                ),
+              );
+            }
             return GestureDetector(
               onTap: () => onTap(i),
-              child: Container(
-                width: 46,
-                height: 46,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: selected ? Colors.white.withValues(alpha: 0.14) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
-                child: Icon(_items[i].$1, color: Colors.white, size: 24),
+                child: Icon(
+                  _items[i].$1,
+                  color: selected ? Colors.white : AppColors.textMuted,
+                  size: 22,
+                ),
               ),
             );
-          }
-          return GestureDetector(
-            onTap: () => onTap(i),
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Icon(
-                _items[i].$1,
-                color: selected ? AppColors.purple : AppColors.textMuted,
-                size: 24,
-              ),
-            ),
-          );
-        }),
+          }),
+        ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 import '../widgets/bottom_nav.dart';
+import '../widgets/glass.dart';
 import 'home_screen.dart';
 import 'tournaments_screen.dart';
 import 'leaderboard_screen.dart';
@@ -30,14 +30,10 @@ class _RootShellState extends State<RootShell> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       extendBody: true,
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.screenGradient),
+      body: GlassBackground(
         child: IndexedStack(index: _index, children: _screens),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: BottomNav(currentIndex: _index, onTap: (i) => setState(() => _index = i)),
-      ),
+      bottomNavigationBar: BottomNav(currentIndex: _index, onTap: (i) => setState(() => _index = i)),
     );
   }
 }

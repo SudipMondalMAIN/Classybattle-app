@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../models/tournament.dart';
+import 'glass.dart';
 
 class GradientButton extends StatelessWidget {
   final String label;
@@ -35,6 +36,7 @@ class GradientButton extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1),
             boxShadow: [
               BoxShadow(
                 color: AppColors.purple.withValues(alpha: 0.4),
@@ -92,17 +94,7 @@ class StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
-      ),
-      child: Text(text,
-          style: TextStyle(
-              color: color, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
-    );
+    return GlassPill(text: text, color: color);
   }
 }
 
@@ -224,14 +216,12 @@ class TournamentListCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: GlassContainer(
         padding: const EdgeInsets.all(14),
         margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: AppColors.cardBorder),
-        ),
+        blur: 20,
+        opacity: 0.09,
+        border: Border.all(color: AppColors.glassBorder, width: 1.2),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
