@@ -65,6 +65,32 @@ class AuthService {
     }
   }
 
+  /// GET /users/me — refetches the current user (used by Profile screen so
+  /// data is live even after an app restart / cached login).
+  Future<AppUser> getMe() async {
+    try {
+      final res = await _dio.get('/users/me');
+      return AppUser.fromJson(res.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
+  /// PATCH /users/me
+  Future<AppUser> updateProfile({String? fullName, String? avatarId, String? bio, String? country}) async {
+    try {
+      final res = await _dio.patch('/users/me', data: {
+        if (fullName != null) 'full_name': fullName,
+        if (avatarId != null) 'avatar_id': avatarId,
+        if (bio != null) 'bio': bio,
+        if (country != null) 'country': country,
+      });
+      return AppUser.fromJson(res.data);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
+
   Future<void> logout() async {
     final refreshToken = await TokenStorage.instance.refreshToken;
     try {

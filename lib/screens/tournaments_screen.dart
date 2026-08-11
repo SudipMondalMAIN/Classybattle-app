@@ -12,6 +12,7 @@ import 'tournament_detail_screen.dart';
 import 'tournaments/join_tournament_flow.dart';
 import '../widgets/common.dart';
 import '../widgets/app_header.dart';
+import '../widgets/skeleton.dart';
 
 class TournamentsScreen extends ConsumerStatefulWidget {
   const TournamentsScreen({super.key});
@@ -79,6 +80,54 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
 
   String _gameName(String gameId) => _gamesById[gameId]?.name ?? 'Unknown';
 
+  Widget _skeleton() {
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+        children: [
+          Row(
+            children: [
+              const SkeletonCircle(size: 32),
+              const Spacer(),
+              const SkeletonBox(width: 70, height: 30, radius: AppRadius.pill),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const SkeletonBox(width: 170, height: 24),
+          const SizedBox(height: 8),
+          const SkeletonBox(width: 140, height: 13),
+          const SizedBox(height: 16),
+          SkeletonBox(height: 44, radius: AppRadius.pill),
+          const SizedBox(height: 14),
+          SkeletonBox(height: 38, radius: AppRadius.pill),
+          const SizedBox(height: 24),
+          const SkeletonBox(width: 140, height: 16),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 300,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: 2,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (_, __) => const SkeletonBox(width: 230, height: 300, radius: AppRadius.lg),
+            ),
+          ),
+          const SizedBox(height: 22),
+          const SkeletonBox(width: 170, height: 16),
+          const SizedBox(height: 12),
+          ...List.generate(
+            3,
+            (i) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SkeletonBox(height: 92, radius: AppRadius.lg),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _join(Tournament t) async {
     final participant = await runJoinTournamentFlow(context, tournamentId: t.id, gameId: t.gameId);
     if (participant != null) _load();
@@ -92,7 +141,7 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purple));
+      return _skeleton();
     }
     return SafeArea(
       bottom: false,

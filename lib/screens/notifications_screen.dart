@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../core/api_exception.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/skeleton.dart';
+import 'settings_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -17,6 +19,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   bool _loading = true;
   String? _error;
   List<AppNotification> _items = [];
+  int _tab = 0; // 0 = All, 1 = Unread
 
   @override
   void initState() {
@@ -40,6 +43,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       if (!mounted) return;
       setState(() {
         _error = e.message;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Something went wrong: $e';
         _loading = false;
       });
     }
@@ -94,23 +103,46 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back_rounded, color: AppColors.textPrimary),
-                  ),
-                  const SizedBox(width: 14),
                   const Expanded(
                     child: Text('Notifications',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                   ),
                   GestureDetector(
-                    onTap: _markAllRead,
-                    child: const Icon(Icons.done_all_rounded, color: AppColors.textSecondary),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())),
+                    child: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(AppRadius.sm)),
+                      child: const Icon(Icons.settings_rounded, color: AppColors.textPrimary, size: 18),
+                    ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              child: Row(
+                children: [
+                  _tabButton('All', 0),
+                  const SizedBox(width: 20),
+                  _tabButton('Unread', 1),
+                  const Spacer(),
+                  GestureDetector(
+                    onTap: _markAllRead,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.delete_outline_rounded, color: AppColors.purple, size: 16),
+                        SizedBox(width: 4),
+                        Text('Mark all as read',
+                            style: TextStyle(color: AppColors.purple, fontSize: 12.5, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -118,9 +150,68 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
+  Widget _tabButton(String label, int index) {
+    final selected = _tab == index;
+    return GestureDetector(
+      onTap: () => setState(() => _tab = index),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(
+                  color: selected ? AppColors.purple : AppColors.textSecondary,
+                  fontSize: 14.5,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600)),
+          const SizedBox(height: 5),
+          Container(height: 2, width: 22, color: selected ? AppColors.purple : Colors.transparent),
+        ],
+      ),
+    );
+  }
+
+  List<AppNotification> get _filteredItems =>
+      _tab == 1 ? _items.where((n) => !n.isRead).toList() : _items;
+
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purple));
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(18, 0, 18, 20),
+        itemCount: 6,
+        itemBuilder: (context, i) => Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.card,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SkeletonCircle(size: 40),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(child: SkeletonBox(height: 13)),
+                        const SizedBox(width: 8),
+                        SkeletonBox(width: 40, height: 10),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    const SkeletonBox(height: 10),
+                    const SizedBox(height: 6),
+                    SkeletonBox(width: 160, height: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
     }
     if (_error != null) {
       return ListView(
@@ -144,9 +235,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       );
     }
-    if (_items.isEmpty) {
-      return const Center(
-        child: Text('No notifications yet', style: TextStyle(color: AppColors.textMuted)),
+    final items = _filteredItems;
+    if (items.isEmpty) {
+      return Center(
+        child: Text(_tab == 1 ? 'No unread notifications' : 'No notifications yet',
+            style: const TextStyle(color: AppColors.textMuted)),
       );
     }
     return RefreshIndicator(
@@ -155,10 +248,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       backgroundColor: AppColors.surface,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(18, 0, 18, 20),
-        itemCount: _items.length,
+        itemCount: items.length,
         itemBuilder: (context, i) => _NotifTile(
-          item: _items[i],
-          onTap: () => _handleTap(_items[i]),
+          item: items[i],
+          onTap: () => _handleTap(items[i]),
         ),
       ),
     );
@@ -172,20 +265,33 @@ class _NotifTile extends StatelessWidget {
 
   IconData get _icon {
     switch (item.eventType) {
-      case 'wallet_credit':
-      case 'wallet_debit':
-      case 'deposit_approved':
-      case 'deposit_rejected':
+      case 'wallet_credited':
+      case 'wallet_debited':
+      case 'refund_completed':
         return Icons.account_balance_wallet_rounded;
-      case 'tournament_registration':
-      case 'tournament_update':
-      case 'match_live':
+      case 'registration_successful':
+        return Icons.check_circle_rounded;
+      case 'registration_cancelled':
+      case 'tournament_cancelled':
+        return Icons.cancel_rounded;
+      case 'tournament_created':
+      case 'tournament_updated':
         return Icons.emoji_events_rounded;
-      case 'prize_credited':
+      case 'match_created':
+      case 'match_started':
+      case 'live_match_started':
         return Icons.card_giftcard_rounded;
-      case 'friend_request':
-      case 'follow':
-        return Icons.person_add_alt_1_rounded;
+      case 'match_completed':
+      case 'match_result_approved':
+        return Icons.flag_circle_rounded;
+      case 'room_details_published':
+        return Icons.meeting_room_rounded;
+      case 'winner_declared':
+      case 'prize_distributed':
+        return Icons.star_rounded;
+      case 'admin_broadcast':
+      case 'system_announcement':
+        return Icons.campaign_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -193,19 +299,31 @@ class _NotifTile extends StatelessWidget {
 
   Color get _color {
     switch (item.eventType) {
-      case 'wallet_credit':
-      case 'prize_credited':
-      case 'deposit_approved':
-        return AppColors.success;
-      case 'wallet_debit':
-      case 'deposit_rejected':
-        return AppColors.danger;
-      case 'tournament_registration':
-      case 'tournament_update':
-      case 'match_live':
+      case 'wallet_credited':
+      case 'refund_completed':
         return AppColors.purple;
-      default:
+      case 'wallet_debited':
+        return AppColors.danger;
+      case 'registration_successful':
+        return AppColors.success;
+      case 'registration_cancelled':
+      case 'tournament_cancelled':
+        return AppColors.danger;
+      case 'tournament_created':
+      case 'tournament_updated':
+        return AppColors.purple;
+      case 'match_created':
+      case 'match_started':
+      case 'live_match_started':
         return AppColors.blue;
+      case 'winner_declared':
+      case 'prize_distributed':
+        return AppColors.success;
+      case 'admin_broadcast':
+      case 'system_announcement':
+        return AppColors.warning;
+      default:
+        return AppColors.gold;
     }
   }
 
@@ -227,8 +345,8 @@ class _NotifTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: _color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+                color: _color.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
               ),
               child: Icon(_icon, color: _color, size: 20),
             ),

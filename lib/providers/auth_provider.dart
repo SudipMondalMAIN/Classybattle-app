@@ -118,6 +118,28 @@ class AuthController extends StateNotifier<AuthState> {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
+  /// Refetches the current user from GET /users/me. Used by the Profile
+  /// screen so stats like avatar/name are live, not just what login returned.
+  Future<void> refreshUser() async {
+    try {
+      final user = await _authService.getMe();
+      state = state.copyWith(user: user);
+    } on ApiException {
+      // Non-fatal — keep whatever user we already have cached.
+    }
+  }
+
+  Future<bool> updateProfile({String? fullName, String? avatarId, String? bio}) async {
+    try {
+      final user = await _authService.updateProfile(fullName: fullName, avatarId: avatarId, bio: bio);
+      state = state.copyWith(user: user);
+      return true;
+    } on ApiException catch (e) {
+      state = state.copyWith(error: e.message);
+      return false;
+    }
+  }
+
   void clearError() => state = state.copyWith(clearError: true);
 }
 

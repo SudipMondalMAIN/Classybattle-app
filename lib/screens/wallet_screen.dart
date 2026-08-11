@@ -6,6 +6,7 @@ import '../services/wallet_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
 import '../widgets/app_header.dart';
+import '../widgets/skeleton.dart';
 import 'add_money_screen.dart';
 import 'withdraw_screen.dart';
 import 'tournaments_screen.dart' show GlassCard;
@@ -80,7 +81,26 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Widget _buildBody(BuildContext context) {
     if (_loading && _wallet == null) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purple));
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(18, 10, 18, 20),
+        children: [
+          const SkeletonCircle(size: 32),
+          const SizedBox(height: 22),
+          SkeletonBox(height: 130, radius: AppRadius.lg),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: SkeletonBox(height: 70, radius: AppRadius.md)),
+              const SizedBox(width: 10),
+              Expanded(child: SkeletonBox(height: 70, radius: AppRadius.md)),
+            ],
+          ),
+          const SizedBox(height: 22),
+          const SkeletonBox(width: 150, height: 16),
+          const SizedBox(height: 12),
+          ...List.generate(5, (i) => const SkeletonListTile()),
+        ],
+      );
     }
     if (_error != null && _wallet == null) {
       return ListView(

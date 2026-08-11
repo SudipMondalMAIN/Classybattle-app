@@ -11,6 +11,7 @@ import '../services/tournament_service.dart';
 import '../services/wallet_service.dart';
 import '../widgets/common.dart';
 import '../widgets/app_header.dart';
+import '../widgets/skeleton.dart';
 import 'auth/auth_widgets.dart';
 import 'tournaments/join_tournament_flow.dart';
 import 'tournaments_screen.dart' show gameTint, GlassCard;
@@ -103,9 +104,42 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: AppColors.bgBottom,
-        body: Center(child: CircularProgressIndicator(color: AppColors.purple)),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
+            children: [
+              Row(
+                children: [
+                  const SkeletonCircle(size: 30),
+                  const Spacer(),
+                  const SkeletonCircle(size: 30),
+                ],
+              ),
+              const SizedBox(height: 18),
+              SkeletonBox(height: 170, radius: AppRadius.lg),
+              const SizedBox(height: 18),
+              const SkeletonBox(width: 220, height: 20),
+              const SizedBox(height: 10),
+              const SkeletonBox(width: 140, height: 13),
+              const SizedBox(height: 22),
+              Row(
+                children: [
+                  Expanded(child: SkeletonBox(height: 70, radius: AppRadius.md)),
+                  const SizedBox(width: 10),
+                  Expanded(child: SkeletonBox(height: 70, radius: AppRadius.md)),
+                  const SizedBox(width: 10),
+                  Expanded(child: SkeletonBox(height: 70, radius: AppRadius.md)),
+                ],
+              ),
+              const SizedBox(height: 22),
+              const SkeletonBox(width: 140, height: 16),
+              const SizedBox(height: 12),
+              SkeletonBox(height: 100, radius: AppRadius.lg),
+            ],
+          ),
+        ),
       );
     }
     if (_error != null || _tournament == null) {

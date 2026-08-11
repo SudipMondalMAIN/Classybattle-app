@@ -7,6 +7,7 @@ import '../models/participant.dart';
 import '../models/game.dart';
 import '../services/tournament_service.dart';
 import '../widgets/common.dart';
+import '../widgets/skeleton.dart';
 import 'tournament_detail_screen.dart';
 
 class _MyEntry {
@@ -153,7 +154,7 @@ class _MyTournamentsScreenState extends State<MyTournamentsScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purple));
+      return const SkeletonListPage(count: 5, leadingCircle: false);
     }
     if (_error != null) {
       return Center(

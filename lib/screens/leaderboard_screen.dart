@@ -5,6 +5,7 @@ import '../models/leaderboard.dart';
 import '../providers/auth_provider.dart';
 import '../services/leaderboard_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/skeleton.dart';
 import 'user_profile_screen.dart';
 
 class LeaderboardScreen extends ConsumerStatefulWidget {
@@ -81,7 +82,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
 
   Widget _buildBody(String? myUserId) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.purple));
+      return const SkeletonListPage(count: 8);
     }
     if (_error != null) {
       return ListView(
