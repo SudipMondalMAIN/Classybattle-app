@@ -69,7 +69,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       if (user == null) throw ApiException('Not logged in');
 
       final results = await Future.wait([
-        _leaderboardService.getPlayerStatistics(user.id),
+        _leaderboardService.getPlayerStatistics(user.id).catchError((e) {
+          // New accounts don't have a stats row yet — treat "not found" as
+          // zero stats instead of failing the whole profile screen.
+          if (e is ApiException && e.statusCode == 404) {
+            return PlayerStatistics.empty(user.id);
+          }
+          throw e;
+        }),
         _walletService.getWallet(),
         _tournamentService.myRegistrations(pageSize: 50),
         GameCache.instance.byId(),
@@ -702,7 +709,7 @@ class _TournamentTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GameIcon(game: gameName, size: 46),
+            GameIcon(game: gameName, size: 46, imageUrl: t.coverUrl ?? t.bannerUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

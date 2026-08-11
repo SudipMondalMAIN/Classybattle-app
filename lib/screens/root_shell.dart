@@ -3,7 +3,6 @@ import '../theme/app_theme.dart';
 import '../widgets/bottom_nav.dart';
 import 'home_screen.dart';
 import 'tournaments_screen.dart';
-import 'leaderboard_screen.dart';
 import 'wallet_screen.dart';
 import 'profile_screen.dart';
 
@@ -20,7 +19,6 @@ class _RootShellState extends State<RootShell> {
   final _screens = const [
     HomeScreen(),
     TournamentsScreen(),
-    LeaderboardScreen(),
     WalletScreen(),
     ProfileScreen(),
   ];

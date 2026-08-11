@@ -11,7 +11,6 @@ class BottomNav extends StatelessWidget {
     (Icons.home_rounded, 'Home'),
     (Icons.emoji_events_rounded, 'Tournaments'),
     (Icons.account_balance_wallet_rounded, 'Wallet'),
-    (Icons.card_giftcard_rounded, 'Rewards'),
     (Icons.person_rounded, 'Profile'),
   ];
 

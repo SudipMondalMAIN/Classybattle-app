@@ -25,8 +25,9 @@ class ApiException implements Exception {
     final data = e.response?.data;
 
     String msg = 'Something went wrong. Please try again.';
-    if (data is Map && data['detail'] != null) {
+    if (data is Map) {
       final detail = data['detail'];
+      final message = data['message'];
       if (detail is String) {
         msg = detail;
       } else if (detail is List && detail.isNotEmpty) {
@@ -36,6 +37,10 @@ class ApiException implements Exception {
         } else {
           msg = detail.map((d) => d is Map ? d['msg'] ?? d.toString() : d.toString()).join(', ');
         }
+      } else if (message is String) {
+        // Backend's custom AppException handler returns {"message": "..."}
+        // instead of FastAPI's default {"detail": "..."} shape.
+        msg = message;
       }
     }
     return ApiException(msg, statusCode: status);

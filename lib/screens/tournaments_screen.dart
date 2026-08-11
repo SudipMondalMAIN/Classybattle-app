@@ -463,7 +463,8 @@ class GameBanner extends StatelessWidget {
   final String gameName;
   final double height;
   final BorderRadius borderRadius;
-  const GameBanner({super.key, required this.gameName, required this.height, required this.borderRadius});
+  final String? imageUrl;
+  const GameBanner({super.key, required this.gameName, required this.height, required this.borderRadius, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -478,8 +479,14 @@ class GameBanner extends StatelessWidget {
           end: Alignment.bottomCenter,
         ),
       ),
-      child: Center(
-        child: Icon(gameIconFor(gameName), color: Colors.white.withValues(alpha: 0.85), size: height * 0.4),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: Icon(gameIconFor(gameName), color: Colors.white.withValues(alpha: 0.85), size: height * 0.4),
+          ),
+          NetworkCover(imageUrl: imageUrl, borderRadius: borderRadius),
+        ],
       ),
     );
   }
@@ -513,6 +520,7 @@ class _LiveTournamentCard extends StatelessWidget {
                   gameName: gameName,
                   height: 120,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+                  imageUrl: t.coverUrl ?? t.bannerUrl,
                 ),
                 Positioned(
                   top: 10,
@@ -646,7 +654,12 @@ class _UpcomingTournamentTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.md),
-              child: GameBanner(gameName: gameName, height: 68, borderRadius: BorderRadius.circular(AppRadius.md)),
+              child: GameBanner(
+                gameName: gameName,
+                height: 68,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                imageUrl: t.coverUrl ?? t.bannerUrl,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

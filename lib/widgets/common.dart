@@ -119,10 +119,36 @@ class TournamentStatusStyle {
   }
 }
 
+/// Shows a tournament's real cover/banner image on top of whatever
+/// fallback (gradient + icon) is already behind it. Renders nothing
+/// (transparent) while loading or on error/missing URL, so the
+/// existing placeholder stays visible underneath.
+class NetworkCover extends StatelessWidget {
+  final String? imageUrl;
+  final BorderRadius? borderRadius;
+  const NetworkCover({super.key, required this.imageUrl, this.borderRadius});
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl;
+    if (url == null || url.isEmpty) return const SizedBox.shrink();
+    final child = Image.network(
+      url,
+      fit: BoxFit.cover,
+      width: double.infinity,
+      height: double.infinity,
+      loadingBuilder: (context, widget, progress) => progress == null ? widget : const SizedBox.shrink(),
+      errorBuilder: (context, error, stack) => const SizedBox.shrink(),
+    );
+    return borderRadius != null ? ClipRRect(borderRadius: borderRadius!, child: child) : child;
+  }
+}
+
 class GameIcon extends StatelessWidget {
   final String game;
   final double size;
-  const GameIcon({super.key, required this.game, this.size = 44});
+  final String? imageUrl;
+  const GameIcon({super.key, required this.game, this.size = 44, this.imageUrl});
 
   Color get _color {
     switch (game.toUpperCase()) {
@@ -152,15 +178,22 @@ class GameIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(AppRadius.sm);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: _color.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderRadius: radius,
         border: Border.all(color: _color.withValues(alpha: 0.4)),
       ),
-      child: Icon(_icon, color: _color, size: size * 0.5),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(child: Icon(_icon, color: _color, size: size * 0.5)),
+          NetworkCover(imageUrl: imageUrl, borderRadius: radius),
+        ],
+      ),
     );
   }
 }
@@ -227,7 +260,7 @@ class TournamentListCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                GameIcon(game: gameName),
+                GameIcon(game: gameName, imageUrl: t.coverUrl ?? t.bannerUrl),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(

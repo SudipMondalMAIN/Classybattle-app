@@ -239,7 +239,7 @@ class _RegisteredCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            GameIcon(game: gameName),
+            GameIcon(game: gameName, imageUrl: t.coverUrl ?? t.bannerUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

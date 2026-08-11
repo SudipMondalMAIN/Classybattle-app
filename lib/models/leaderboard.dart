@@ -40,6 +40,29 @@ class PlayerStatistics {
     this.previousRank,
   });
 
+  /// Used when the backend has no stats row yet for a brand-new player
+  /// (returns 404 until they finish their first tournament).
+  factory PlayerStatistics.empty(String userId) {
+    return PlayerStatistics(
+      id: '',
+      userId: userId,
+      matchesPlayed: 0,
+      matchesWon: 0,
+      matchesLost: 0,
+      winRate: 0,
+      kills: 0,
+      deaths: 0,
+      kdRatio: 0,
+      assists: 0,
+      mvpCount: 0,
+      tournamentsPlayed: 0,
+      tournamentsWon: 0,
+      prizeMoneyEarned: 0,
+      walletEarnings: 0,
+      rankingScore: 0,
+    );
+  }
+
   factory PlayerStatistics.fromJson(Map<String, dynamic> json) {
     return PlayerStatistics(
       id: json['id'] as String,

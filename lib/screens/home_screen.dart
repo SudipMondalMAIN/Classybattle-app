@@ -375,7 +375,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final items = [
       (Icons.sports_esports_rounded, 'All Games', AppColors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const GameProfilesScreen()))),
       (Icons.emoji_events_rounded, 'Tournaments', AppColors.gold, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TournamentsScreen()))),
-      (Icons.card_giftcard_rounded, 'Rewards', AppColors.success, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()))),
+      (Icons.account_balance_wallet_rounded, 'Wallet', AppColors.success, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()))),
       (Icons.shield_rounded, 'Leaderboard', AppColors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaderboardScreen()))),
     ];
     return GlassContainer(
@@ -434,83 +434,94 @@ class _BannerCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppColors.cardBorder),
       ),
-      child: Stack(
-        children: [
-          Positioned(
-            right: -10,
-            bottom: -10,
-            top: 10,
-            child: Icon(Icons.military_tech_rounded, size: 170, color: Colors.white.withValues(alpha: 0.06)),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.circle, color: AppColors.danger, size: 8),
-                  const SizedBox(width: 4),
-                  const Text('LIVE',
-                      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(gameName.toUpperCase(),
-                  style: const TextStyle(color: AppColors.purple, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-              const SizedBox(height: 2),
-              Text(
-                t != null ? t.title.toUpperCase() : 'SUMMER',
-                style: const TextStyle(color: AppColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
-              ),
-              ShaderMask(
-                shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
-                child: const Text('CHAMPIONSHIP',
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1)),
-              ),
-              const SizedBox(height: 6),
-              const Text('Win Exciting Prizes',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
-              const SizedBox(height: 14),
-              GradientButton(label: 'Join Now', height: 40, onTap: onJoin),
-            ],
-          ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 150,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('PRIZE POOL',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 13),
-                      const SizedBox(width: 4),
-                      Text('₹${formatMoney(t?.prizePool ?? 50000)}',
-                          style: const TextStyle(color: AppColors.gold, fontSize: 15, fontWeight: FontWeight.w800)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('REGISTRATIONS',
-                      style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
-                  const SizedBox(height: 2),
-                  Text(
-                    t != null ? '${t.currentPlayers} / ${t.maxPlayers}' : '256 / 512',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
-                  ),
-                ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -10,
+              bottom: -10,
+              top: 10,
+              child: Icon(Icons.military_tech_rounded, size: 170, color: Colors.white.withValues(alpha: 0.06)),
+            ),
+            // Real tournament cover image, if the tournament has one.
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.5,
+                child: NetworkCover(imageUrl: t?.bannerUrl ?? t?.coverUrl),
               ),
             ),
-          ),
-        ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.circle, color: AppColors.danger, size: 8),
+                    const SizedBox(width: 4),
+                    const Text('LIVE',
+                        style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(gameName.toUpperCase(),
+                    style: const TextStyle(color: AppColors.purple, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                const SizedBox(height: 2),
+                ShaderMask(
+                  shaderCallback: (rect) => AppColors.primaryGradient.createShader(rect),
+                  child: Text(
+                    t != null ? t.title.toUpperCase() : 'JOIN A TOURNAMENT',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.1),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                const Text('Win Exciting Prizes',
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13, fontWeight: FontWeight.w500)),
+                const SizedBox(height: 14),
+                if (t != null) GradientButton(label: 'Join Now', height: 40, onTap: onJoin),
+              ],
+            ),
+            if (t != null)
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 150,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('PRIZE POOL',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+                      const SizedBox(height: 2),
+                      Row(
+                        children: [
+                          const Icon(Icons.emoji_events_rounded, color: AppColors.gold, size: 13),
+                          const SizedBox(width: 4),
+                          Text('₹${formatMoney(t.prizePool)}',
+                              style: const TextStyle(color: AppColors.gold, fontSize: 15, fontWeight: FontWeight.w800)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      const Text('REGISTRATIONS',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${t.currentPlayers} / ${t.maxPlayers}',
+                        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -728,7 +739,7 @@ class _UpcomingTournamentCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GameIcon(game: gameName, size: 60),
+            GameIcon(game: gameName, size: 60, imageUrl: t.coverUrl ?? t.bannerUrl),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

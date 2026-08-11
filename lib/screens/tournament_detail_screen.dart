@@ -254,6 +254,12 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
               top: 20,
               child: Icon(Icons.military_tech_rounded, color: Colors.white.withValues(alpha: 0.14), size: 190),
             ),
+            Positioned.fill(
+              child: Opacity(
+                opacity: 0.55,
+                child: NetworkCover(imageUrl: t.bannerUrl ?? t.coverUrl),
+              ),
+            ),
             Positioned(
               top: 14,
               left: 14,
