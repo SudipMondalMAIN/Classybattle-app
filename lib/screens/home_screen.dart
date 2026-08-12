@@ -9,6 +9,8 @@ import '../widgets/home/hero_banner_carousel.dart';
 import '../widgets/home/how_it_works.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
+import 'tournament_details_screen.dart';
+import 'tournaments_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -35,6 +37,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _notImplemented(String what) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$what — coming soon')),
+    );
+  }
+
+  void _openTournaments() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+    );
+  }
+
+  void _openTournamentDetails(String id) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournamentId: id)),
     );
   }
 
@@ -78,9 +92,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: HeroBannerCarousel(
                           onJoinTap: (featured) {
                             if (featured == null) {
-                              _notImplemented('Join tournament');
+                              _openTournaments();
                             } else {
-                              _notImplemented('Join "${featured.title}"');
+                              _openTournamentDetails(featured.id);
                             }
                           },
                         ),
@@ -98,8 +112,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),
                     SliverToBoxAdapter(
                       child: LiveTournamentsSection(
-                        onViewAll: () => _notImplemented('Live tournaments list'),
-                        onJoinTap: (id) => _notImplemented('Join tournament'),
+                        onViewAll: () => _openTournaments(),
+                        onJoinTap: (id) => _openTournamentDetails(id),
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),
@@ -107,9 +121,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverToBoxAdapter(
                         child: UpcomingTournamentsSection(
-                          onViewAll: () =>
-                              _notImplemented('Upcoming tournaments list'),
-                          onJoinTap: (id) => _notImplemented('Join tournament'),
+                          onViewAll: () => _openTournaments(),
+                          onJoinTap: (id) => _openTournamentDetails(id),
                         ),
                       ),
                     ),
@@ -130,6 +143,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         currentIndex: _navIndex,
         onTap: (i) {
           if (i == _navIndex) return;
+          if (i == 1) {
+            _openTournaments();
+            return;
+          }
           setState(() => _navIndex = i);
           if (i != 0) {
             const labels = ['Home', 'Tournaments', 'Wallet', 'Profile'];
