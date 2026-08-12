@@ -13,7 +13,7 @@ class ApiConfig {
 
   static const String _base = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'https://classybattle.onrender.com',
   );
 
   /// e.g. http://10.0.2.2:8000/api/v1
