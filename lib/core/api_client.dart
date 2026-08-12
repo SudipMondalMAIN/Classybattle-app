@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'api_config.dart';
 import 'token_storage.dart';
 
@@ -10,8 +11,8 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: ApiConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
+        connectTimeout: const Duration(seconds: 45),
+        receiveTimeout: const Duration(seconds: 45),
         headers: {'Accept': 'application/json'},
       ),
     );
@@ -23,7 +24,27 @@ class ApiClient {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+          if (kDebugMode) {
+            debugPrint('[API] -> ${options.method} ${options.uri}');
+          }
           handler.next(options);
+        },
+        onResponse: (response, handler) {
+          if (kDebugMode) {
+            debugPrint(
+              '[API] <- ${response.statusCode} ${response.requestOptions.uri}',
+            );
+          }
+          handler.next(response);
+        },
+        onError: (error, handler) {
+          if (kDebugMode) {
+            debugPrint(
+              '[API] !! ${error.requestOptions.uri} -> '
+              '${error.type} ${error.message}',
+            );
+          }
+          handler.next(error);
         },
       ),
     );
