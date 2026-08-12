@@ -13,16 +13,12 @@ import '../services/banner_service.dart';
 import '../services/tournament_service.dart';
 import '../services/wallet_service.dart';
 import '../widgets/common.dart';
-import '../widgets/glass.dart';
 import '../widgets/skeleton.dart';
 import 'add_money_screen.dart';
-import 'leaderboard_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_detail_screen.dart';
 import 'tournaments_screen.dart';
-import 'game_profiles_screen.dart';
-import 'wallet_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -40,6 +36,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _bannerService = BannerService();
 
   bool _loading = true;
+  bool _hasLoadedOnce = false;
   String? _error;
   List<Tournament> _live = [];
   List<Tournament> _featured = [];
@@ -55,10 +52,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    // Only blank the screen with the skeleton on the very first load.
+    // Pull-to-refresh (and any later call) keeps showing existing data
+    // while it refreshes in the background — feels instant, no flash.
+    if (!_hasLoadedOnce) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
       final results = await Future.wait([
         _tournamentService.list(status: 'ongoing', pageSize: 5),
@@ -84,11 +86,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _walletBalance = (results[4] as Wallet).availableBalance;
         _banners = banners;
         _loading = false;
+        _hasLoadedOnce = true;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
-        _error = e.message;
+        // Don't wipe already-loaded data on a background refresh failure —
+        // just surface the error state if we truly have nothing to show yet.
+        if (!_hasLoadedOnce) _error = e.message;
         _loading = false;
       });
     }
@@ -119,8 +124,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _buildTopBar(user?.fullName),
             const SizedBox(height: 16),
             _buildBanner(),
-            const SizedBox(height: 16),
-            _buildQuickActions(),
             const SizedBox(height: 22),
             SectionHeader(
               title: 'Live Tournaments',
@@ -165,8 +168,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   gameName: _gameName(t.gameId),
                 ),
               ),
-            const SizedBox(height: 22),
-            const _HowItWorks(),
           ],
         ),
       ),
@@ -190,18 +191,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 16),
           SkeletonBox(height: 150, radius: AppRadius.lg),
-          const SizedBox(height: 16),
-          Row(
-            children: List.generate(
-              4,
-              (i) => Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(right: i == 3 ? 0 : 10),
-                  child: const SkeletonBox(height: 64, radius: AppRadius.md),
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 22),
           const SkeletonBox(width: 150, height: 16),
           const SizedBox(height: 12),
@@ -496,85 +485,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
-    final items = [
-      (
-        Icons.sports_esports_rounded,
-        'All Games',
-        AppColors.purple,
-        () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const GameProfilesScreen()),
-        ),
-      ),
-      (
-        Icons.emoji_events_rounded,
-        'Tournaments',
-        AppColors.gold,
-        () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const TournamentsScreen()),
-        ),
-      ),
-      (
-        Icons.account_balance_wallet_rounded,
-        'Wallet',
-        AppColors.success,
-        () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const WalletScreen()),
-        ),
-      ),
-      (
-        Icons.shield_rounded,
-        'Leaderboard',
-        AppColors.blue,
-        () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const LeaderboardScreen()),
-        ),
-      ),
-    ];
-    return GlassContainer(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      borderRadius: AppRadius.xl,
-      blur: 16,
-      opacity: 0.06,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: items.map((it) {
-          final (icon, label, color, onTap) = it;
-          return GestureDetector(
-            onTap: onTap,
-            behavior: HitTestBehavior.opaque,
-            child: Column(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.16),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: color.withValues(alpha: 0.4)),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
 }
 
 class _PromoBannerCard extends StatelessWidget {
@@ -821,116 +731,6 @@ class _BannerCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _HowItWorks extends StatelessWidget {
-  const _HowItWorks();
-
-  static const _steps = [
-    ('1', 'Register', 'Join tournament'),
-    ('2', 'Compete', 'Play your matches'),
-    ('3', 'Score', 'Top the leaderboard'),
-    ('4', 'Win', 'Get exciting prizes'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'How It Works?',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Row(
-          children: List.generate(_steps.length * 2 - 1, (i) {
-            if (i.isOdd) {
-              return const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 34),
-                  child: _DashedLine(),
-                ),
-              );
-            }
-            final step = _steps[i ~/ 2];
-            return Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: const BoxDecoration(
-                    gradient: AppColors.primaryGradient,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    step.$1,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  step.$2,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                SizedBox(
-                  width: 78,
-                  child: Text(
-                    step.$3,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontSize: 10,
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
-        ),
-      ],
-    );
-  }
-}
-
-class _DashedLine extends StatelessWidget {
-  const _DashedLine();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const dashWidth = 5.0;
-        const dashSpace = 4.0;
-        final dashCount = (constraints.maxWidth / (dashWidth + dashSpace))
-            .floor();
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(dashCount, (_) {
-            return Container(
-              width: dashWidth,
-              height: 2,
-              margin: const EdgeInsets.symmetric(horizontal: dashSpace / 2),
-              color: AppColors.purple.withValues(alpha: 0.5),
-            );
-          }),
-        );
-      },
     );
   }
 }

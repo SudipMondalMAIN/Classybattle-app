@@ -302,13 +302,13 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                     Text('${t.currentPlayers} / ${t.maxPlayers}',
                         style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
-                    const Text('TIME LEFT', style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+                    const Text('STATUS', style: TextStyle(color: AppColors.textMuted, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
                     const SizedBox(height: 3),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.access_time_rounded, color: Colors.white, size: 12),
-                        SizedBox(width: 4),
-                        Text('2h 15m', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                        Icon(Icons.circle, color: statusStyle.color, size: 9),
+                        const SizedBox(width: 5),
+                        Text(statusStyle.label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
                       ],
                     ),
                   ],
@@ -340,8 +340,12 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                     spacing: 8,
                     children: [
                       _tagChip(Icons.groups_rounded, t.registrationMode == 'solo' ? 'Solo' : 'Squad'),
-                      _tagChip(Icons.center_focus_strong_rounded, 'TPP'),
-                      _tagChip(Icons.map_rounded, 'Erangel'),
+                      if (t.registrationMode != 'solo')
+                        _tagChip(Icons.people_alt_rounded, 'Team of ${t.teamSize}'),
+                      _tagChip(
+                        Icons.currency_rupee_rounded,
+                        t.entryFee == 0 ? 'Free Entry' : '₹${formatMoney(t.entryFee)} Entry',
+                      ),
                     ],
                   ),
                 ],
@@ -446,8 +450,9 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                   children: [
                     _infoRow(Icons.sports_esports_rounded, 'Game', gameName),
                     _infoRow(Icons.groups_rounded, 'Game Mode', t.registrationMode == 'solo' ? 'Solo' : 'Squad'),
-                    _infoRow(Icons.center_focus_strong_rounded, 'Perspective', 'TPP'),
-                    _infoRow(Icons.map_outlined, 'Map', 'Erangel'),
+                    _infoRow(Icons.people_alt_rounded, 'Team Size', '${t.teamSize}'),
+                    _infoRow(Icons.currency_rupee_rounded, 'Entry Fee',
+                        t.entryFee == 0 ? 'Free' : '₹${formatMoney(t.entryFee)}'),
                   ],
                 ),
               ),
@@ -457,8 +462,8 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
                   children: [
                     _infoRow(Icons.auto_awesome_rounded, 'Type', t.isFeatured ? 'Featured' : 'Classic'),
                     _infoRow(Icons.people_alt_rounded, 'Max Players', '${t.maxPlayers}'),
-                    _infoRow(Icons.public_rounded, 'Region', 'India'),
-                    _infoRow(Icons.settings_rounded, 'Version', 'Latest'),
+                    _infoRow(Icons.circle_outlined, 'Status', TournamentStatusStyle.of(t.status).label),
+                    _infoRow(Icons.storefront_rounded, 'Organizer', t.organizer?.trim().isNotEmpty == true ? t.organizer! : 'ClassyBattle'),
                   ],
                 ),
               ),
@@ -571,6 +576,9 @@ class _TournamentDetailScreenState extends ConsumerState<TournamentDetailScreen>
             Expanded(child: _prizeBox('3rd Prize', third, Icons.emoji_events_rounded, const Color(0xFFCD7F32))),
           ],
         ),
+        const SizedBox(height: 8),
+        const Text('Estimated split (50/30/20) of the total prize pool.',
+            style: TextStyle(color: AppColors.textMuted, fontSize: 10.5)),
       ],
     );
   }

@@ -192,16 +192,20 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
               if (_upcoming.isEmpty)
                 const _EmptyHint(text: 'No upcoming tournaments right now')
               else
-                ..._upcoming.map((t) => _UpcomingTournamentTile(
-                      t: t,
-                      gameName: _gameName(t.gameId),
-                      onTap: () => _openDetail(t),
-                      onJoin: () => _join(t),
-                    )),
-              const SizedBox(height: 26),
-              _sectionHeader('Your Tournaments'),
-              const SizedBox(height: 12),
-              _buildYourTournamentsCard(),
+                SizedBox(
+                  height: 150,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _upcoming.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (_, i) => _UpcomingTournamentTile(
+                      t: _upcoming[i],
+                      gameName: _gameName(_upcoming[i].gameId),
+                      onTap: () => _openDetail(_upcoming[i]),
+                      onJoin: () => _join(_upcoming[i]),
+                    ),
+                  ),
+                ),
             ],
           ],
         ),
@@ -326,46 +330,6 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildYourTournamentsCard() {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
-      child: Row(
-        children: [
-          _yourStat(icon: Icons.emoji_events_rounded, iconBg: AppColors.purple, value: '12', label: 'Joined'),
-          _statDivider(),
-          _yourStat(icon: Icons.star_rounded, iconBg: AppColors.gold, value: '4', label: 'Won'),
-          _statDivider(),
-          _yourStat(
-              icon: Icons.account_balance_wallet_rounded,
-              iconBg: AppColors.success,
-              value: '₹7,500',
-              label: 'Total Winnings'),
-        ],
-      ),
-    );
-  }
-
-  Widget _statDivider() => Container(width: 1, height: 40, color: AppColors.cardBorder);
-
-  Widget _yourStat({required IconData icon, required Color iconBg, required String value, required String label}) {
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(color: iconBg.withValues(alpha: 0.18), shape: BoxShape.circle),
-            child: Icon(icon, color: iconBg, size: 20),
-          ),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 2),
-          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-        ],
       ),
     );
   }
@@ -634,7 +598,7 @@ class _UpcomingTournamentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final date = t.publishedAt;
-    final dateLabel = date != null ? '${date.day} ${_month(date.month)}, ${date.year}' : 'TBA';
+    final dateLabel = date != null ? '${date.day} ${_month(date.month)}' : 'TBA';
     final timeLabel = date != null
         ? '${date.hour % 12 == 0 ? 12 : date.hour % 12}:${date.minute.toString().padLeft(2, '0')} ${date.hour >= 12 ? 'PM' : 'AM'}'
         : '--';
@@ -642,8 +606,8 @@ class _UpcomingTournamentTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(12),
+        width: 260,
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -661,49 +625,47 @@ class _UpcomingTournamentTile extends StatelessWidget {
                 imageUrl: t.coverUrl ?? t.bannerUrl,
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(gameName.toUpperCase(),
                       style: const TextStyle(
-                          color: AppColors.purple, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
+                          color: AppColors.purple, fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 0.4)),
                   const SizedBox(height: 2),
                   Text(t.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w700)),
+                      style: const TextStyle(color: AppColors.textPrimary, fontSize: 13.5, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_today_rounded, color: AppColors.textMuted, size: 11),
+                      const SizedBox(width: 3),
+                      Text(dateLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 10.5)),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 11),
+                      const SizedBox(width: 3),
+                      Text(timeLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 10.5)),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today_rounded, color: AppColors.textMuted, size: 12),
-                      const SizedBox(width: 4),
-                      Text(dateLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
-                      const SizedBox(width: 10),
-                      const Icon(Icons.access_time_rounded, color: AppColors.textMuted, size: 12),
-                      const SizedBox(width: 4),
-                      Text(timeLabel, style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5)),
+                      Text('₹${formatMoney(t.prizePool)}',
+                          style: const TextStyle(color: AppColors.gold, fontSize: 13, fontWeight: FontWeight.w800)),
+                      const Spacer(),
+                      GradientButton(
+                          label: 'Join',
+                          height: 28,
+                          fontSize: 11,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          onTap: onJoin),
                     ],
                   ),
                 ],
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text('Prize Pool', style: TextStyle(color: AppColors.textMuted, fontSize: 10.5)),
-                const SizedBox(height: 2),
-                Text('₹${formatMoney(t.prizePool)}',
-                    style: const TextStyle(color: AppColors.gold, fontSize: 14, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 8),
-                GradientButton(
-                    label: 'Join',
-                    height: 32,
-                    fontSize: 12,
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    onTap: onJoin),
-              ],
             ),
           ],
         ),
