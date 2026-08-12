@@ -1,0 +1,68 @@
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import '../../theme/app_theme.dart';
+
+/// Dark frosted-glass card: blurred translucent fill, thin bright
+/// border, soft outer glow. Used for every "glass" surface in the
+/// Home Screen (header chips, hero card, category card, tournament
+/// cards, bottom nav).
+class GlassContainer extends StatelessWidget {
+  const GlassContainer({
+    super.key,
+    required this.child,
+    this.borderRadius = 20,
+    this.padding,
+    this.blurSigma = 16,
+    this.fillColor,
+    this.borderColor,
+    this.glow = false,
+    this.margin,
+  });
+
+  final Widget child;
+  final double borderRadius;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final double blurSigma;
+  final Color? fillColor;
+  final Color? borderColor;
+  final bool glow;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(borderRadius);
+    return Container(
+      margin: margin,
+      decoration: glow
+          ? BoxDecoration(
+              borderRadius: radius,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.purple.withValues(alpha: 0.18),
+                  blurRadius: 24,
+                  spreadRadius: 1,
+                ),
+              ],
+            )
+          : null,
+      child: ClipRRect(
+        borderRadius: radius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: fillColor ?? AppColors.glassFill,
+              borderRadius: radius,
+              border: Border.all(
+                color: borderColor ?? AppColors.glassBorder,
+                width: 1,
+              ),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}
