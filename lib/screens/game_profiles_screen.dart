@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/game_model.dart';
 import '../models/game_profile_model.dart';
@@ -272,10 +273,10 @@ class _GameIcon extends StatelessWidget {
         height: 44,
         color: AppColors.glassFillStrong,
         child: url != null && url.isNotEmpty
-            ? Image.network(
-                url,
+            ? CachedNetworkImage(
+                imageUrl: url,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorWidget: (_, __, ___) => const Icon(
                   Icons.sports_esports_rounded,
                   color: AppColors.purpleSoft,
                 ),

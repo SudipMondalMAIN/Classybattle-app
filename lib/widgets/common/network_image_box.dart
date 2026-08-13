@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../theme/app_theme.dart';
 
 /// Wraps [Image.network] with a real loading indicator and a real
@@ -25,28 +26,22 @@ class NetworkImageBox extends StatelessWidget {
     if (imageUrl == null || imageUrl.isEmpty) {
       content = _placeholder(icon: Icons.image_outlined);
     } else {
-      content = Image.network(
-        imageUrl,
+      content = CachedNetworkImage(
+        imageUrl: imageUrl,
         fit: fit,
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) return child;
-          return _placeholder(
-            icon: null,
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppColors.purpleSoft,
-                value: progress.expectedTotalBytes != null
-                    ? (progress.cumulativeBytesLoaded /
-                          (progress.expectedTotalBytes ?? 1))
-                    : null,
-              ),
+        fadeInDuration: const Duration(milliseconds: 120),
+        placeholder: (context, url) => _placeholder(
+          icon: null,
+          child: const SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.purpleSoft,
             ),
-          );
-        },
-        errorBuilder: (context, error, stackTrace) {
+          ),
+        ),
+        errorWidget: (context, url, error) {
           return _placeholder(icon: Icons.broken_image_outlined);
         },
       );
