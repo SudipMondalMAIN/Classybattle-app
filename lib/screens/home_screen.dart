@@ -9,6 +9,7 @@ import '../widgets/home/hero_banner_carousel.dart';
 import '../widgets/home/how_it_works.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
+import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
 import 'wallet_screen.dart';
@@ -56,6 +57,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _openWallet() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const WalletScreen()),
+    );
+  }
+
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ProfileScreen()),
     );
   }
 
@@ -158,14 +165,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _openWallet();
             return;
           }
-          setState(() => _navIndex = i);
-          if (i != 0) {
-            const labels = ['Home', 'Tournaments', 'Wallet', 'Profile'];
-            _notImplemented(labels[i]);
-            // Reset back to Home since Profile doesn't exist yet --
-            // avoids a nav bar stuck pointing at a blank tab.
-            Future.microtask(() => setState(() => _navIndex = 0));
+          if (i == 3) {
+            _openProfile();
+            return;
           }
+          setState(() => _navIndex = i);
         },
       ),
     );

@@ -12,6 +12,7 @@ import '../widgets/tournaments/search_filter_bar.dart';
 import '../widgets/tournaments/tournament_filtered_list.dart';
 import '../widgets/tournaments/tournament_tabs.dart';
 import '../widgets/tournaments/your_tournaments_section.dart';
+import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
 
 class TournamentsScreen extends ConsumerStatefulWidget {
@@ -148,6 +149,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
         currentIndex: 1,
         onTap: (i) {
           if (i == 1) return;
+          if (i == 3) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+            return;
+          }
           Navigator.of(context).pop();
         },
       ),

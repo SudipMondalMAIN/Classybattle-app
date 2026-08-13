@@ -10,6 +10,9 @@ class UserModel {
   final String email;
   final String playerUid;
   final String? avatarId;
+  final bool isEmailVerified;
+  final String? bio;
+  final String? country;
 
   UserModel({
     required this.id,
@@ -17,6 +20,9 @@ class UserModel {
     required this.email,
     required this.playerUid,
     this.avatarId,
+    this.isEmailVerified = false,
+    this.bio,
+    this.country,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class UserModel {
       email: json['email'] as String,
       playerUid: json['player_uid'] as String,
       avatarId: json['avatar_id'] as String?,
+      isEmailVerified: json['is_email_verified'] as bool? ?? false,
+      bio: json['bio'] as String?,
+      country: json['country'] as String?,
     );
   }
 }

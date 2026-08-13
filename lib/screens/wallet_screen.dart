@@ -11,6 +11,7 @@ import '../widgets/wallet/wallet_balance_card.dart';
 import '../widgets/wallet/wallet_header_bar.dart';
 import '../widgets/wallet/wallet_summary_grid.dart';
 import 'home_screen.dart';
+import 'profile_screen.dart';
 import 'transactions_screen.dart';
 import 'tournaments_screen.dart';
 
@@ -134,7 +135,9 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
               MaterialPageRoute(builder: (_) => const TournamentsScreen()),
             );
           } else {
-            _notImplemented('Profile');
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
           }
         },
       ),
