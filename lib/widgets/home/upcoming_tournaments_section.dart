@@ -55,10 +55,13 @@ class UpcomingTournamentsSection extends ConsumerWidget {
                   .map(
                     (t) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: UpcomingTournamentRow(
-                        tournament: t,
-                        game: games[t.gameId],
-                        onJoinTap: () => onJoinTap(t.id),
+                      child: GestureDetector(
+                        onTap: () => onJoinTap(t.id),
+                        child: UpcomingTournamentRow(
+                          tournament: t,
+                          game: games[t.gameId],
+                          onJoinTap: () => onJoinTap(t.id),
+                        ),
                       ),
                     ),
                   )

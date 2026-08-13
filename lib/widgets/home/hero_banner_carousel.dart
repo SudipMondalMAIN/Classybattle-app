@@ -101,7 +101,9 @@ class _HeroSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return GestureDetector(
+      onTap: featured != null ? onJoinTap : null,
+      child: Stack(
       fit: StackFit.expand,
       children: [
         NetworkImageBox(
@@ -164,8 +166,12 @@ class _HeroSlide extends StatelessWidget {
                     fontSize: 14,
                   ),
                 ),
-                const SizedBox(height: 14),
-                _JoinButton(onTap: onJoinTap),
+                // Once a tournament goes live, joining is closed --
+                // so the CTA disappears instead of staying tappable.
+                if (!featured!.isLive) ...[
+                  const SizedBox(height: 14),
+                  _JoinButton(onTap: onJoinTap),
+                ],
               ] else if (banner.title != null) ...[
                 Text(
                   banner.title!,
@@ -188,6 +194,7 @@ class _HeroSlide extends StatelessWidget {
             child: _PrizePanel(featured: featured!),
           ),
       ],
+      ),
     );
   }
 }

@@ -50,10 +50,12 @@ class LiveTournamentsSection extends ConsumerWidget {
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, i) {
                   final t = tournaments[i];
-                  return LiveTournamentCard(
-                    tournament: t,
-                    game: games[t.gameId],
-                    onJoinTap: () => onJoinTap(t.id),
+                  return GestureDetector(
+                    onTap: () => onJoinTap(t.id),
+                    child: LiveTournamentCard(
+                      tournament: t,
+                      game: games[t.gameId],
+                    ),
                   );
                 },
               ),

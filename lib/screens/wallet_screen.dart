@@ -12,6 +12,7 @@ import '../widgets/wallet/wallet_header_bar.dart';
 import '../widgets/wallet/wallet_summary_grid.dart';
 import 'add_money_screen.dart';
 import 'home_screen.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'transactions_screen.dart';
 import 'tournaments_screen.dart';
@@ -78,7 +79,9 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
           child: Column(
             children: [
               WalletHeaderBar(
-                onNotificationsTap: () => _notImplemented('Notifications'),
+                onNotificationsTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ),
               ),
               const SizedBox(height: 14),
               // Locked in place: stays fixed on screen while only the

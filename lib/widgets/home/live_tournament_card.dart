@@ -11,12 +11,10 @@ class LiveTournamentCard extends StatelessWidget {
     super.key,
     required this.tournament,
     required this.game,
-    required this.onJoinTap,
   });
 
   final TournamentModel tournament;
   final GameModel? game;
-  final VoidCallback onJoinTap;
 
   @override
   Widget build(BuildContext context) {
@@ -132,25 +130,32 @@ class LiveTournamentCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      GestureDetector(
-                        onTap: onJoinTap,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.purpleButton,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'Join',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                      // Already live -- joining is closed, so this is
+                      // just a "view details" affordance, not a CTA.
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.glassFillStrong,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'View',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
+                            SizedBox(width: 3),
+                            Icon(Icons.arrow_forward_ios_rounded,
+                                size: 10, color: AppColors.textPrimary),
+                          ],
                         ),
                       ),
                     ],

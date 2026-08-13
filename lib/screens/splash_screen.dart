@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import '../core/token_storage.dart';
 import '../models/app_version_check.dart';
 import '../services/app_version_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/splash/animated_splash_scene.dart';
-import 'auth/login_screen.dart';
 import 'force_update_screen.dart';
 import 'home_screen.dart';
 
@@ -55,12 +53,11 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    final loggedIn = await TokenStorage.hasSession();
+    // Guest mode: always land on Home whether or not the user is
+    // logged in. Login/signup is reachable from the Profile tab.
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => loggedIn ? const HomeScreen() : const LoginScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
     );
   }
 

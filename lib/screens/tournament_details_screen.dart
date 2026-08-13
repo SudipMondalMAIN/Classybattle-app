@@ -11,16 +11,14 @@ import '../widgets/tournament_details/room_details_section.dart';
 import '../widgets/tournament_details/tournament_hero.dart';
 import '../widgets/tournament_details/tournament_info_card.dart';
 import '../widgets/tournament_details/tournament_rules_section.dart';
+import 'notifications_screen.dart';
+import 'profile_screen.dart';
+import 'wallet_screen.dart';
 
 class TournamentDetailsScreen extends ConsumerWidget {
   const TournamentDetailsScreen({super.key, required this.tournamentId});
 
   final String tournamentId;
-
-  void _notImplemented(BuildContext context, String what) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$what — coming soon')));
-  }
 
   Future<void> _refresh(WidgetRef ref) async {
     ref.invalidate(tournamentDetailProvider(tournamentId));
@@ -51,7 +49,15 @@ class TournamentDetailsScreen extends ConsumerWidget {
           child: Column(
             children: [
               DetailsHeaderBar(
-                onNotificationsTap: () => _notImplemented(context, 'Notifications'),
+                onNotificationsTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                ),
+                onWalletTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const WalletScreen()),
+                ),
+                onProfileTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                ),
               ),
               const SizedBox(height: 10),
               Expanded(

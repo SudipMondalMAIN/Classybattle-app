@@ -12,7 +12,10 @@ import '../widgets/profile/profile_header_bar.dart';
 import '../widgets/profile/profile_stats_card.dart';
 import '../widgets/profile/profile_tournament_card.dart';
 import '../widgets/profile/profile_tournament_tabs.dart';
+import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
+import 'game_profiles_screen.dart';
+import 'leaderboard_screen.dart';
 import 'notifications_screen.dart';
 import 'settings_screen.dart';
 import 'tournament_details_screen.dart';
@@ -321,6 +324,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                   },
                                 ),
                                 AccountRow(
+                                  icon: Icons.leaderboard_rounded,
+                                  label: 'Leaderboard',
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const LeaderboardScreen()),
+                                  ),
+                                ),
+                                AccountRow(
+                                  icon: Icons.sports_esports_rounded,
+                                  label: 'Game Profiles',
+                                  onTap: () => Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                            const GameProfilesScreen()),
+                                  ),
+                                ),
+                                AccountRow(
                                   icon: Icons.shield_outlined,
                                   label: 'Security',
                                   trailingText: 'Change Password',
@@ -398,27 +419,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-class _LoggedOutState extends StatelessWidget {
+class _LoggedOutState extends ConsumerWidget {
   const _LoggedOutState({required this.onRefresh});
   final Future<void> Function() onRefresh;
 
+  Future<void> _login(BuildContext context, WidgetRef ref) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    // Refresh whether or not login succeeded -- cheap no-op if it didn't.
+    ref.invalidate(currentUserProvider);
+    ref.invalidate(walletProvider);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         SizedBox(
           height: MediaQuery.of(context).size.height * 0.6,
-          child: const Center(
+          child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.person_off_outlined,
+                const Icon(Icons.person_off_outlined,
                     size: 40, color: AppColors.textMuted),
-                SizedBox(height: 12),
-                Text(
+                const SizedBox(height: 12),
+                const Text(
                   'Log in to view your profile',
                   style: TextStyle(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _login(context, ref),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Log In',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ],
             ),

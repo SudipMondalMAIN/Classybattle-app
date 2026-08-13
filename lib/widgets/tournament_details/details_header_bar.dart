@@ -6,9 +6,16 @@ import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
 
 class DetailsHeaderBar extends ConsumerWidget {
-  const DetailsHeaderBar({super.key, required this.onNotificationsTap});
+  const DetailsHeaderBar({
+    super.key,
+    required this.onNotificationsTap,
+    required this.onWalletTap,
+    required this.onProfileTap,
+  });
 
   final VoidCallback onNotificationsTap;
+  final VoidCallback onWalletTap;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,35 +44,38 @@ class DetailsHeaderBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          GlassContainer(
-            borderRadius: 22,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.account_balance_wallet_outlined,
-                    size: 16, color: AppColors.textPrimary),
-                const SizedBox(width: 6),
-                wallet.when(
-                  data: (w) => Text(
-                    w == null ? 'Login' : formatRupees(w.availableBalance),
-                    style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+          GestureDetector(
+            onTap: onWalletTap,
+            child: GlassContainer(
+              borderRadius: 22,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.account_balance_wallet_outlined,
+                      size: 16, color: AppColors.textPrimary),
+                  const SizedBox(width: 6),
+                  wallet.when(
+                    data: (w) => Text(
+                      w == null ? 'Login' : formatRupees(w.availableBalance),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
+                    loading: () => const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    error: (_, __) =>
+                        const Text('—', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
                   ),
-                  loading: () => const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  error: (_, __) =>
-                      const Text('—', style: TextStyle(color: AppColors.textMuted, fontSize: 14)),
-                ),
-                const SizedBox(width: 6),
-                const Icon(Icons.add_circle, size: 16, color: AppColors.textSecondary),
-              ],
+                  const SizedBox(width: 6),
+                  const Icon(Icons.add_circle, size: 16, color: AppColors.textSecondary),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -96,30 +106,33 @@ class DetailsHeaderBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 10),
-          user.when(
-            data: (u) => CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.glassFillStrong,
-              backgroundImage:
-                  u?.avatarId != null ? AssetImage('assets/avatars/${u!.avatarId}.png') : null,
-              onBackgroundImageError: u?.avatarId != null ? (_, __) {} : null,
-              child: u?.avatarId == null
-                  ? const Icon(Icons.person, size: 18, color: AppColors.textSecondary)
-                  : null,
-            ),
-            loading: () => const CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.glassFillStrong,
-              child: SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2),
+          GestureDetector(
+            onTap: onProfileTap,
+            child: user.when(
+              data: (u) => CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.glassFillStrong,
+                backgroundImage:
+                    u?.avatarId != null ? AssetImage('assets/avatars/${u!.avatarId}.png') : null,
+                onBackgroundImageError: u?.avatarId != null ? (_, __) {} : null,
+                child: u?.avatarId == null
+                    ? const Icon(Icons.person, size: 18, color: AppColors.textSecondary)
+                    : null,
               ),
-            ),
-            error: (_, __) => const CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.glassFillStrong,
-              child: Icon(Icons.person_outline, size: 18, color: AppColors.textMuted),
+              loading: () => const CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.glassFillStrong,
+                child: SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+              error: (_, __) => const CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.glassFillStrong,
+                child: Icon(Icons.person_outline, size: 18, color: AppColors.textMuted),
+              ),
             ),
           ),
         ],

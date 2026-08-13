@@ -12,6 +12,7 @@ import '../widgets/tournaments/search_filter_bar.dart';
 import '../widgets/tournaments/tournament_filtered_list.dart';
 import '../widgets/tournaments/tournament_tabs.dart';
 import '../widgets/tournaments/your_tournaments_section.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
 import 'wallet_screen.dart';
@@ -28,11 +29,6 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournamentId: id)),
     );
-  }
-
-  void _notImplemented(String what) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$what — coming soon')));
   }
 
   Future<void> _refresh() async {
@@ -75,7 +71,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: HeaderBar(
-                    onNotificationsTap: () => _notImplemented('Notifications'),
+                    onNotificationsTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                    ),
                     onWalletTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const WalletScreen()),
                     ),
@@ -156,13 +154,22 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
         currentIndex: 1,
         onTap: (i) {
           if (i == 1) return;
+          if (i == 0) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+            return;
+          }
+          if (i == 2) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const WalletScreen()),
+            );
+            return;
+          }
           if (i == 3) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ProfileScreen()),
             );
             return;
           }
-          Navigator.of(context).pop();
         },
       ),
     );
