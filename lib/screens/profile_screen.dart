@@ -13,6 +13,7 @@ import '../widgets/profile/profile_stats_card.dart';
 import '../widgets/profile/profile_tournament_card.dart';
 import '../widgets/profile/profile_tournament_tabs.dart';
 import 'edit_profile_screen.dart';
+import 'notifications_screen.dart';
 import 'settings_screen.dart';
 import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
@@ -79,8 +80,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   slivers: [
                     SliverToBoxAdapter(
                       child: ProfileHeaderBar(
-                        onNotificationsTap: () =>
-                            _notImplemented('Notifications'),
+                        onNotificationsTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen()),
+                        ),
                         onSettingsTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
                               builder: (_) => const SettingsScreen()),

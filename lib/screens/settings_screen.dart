@@ -11,7 +11,7 @@ import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
 import '../widgets/profile/account_section.dart';
 import 'edit_profile_screen.dart';
-import 'home_screen.dart';
+import 'auth/login_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -97,7 +97,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ref.invalidate(walletProvider);
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
   }

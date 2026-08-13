@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../core/token_storage.dart';
 import '../models/app_version_check.dart';
 import '../services/app_version_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/splash/animated_splash_scene.dart';
+import 'auth/login_screen.dart';
 import 'force_update_screen.dart';
 import 'home_screen.dart';
 
@@ -45,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigate(versionCheck);
   }
 
-  void _navigate(AppVersionCheck info) {
+  Future<void> _navigate(AppVersionCheck info) async {
     if (info.forceUpdate) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => ForceUpdateScreen(info: info)),
@@ -53,8 +55,12 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
+    final loggedIn = await TokenStorage.hasSession();
+    if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+      MaterialPageRoute(
+        builder: (_) => loggedIn ? const HomeScreen() : const LoginScreen(),
+      ),
     );
   }
 

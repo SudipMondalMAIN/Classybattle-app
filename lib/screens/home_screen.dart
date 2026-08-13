@@ -9,6 +9,7 @@ import '../widgets/home/hero_banner_carousel.dart';
 import '../widgets/home/how_it_works.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
@@ -95,8 +96,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   slivers: [
                     SliverToBoxAdapter(
                       child: HeaderBar(
-                        onNotificationsTap: () =>
-                            _notImplemented('Notifications'),
+                        onNotificationsTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (_) => const NotificationsScreen()),
+                        ),
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 18)),
