@@ -79,6 +79,22 @@ class NotificationService {
       rethrow;
     }
   }
+
+  /// POST /notifications/device-tokens -- registers this device's FCM
+  /// token against the current (authenticated) user so the backend
+  /// knows where to push. Must be called whenever we have a fresh
+  /// token AND the user is logged in (see PushNotificationHandler).
+  Future<void> registerDeviceToken(String fcmToken, {required String platform}) async {
+    try {
+      await _dio.post(
+        '/notifications/device-tokens',
+        data: {'fcm_token': fcmToken, 'platform': platform},
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
 }
 
 final notificationService = NotificationService(ApiClient.instance.dio);

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,9 @@ import '../providers/notification_providers.dart';
 import '../providers/home_providers.dart';
 import '../providers/wallet_providers.dart';
 import '../providers/tournament_providers.dart';
+import 'notification_service.dart' show notificationService;
+import 'home_service.dart' show UnauthenticatedException;
+import '../core/token_storage.dart';
 
 /// Top-level handler required by FirebaseMessaging.onBackgroundMessage --
 /// must not be a class member (isolate entry point requirement).
@@ -16,9 +20,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 /// Wires up foreground FCM messages to a local notification so they're
-/// visible while the app is open, and logs the device token needed for
-/// backend registration (POST /notifications/device-tokens, per
-/// FIREBASE_SETUP.md) once an auth flow exists to send it.
+/// visible while the app is open, and registers this device's FCM token
+/// with the backend (POST /notifications/device-tokens) so it actually
+/// receives pushes -- on init (if already logged in), right after
+/// login/signup (via [registerTokenIfNeeded]), and again whenever FCM
+/// rotates the token.
 ///
 /// It also drives the app's "silent auto-refresh": whenever a push
 /// arrives while the app is open, it re-fetches the notification list
@@ -33,8 +39,39 @@ class PushNotificationHandler {
   bool _initialized = false;
   Timer? _pollTimer;
   ProviderContainer? _container;
+  String? _lastKnownToken;
 
   static const _pollInterval = Duration(minutes: 2);
+
+  /// Sends [token] to the backend (POST /notifications/device-tokens) if
+  /// -- and only if -- a user is currently logged in. Safe to call
+  /// whenever we have a token: at startup (before login, this is a
+  /// no-op), right after login/signup succeed, and on every FCM token
+  /// refresh. Best-effort: failures are logged, never thrown, so a
+  /// flaky network never breaks app startup or login.
+  Future<void> _registerWithBackend(String token) async {
+    if (!await TokenStorage.hasSession()) return;
+    try {
+      final platform = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      await notificationService.registerDeviceToken(token, platform: platform);
+      debugPrint('FCM device token registered with backend');
+    } on UnauthenticatedException {
+      // Session expired/invalid; nothing to do, will retry next refresh.
+    } on DioException catch (e) {
+      debugPrint('Failed to register FCM token: $e');
+    }
+  }
+
+  /// Call right after login/signup completes (i.e. right after tokens
+  /// are persisted). At that point we already have the FCM token from
+  /// [init] cached in [_lastKnownToken] -- this just pushes it to the
+  /// backend now that we're authenticated.
+  Future<void> registerTokenIfNeeded() async {
+    final token = _lastKnownToken ?? await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+    _lastKnownToken = token;
+    await _registerWithBackend(token);
+  }
 
   void _startTimer(ProviderContainer container) {
     _container = container;
@@ -104,9 +141,24 @@ class PushNotificationHandler {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       debugPrint('FCM device token: $token');
+      if (token != null) {
+        _lastKnownToken = token;
+        // No-op if not logged in yet (e.g. fresh install, splash
+        // screen) -- registerTokenIfNeeded() covers that case right
+        // after login/signup.
+        await _registerWithBackend(token);
+      }
     } catch (e) {
       debugPrint('Failed to get FCM token: $e');
     }
+
+    // FCM rotates the token occasionally (app reinstall, data clear,
+    // token expiry, etc). Without this listener a rotated token is
+    // never sent to the backend and push silently stops working.
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+      _lastKnownToken = newToken;
+      _registerWithBackend(newToken);
+    });
   }
 
   /// Re-fetches notifications, wallet, tournaments, and home feed data

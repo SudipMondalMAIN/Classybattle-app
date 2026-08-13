@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import '../core/api_client.dart';
 import '../core/token_storage.dart';
 import '../models/user_model.dart';
+import 'push_notification_handler.dart';
 
 /// Thrown for any auth-flow failure with a clean, backend-provided
 /// message (see app/middleware/exception_handlers.py -> {"message": ...}),
@@ -42,14 +44,19 @@ class AuthService {
     required String password,
   }) async {
     try {
-      await _dio.post('/auth/signup', data: {
-        'full_name': fullName,
-        'email': email,
-        'phone_number': phoneNumber,
-        'password': password,
-      });
+      await _dio.post(
+        '/auth/signup',
+        data: {
+          'full_name': fullName,
+          'email': email,
+          'phone_number': phoneNumber,
+          'password': password,
+        },
+      );
     } on DioException catch (e) {
-      throw AuthException(_messageFrom(e, "Couldn't create your account. Please try again."));
+      throw AuthException(
+        _messageFrom(e, "Couldn't create your account. Please try again."),
+      );
     }
   }
 
@@ -59,10 +66,10 @@ class AuthService {
     required String otp,
   }) async {
     try {
-      final res = await _dio.post('/auth/signup/verify-otp', data: {
-        'email': email,
-        'otp': otp,
-      });
+      final res = await _dio.post(
+        '/auth/signup/verify-otp',
+        data: {'email': email, 'otp': otp},
+      );
       return _resultFromTokenResponse(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw AuthException(_messageFrom(e, 'Invalid or expired OTP.'));
@@ -75,12 +82,14 @@ class AuthService {
     required String purpose, // 'signup_verification' | 'password_reset'
   }) async {
     try {
-      await _dio.post('/auth/otp/resend', data: {
-        'email': email,
-        'purpose': purpose,
-      });
+      await _dio.post(
+        '/auth/otp/resend',
+        data: {'email': email, 'purpose': purpose},
+      );
     } on DioException catch (e) {
-      throw AuthException(_messageFrom(e, "Couldn't resend OTP. Please try again."));
+      throw AuthException(
+        _messageFrom(e, "Couldn't resend OTP. Please try again."),
+      );
     }
   }
 
@@ -90,10 +99,10 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final res = await _dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+      final res = await _dio.post(
+        '/auth/login',
+        data: {'email': email, 'password': password},
+      );
       return _resultFromTokenResponse(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw AuthException(_messageFrom(e, 'Invalid email or password.'));
@@ -105,17 +114,22 @@ class AuthService {
     try {
       await _dio.post('/auth/password/forgot', data: {'email': email});
     } on DioException catch (e) {
-      throw AuthException(_messageFrom(e, "Couldn't send the reset OTP. Please try again."));
+      throw AuthException(
+        _messageFrom(e, "Couldn't send the reset OTP. Please try again."),
+      );
     }
   }
 
   /// POST /auth/password/verify-otp
-  Future<void> verifyResetOtp({required String email, required String otp}) async {
+  Future<void> verifyResetOtp({
+    required String email,
+    required String otp,
+  }) async {
     try {
-      await _dio.post('/auth/password/verify-otp', data: {
-        'email': email,
-        'otp': otp,
-      });
+      await _dio.post(
+        '/auth/password/verify-otp',
+        data: {'email': email, 'otp': otp},
+      );
     } on DioException catch (e) {
       throw AuthException(_messageFrom(e, 'Invalid or expired OTP.'));
     }
@@ -128,13 +142,14 @@ class AuthService {
     required String newPassword,
   }) async {
     try {
-      await _dio.post('/auth/password/reset', data: {
-        'email': email,
-        'otp': otp,
-        'new_password': newPassword,
-      });
+      await _dio.post(
+        '/auth/password/reset',
+        data: {'email': email, 'otp': otp, 'new_password': newPassword},
+      );
     } on DioException catch (e) {
-      throw AuthException(_messageFrom(e, "Couldn't reset your password. Please try again."));
+      throw AuthException(
+        _messageFrom(e, "Couldn't reset your password. Please try again."),
+      );
     }
   }
 
@@ -159,6 +174,11 @@ class AuthService {
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
     );
+    // Now that we have a session, push the already-fetched FCM token
+    // (cached at app startup in PushNotificationHandler.init) to the
+    // backend so this device actually starts receiving pushes.
+    // Best-effort -- never blocks/breaks login on a network hiccup.
+    unawaited(PushNotificationHandler.instance.registerTokenIfNeeded());
   }
 }
 
