@@ -38,13 +38,22 @@ class TournamentInfoCard extends StatelessWidget {
     // Only real fields the backend actually has -- no invented
     // perspective/region/version values.
     final fields = <_InfoField>[
-      if (game != null) _InfoField(Icons.sports_esports_outlined, 'Game', game!.name),
+      if (game != null)
+        _InfoField(Icons.sports_esports_outlined, 'Game', game!.name),
       _InfoField(Icons.auto_awesome_outlined, 'Type', registrationTypeLabel),
       if (gameMode != null)
         _InfoField(Icons.groups_2_outlined, 'Game Mode', gameMode!.name),
-      _InfoField(Icons.people_outline, 'Max Players', '${tournament.maxPlayers}'),
+      _InfoField(
+        Icons.people_outline,
+        'Max Players',
+        '${tournament.maxPlayers}',
+      ),
       if (tournament.registrationMode != 'solo')
-        _InfoField(Icons.group_work_outlined, 'Team Size', '${tournament.teamSize}'),
+        _InfoField(
+          Icons.group_work_outlined,
+          'Team Size',
+          '${tournament.teamSize}',
+        ),
       if (map != null) _InfoField(Icons.map_outlined, 'Map', map!.name),
       if (tournament.organizer.isNotEmpty)
         _InfoField(Icons.badge_outlined, 'Organizer', tournament.organizer),
@@ -58,7 +67,11 @@ class TournamentInfoCard extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 18, color: AppColors.purpleSoft),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 18,
+                color: AppColors.purpleSoft,
+              ),
               SizedBox(width: 8),
               Text(
                 'Tournament Info',
@@ -71,17 +84,18 @@ class TournamentInfoCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 12,
-              childAspectRatio: 3.6,
-            ),
-            itemCount: fields.length,
-            itemBuilder: (context, i) => _FieldTile(field: fields[i]),
+          // Single column, top-to-bottom -- easier to scan than the
+          // previous 2-up grid where fields sat side by side.
+          Column(
+            children: [
+              for (int i = 0; i < fields.length; i++)
+                Padding(
+                  padding: EdgeInsets.only(
+                    bottom: i == fields.length - 1 ? 0 : 14,
+                  ),
+                  child: _FieldTile(field: fields[i]),
+                ),
+            ],
           ),
         ],
       ),

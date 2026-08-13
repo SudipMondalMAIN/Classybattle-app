@@ -27,7 +27,9 @@ class TournamentsScreen extends ConsumerStatefulWidget {
 class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
   void _openTournament(String id) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournamentId: id)),
+      MaterialPageRoute(
+        builder: (_) => TournamentDetailsScreen(tournamentId: id),
+      ),
     );
   }
 
@@ -72,7 +74,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
                 SliverToBoxAdapter(
                   child: HeaderBar(
                     onNotificationsTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationsScreen(),
+                      ),
                     ),
                     onWalletTap: () => Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const WalletScreen()),
@@ -101,9 +105,11 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
                     sliver: SliverToBoxAdapter(
                       child: SectionHeader(
                         title: 'Live Tournaments',
-                        onViewAll: () => ref
-                            .read(selectedTournamentTabProvider.notifier)
-                            .state = TournamentTab.live,
+                        onViewAll: () =>
+                            ref
+                                .read(selectedTournamentTabProvider.notifier)
+                                .state = TournamentTab
+                                .live,
                       ),
                     ),
                   ),
@@ -115,25 +121,31 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
                     sliver: SliverToBoxAdapter(
                       child: SectionHeader(
                         title: 'Upcoming Tournaments',
-                        onViewAll: () => ref
-                            .read(selectedTournamentTabProvider.notifier)
-                            .state = TournamentTab.upcoming,
+                        onViewAll: () =>
+                            ref
+                                .read(selectedTournamentTabProvider.notifier)
+                                .state = TournamentTab
+                                .upcoming,
                       ),
                     ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 14)),
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverToBoxAdapter(child: _UpcomingList(onTap: _openTournament)),
+                    sliver: SliverToBoxAdapter(
+                      child: _UpcomingList(onTap: _openTournament),
+                    ),
                   ),
                   const SliverToBoxAdapter(child: SizedBox(height: 30)),
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverToBoxAdapter(
                       child: YourTournamentsSection(
-                        onViewAll: () => ref
-                            .read(selectedTournamentTabProvider.notifier)
-                            .state = TournamentTab.mine,
+                        onViewAll: () =>
+                            ref
+                                .read(selectedTournamentTabProvider.notifier)
+                                .state = TournamentTab
+                                .mine,
                       ),
                     ),
                   ),
@@ -141,7 +153,9 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     sliver: SliverToBoxAdapter(
-                      child: TournamentFilteredList(onOpenTournament: _openTournament),
+                      child: TournamentFilteredList(
+                        onOpenTournament: _openTournament,
+                      ),
                     ),
                   ),
                 const SliverToBoxAdapter(child: SizedBox(height: 110)),
@@ -159,15 +173,15 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
             return;
           }
           if (i == 2) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const WalletScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const WalletScreen()));
             return;
           }
           if (i == 3) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
             return;
           }
         },
@@ -214,20 +228,26 @@ class _LiveRow extends ConsumerWidget {
     return allAsync.when(
       loading: () => const SizedBox(
         height: 220,
-        child: Center(child: CircularProgressIndicator(color: AppColors.purpleSoft)),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+        ),
       ),
       error: (_, __) => const Padding(
         padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Text('Couldn\'t load live tournaments',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+        child: Text(
+          'Couldn\'t load live tournaments',
+          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+        ),
       ),
       data: (all) {
         final live = all.where((t) => t.isLive).toList();
         if (live.isEmpty) {
           return const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Text('No live tournaments right now',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+            child: Text(
+              'No live tournaments right now',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
           );
         }
         final games = gamesAsync.valueOrNull ?? const {};
@@ -242,11 +262,7 @@ class _LiveRow extends ConsumerWidget {
               final t = live[i];
               return GestureDetector(
                 onTap: () => onTap(t.id),
-                child: LiveTournamentCard(
-                  tournament: t,
-                  game: games[t.gameId],
-                  onJoinTap: () => onTap(t.id),
-                ),
+                child: LiveTournamentCard(tournament: t, game: games[t.gameId]),
               );
             },
           ),
@@ -268,17 +284,26 @@ class _UpcomingList extends ConsumerWidget {
     return allAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: CircularProgressIndicator(color: AppColors.purpleSoft)),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+        ),
       ),
-      error: (_, __) => const Text('Couldn\'t load upcoming tournaments',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+      error: (_, __) => const Text(
+        'Couldn\'t load upcoming tournaments',
+        style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+      ),
       data: (all) {
-        final upcoming = all.where((t) => t.status == 'scheduled').take(3).toList();
+        final upcoming = all
+            .where((t) => t.status == 'scheduled')
+            .take(3)
+            .toList();
         if (upcoming.isEmpty) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
-            child: Text('No upcoming tournaments yet',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+            child: Text(
+              'No upcoming tournaments yet',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
           );
         }
         final games = gamesAsync.valueOrNull ?? const {};
