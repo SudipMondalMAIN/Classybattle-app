@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home/bottom_nav_bar.dart';
-import '../widgets/home/category_shortcuts.dart';
 import '../widgets/home/header_bar.dart';
 import '../widgets/home/hero_banner_carousel.dart';
-import '../widgets/home/how_it_works.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
 import 'notifications_screen.dart';
@@ -35,12 +33,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.invalidate(currentUserProvider);
     // Give listeners a beat to kick off before the indicator dismisses.
     await Future.delayed(const Duration(milliseconds: 300));
-  }
-
-  void _notImplemented(String what) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$what — coming soon')),
-    );
   }
 
   void _openTournaments() {
@@ -100,6 +92,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           MaterialPageRoute(
                               builder: (_) => const NotificationsScreen()),
                         ),
+                        onWalletTap: _openWallet,
+                        onProfileTap: _openProfile,
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 18)),
@@ -114,15 +108,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _openTournamentDetails(featured.id);
                             }
                           },
-                        ),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 18)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: CategoryShortcuts(
-                          onTap: (label) => _notImplemented(label),
                         ),
                       ),
                     ),
@@ -142,11 +127,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onJoinTap: (id) => _openTournamentDetails(id),
                         ),
                       ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 30)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: const SliverToBoxAdapter(child: HowItWorks()),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 110)),
                   ],

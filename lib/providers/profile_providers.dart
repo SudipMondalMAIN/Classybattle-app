@@ -48,7 +48,7 @@ final myTournamentEntriesProvider = FutureProvider<List<MyTournamentEntry>>((ref
   try {
     final regs = await tournamentService.fetchMyRegistrations(pageSize: 100);
     if (regs.items.isEmpty) return [];
-    final all = await tournamentService.fetchTournaments(pageSize: 200);
+    final all = await tournamentService.fetchTournaments(pageSize: 100);
     final byId = {for (final t in all.items) t.id: t};
     final entries = <MyTournamentEntry>[];
     for (final r in regs.items) {

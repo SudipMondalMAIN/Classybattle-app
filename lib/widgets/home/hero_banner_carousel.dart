@@ -48,7 +48,7 @@ class _HeroBannerCarouselState extends ConsumerState<HeroBannerCarousel> {
         return Column(
           children: [
             AspectRatio(
-              aspectRatio: 335 / 380,
+              aspectRatio: 775 / 370,
               child: GlassContainer(
                 borderRadius: 24,
                 blurSigma: 0,
@@ -356,7 +356,7 @@ class _HeroSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 335 / 380,
+      aspectRatio: 775 / 370,
       child: GlassContainer(
         borderRadius: 24,
         child: const Center(
@@ -373,7 +373,7 @@ class _HeroError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 335 / 380,
+      aspectRatio: 775 / 370,
       child: GlassContainer(
         borderRadius: 24,
         child: const Center(
@@ -400,7 +400,7 @@ class _HeroEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 335 / 380,
+      aspectRatio: 775 / 370,
       child: GlassContainer(
         borderRadius: 24,
         child: const Center(

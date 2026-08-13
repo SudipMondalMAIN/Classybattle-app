@@ -30,14 +30,13 @@ class LiveTournamentCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                SizedBox(
-                  height: 100,
-                  width: double.infinity,
+                AspectRatio(
+                  aspectRatio: 600 / 410,
                   child: NetworkImageBox(
                     url: tournament.bannerUrl,
                     fit: BoxFit.cover,
-                    cacheWidth: 360,
-                    cacheHeight: 200,
+                    cacheWidth: 600,
+                    cacheHeight: 410,
                   ),
                 ),
                 Positioned(

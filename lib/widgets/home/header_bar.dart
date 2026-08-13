@@ -6,9 +6,16 @@ import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
 
 class HeaderBar extends ConsumerWidget {
-  const HeaderBar({super.key, required this.onNotificationsTap});
+  const HeaderBar({
+    super.key,
+    required this.onNotificationsTap,
+    required this.onWalletTap,
+    required this.onProfileTap,
+  });
 
   final VoidCallback onNotificationsTap;
+  final VoidCallback onWalletTap;
+  final VoidCallback onProfileTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,14 +27,14 @@ class HeaderBar extends ConsumerWidget {
       child: Row(
         children: [
           // Logo
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white70, width: 1.2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/images/cb_logo.png',
+              width: 34,
+              height: 34,
+              fit: BoxFit.cover,
             ),
-            child: const Icon(Icons.shield_outlined, color: Colors.white, size: 18),
           ),
           const SizedBox(width: 8),
           RichText(
@@ -44,7 +51,10 @@ class HeaderBar extends ConsumerWidget {
             ),
           ),
           const Spacer(),
-          _WalletChip(wallet: wallet),
+          GestureDetector(
+            onTap: onWalletTap,
+            child: _WalletChip(wallet: wallet),
+          ),
           const SizedBox(width: 10),
           _IconButtonGlass(
             icon: Icons.notifications_none_rounded,
@@ -52,7 +62,10 @@ class HeaderBar extends ConsumerWidget {
             showDot: true,
           ),
           const SizedBox(width: 10),
-          _AvatarButton(user: user),
+          GestureDetector(
+            onTap: onProfileTap,
+            child: _AvatarButton(user: user),
+          ),
         ],
       ),
     );

@@ -14,6 +14,7 @@ import '../widgets/tournaments/tournament_tabs.dart';
 import '../widgets/tournaments/your_tournaments_section.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
+import 'wallet_screen.dart';
 
 class TournamentsScreen extends ConsumerStatefulWidget {
   const TournamentsScreen({super.key});
@@ -75,6 +76,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
                 SliverToBoxAdapter(
                   child: HeaderBar(
                     onNotificationsTap: () => _notImplemented('Notifications'),
+                    onWalletTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const WalletScreen()),
+                    ),
+                    onProfileTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    ),
                   ),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 18)),

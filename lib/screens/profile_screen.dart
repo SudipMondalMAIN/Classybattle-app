@@ -381,8 +381,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         currentIndex: 3,
         onTap: (i) {
           if (i == 3) return;
-          Navigator.of(context).popUntil((route) => route.isFirst);
-          if (i != 0) _notImplemented('That tab');
+          if (i == 0) {
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          } else if (i == 1) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+            );
+          } else if (i == 2) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const WalletScreen()),
+            );
+          }
         },
       ),
     );

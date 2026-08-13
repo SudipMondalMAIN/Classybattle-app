@@ -10,10 +10,12 @@ import '../widgets/wallet/security_banner.dart';
 import '../widgets/wallet/wallet_balance_card.dart';
 import '../widgets/wallet/wallet_header_bar.dart';
 import '../widgets/wallet/wallet_summary_grid.dart';
+import 'add_money_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 import 'transactions_screen.dart';
 import 'tournaments_screen.dart';
+import 'withdraw_screen.dart';
 
 class WalletScreen extends ConsumerStatefulWidget {
   const WalletScreen({super.key});
@@ -42,6 +44,18 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
     );
   }
 
+  void _openAddMoney() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AddMoneyScreen()),
+    ).then((_) => _refresh());
+  }
+
+  void _openWithdraw() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const WithdrawScreen()),
+    ).then((_) => _refresh());
+  }
+
   @override
   Widget build(BuildContext context) {
     final walletAsync = ref.watch(walletProvider);
@@ -67,6 +81,17 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                 onNotificationsTap: () => _notImplemented('Notifications'),
               ),
               const SizedBox(height: 14),
+              // Locked in place: stays fixed on screen while only the
+              // content below (summary/transactions) scrolls.
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: WalletBalanceCard(
+                  wallet: walletAsync.valueOrNull,
+                  onAddMoney: _openAddMoney,
+                  onWithdraw: _openWithdraw,
+                ),
+              ),
+              const SizedBox(height: 18),
               Expanded(
                 child: RefreshIndicator(
                   color: AppColors.purple,
@@ -76,12 +101,6 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
                     children: [
-                      WalletBalanceCard(
-                        wallet: walletAsync.valueOrNull,
-                        onAddMoney: () => _notImplemented('Add Money'),
-                        onWithdraw: () => _notImplemented('Withdraw'),
-                      ),
-                      const SizedBox(height: 18),
                       GlassContainer(
                         borderRadius: 18,
                         padding: const EdgeInsets.all(16),
