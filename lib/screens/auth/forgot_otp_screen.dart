@@ -62,7 +62,6 @@ class _ForgotOtpScreenState extends State<ForgotOtpScreen> {
     return AuthScaffold(
       title: 'Enter the code',
       subtitle: 'We sent a 6-digit code to ${widget.email}.',
-      showLogo: false,
       children: [
         OtpInput(
           key: _otpKey,

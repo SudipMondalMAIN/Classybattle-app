@@ -5,7 +5,7 @@ import '../../widgets/auth/auth_primary_button.dart';
 import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/otp_input.dart';
 import '../../widgets/auth/resend_timer.dart';
-import '../home_screen.dart';
+import 'signup_success_screen.dart';
 
 class SignupOtpScreen extends StatefulWidget {
   const SignupOtpScreen({super.key, required this.email});
@@ -36,7 +36,7 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
       await authService.persistSession(result);
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const SignupSuccessScreen()),
         (route) => false,
       );
     } on AuthException catch (e) {
@@ -61,7 +61,6 @@ class _SignupOtpScreenState extends State<SignupOtpScreen> {
     return AuthScaffold(
       title: 'Verify your email',
       subtitle: 'Enter the 6-digit code sent to ${widget.email}.',
-      showLogo: false,
       children: [
         OtpInput(
           key: _otpKey,

@@ -71,7 +71,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return AuthScaffold(
       title: 'Set a new password',
       subtitle: 'Choose a new password for ${widget.email}.',
-      showLogo: false,
       children: [
         AuthTextField(
           controller: _passwordCtrl,

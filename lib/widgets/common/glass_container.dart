@@ -47,19 +47,24 @@ class GlassContainer extends StatelessWidget {
           : null,
       child: ClipRRect(
         borderRadius: radius,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: fillColor ?? AppColors.glassFill,
-              borderRadius: radius,
-              border: Border.all(
-                color: borderColor ?? AppColors.glassBorder,
-                width: 1,
+        // RepaintBoundary isolates this blur's repaint from the rest of
+        // the tree — without it, every scroll frame can force nearby
+        // glass surfaces to re-run their (expensive) blur pass too.
+        child: RepaintBoundary(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+            child: Container(
+              padding: padding,
+              decoration: BoxDecoration(
+                color: fillColor ?? AppColors.glassFill,
+                borderRadius: radius,
+                border: Border.all(
+                  color: borderColor ?? AppColors.glassBorder,
+                  width: 1,
+                ),
               ),
+              child: child,
             ),
-            child: child,
           ),
         ),
       ),

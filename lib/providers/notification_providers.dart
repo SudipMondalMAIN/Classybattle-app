@@ -70,9 +70,22 @@ class NotificationsNotifier extends AsyncNotifier<List<NotificationModel>> {
     }
   }
 
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => build());
+  /// Re-fetches page 1 WITHOUT clearing the currently shown list first.
+  /// The old data stays on screen the whole time; it's only swapped once
+  /// the new data has actually arrived. This is what makes "silent"
+  /// auto-refresh (e.g. on push notification) invisible to the user —
+  /// no spinner flash, no empty-list flicker.
+  Future<void> refresh({bool silent = true}) async {
+    if (!silent) {
+      state = const AsyncLoading();
+    }
+    final previous = state;
+    final next = await AsyncValue.guard(() => build());
+    // AsyncValue.guard already carries the new data/error; attach the
+    // previous value as "previous" so consumers that check
+    // `hasValue`/`valueOrNull` keep seeing something during the brief
+    // await above, then flip to the fresh result.
+    state = next.hasError ? next.copyWithPrevious(previous) : next;
   }
 
   /// Marks one notification read, both on the backend and in local state

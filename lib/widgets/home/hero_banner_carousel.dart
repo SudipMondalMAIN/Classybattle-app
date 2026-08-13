@@ -104,7 +104,12 @@ class _HeroSlide extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        NetworkImageBox(url: banner.imageUrl, fit: BoxFit.cover),
+        NetworkImageBox(
+          url: banner.imageUrl,
+          fit: BoxFit.cover,
+          cacheWidth: 800,
+          cacheHeight: 400,
+        ),
         // Dark gradient overlay so text stays legible over any artwork.
         DecoratedBox(
           decoration: BoxDecoration(

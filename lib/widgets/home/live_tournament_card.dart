@@ -36,6 +36,8 @@ class LiveTournamentCard extends StatelessWidget {
                   child: NetworkImageBox(
                     url: tournament.bannerUrl,
                     fit: BoxFit.cover,
+                    cacheWidth: 360,
+                    cacheHeight: 200,
                   ),
                 ),
                 Positioned(

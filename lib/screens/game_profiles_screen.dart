@@ -276,6 +276,8 @@ class _GameIcon extends StatelessWidget {
             ? CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.cover,
+                memCacheWidth: 88,
+                memCacheHeight: 88,
                 errorWidget: (_, __, ___) => const Icon(
                   Icons.sports_esports_rounded,
                   color: AppColors.purpleSoft,

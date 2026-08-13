@@ -53,7 +53,6 @@ class _ForgotEmailScreenState extends State<ForgotEmailScreen> {
     return AuthScaffold(
       title: 'Reset your password',
       subtitle: "Enter the email on your account and we'll send you a code.",
-      showLogo: false,
       children: [
         AuthTextField(
           controller: _emailCtrl,

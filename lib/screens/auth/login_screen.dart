@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/auth/auth_primary_button.dart';
 import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/auth_text_field.dart';
-import '../home_screen.dart';
-import 'forgot_email_screen.dart';
-import 'signup_details_screen.dart';
+import 'login_password_screen.dart';
+import 'signup_email_screen.dart';
 
+/// Step 1 of the flow-based login: just the email. Password is collected
+/// on the next screen once we know who's logging in.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,42 +17,25 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _obscure = true;
-  bool _loading = false;
   String? _error;
 
   @override
   void dispose() {
     _emailCtrl.dispose();
-    _passwordCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  void _continue() {
     final email = _emailCtrl.text.trim();
-    final password = _passwordCtrl.text;
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _error = 'Enter your email and password.');
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _error = 'Enter a valid email address.');
       return;
     }
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    try {
-      final result = await authService.login(email: email, password: password);
-      await authService.persistSession(result);
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
-    } on AuthException catch (e) {
-      setState(() => _error = e.message);
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    setState(() => _error = null);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => LoginPasswordScreen(email: email)),
+    );
   }
 
   @override
@@ -67,53 +50,16 @@ class _LoginScreenState extends State<LoginScreen> {
           label: 'Email',
           hint: 'you@example.com',
           keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.next,
-          prefixIcon: Icons.mail_outline_rounded,
-        ),
-        const SizedBox(height: 16),
-        AuthTextField(
-          controller: _passwordCtrl,
-          label: 'Password',
-          hint: 'Enter your password',
-          obscureText: _obscure,
           textInputAction: TextInputAction.done,
-          prefixIcon: Icons.lock_outline_rounded,
-          onSubmitted: (_) => _login(),
-          suffix: IconButton(
-            icon: Icon(
-              _obscure ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-              color: AppColors.textMuted,
-              size: 20,
-            ),
-            onPressed: () => setState(() => _obscure = !_obscure),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Align(
-          alignment: Alignment.centerRight,
-          child: GestureDetector(
-            onTap: _loading
-                ? null
-                : () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ForgotEmailScreen()),
-                    ),
-            child: const Text(
-              'Forgot password?',
-              style: TextStyle(
-                color: AppColors.purpleSoft,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          prefixIcon: Icons.mail_outline_rounded,
+          onSubmitted: (_) => _continue(),
         ),
         if (_error != null) ...[
           const SizedBox(height: 12),
           Text(_error!, style: const TextStyle(color: AppColors.live, fontSize: 13)),
         ],
         const SizedBox(height: 24),
-        AuthPrimaryButton(label: 'Login', onPressed: _login, loading: _loading),
+        AuthPrimaryButton(label: 'Continue', onPressed: _continue),
         const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -121,12 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
             const Text("Don't have an account? ",
                 style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             GestureDetector(
-              onTap: _loading
-                  ? null
-                  : () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SignupDetailsScreen()),
-                      ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SignupEmailScreen()),
+              ),
               child: const Text(
                 'Sign up',
                 style: TextStyle(

@@ -10,18 +10,29 @@ import 'services/push_notification_handler.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Created explicitly (instead of letting ProviderScope make one) so
+  // PushNotificationHandler can read/invalidate providers directly when
+  // a push arrives -- that's what makes auto-refresh possible even
+  // before any screen using those providers has been built.
+  final container = ProviderContainer();
+
   // Requires android/app/google-services.json — see FIREBASE_SETUP.md.
   // Wrapped so a missing/misconfigured file doesn't hard-crash the app;
   // push notifications just won't work until it's added correctly.
   try {
     await Firebase.initializeApp();
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await PushNotificationHandler.instance.init();
+    await PushNotificationHandler.instance.init(container);
   } catch (e) {
     debugPrint('Firebase init failed (check google-services.json): $e');
   }
 
-  runApp(const ProviderScope(child: ClassyBattleApp()));
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const ClassyBattleApp(),
+    ),
+  );
 }
 
 class ClassyBattleApp extends StatelessWidget {
