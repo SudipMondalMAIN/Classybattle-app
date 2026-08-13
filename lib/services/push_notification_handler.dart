@@ -34,7 +34,7 @@ class PushNotificationHandler {
   Timer? _pollTimer;
   ProviderContainer? _container;
 
-  static const _pollInterval = Duration(seconds: 60);
+  static const _pollInterval = Duration(minutes: 2);
 
   void _startTimer(ProviderContainer container) {
     _container = container;
@@ -94,7 +94,7 @@ class PushNotificationHandler {
     });
 
     // Fallback for when the backend doesn't (or can't) send a push for
-    // every change: every 60s while the app is open and in the
+    // every change: every 2 minutes while the app is open and in the
     // foreground, quietly re-check everything the same way a push
     // would. Paused automatically while the app is backgrounded (see
     // [pause]/[resume]) so it doesn't burn battery/data or contend with
