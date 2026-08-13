@@ -11,6 +11,7 @@ import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
 import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
+import 'wallet_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -49,6 +50,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _openTournamentDetails(String id) {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournamentId: id)),
+    );
+  }
+
+  void _openWallet() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const WalletScreen()),
     );
   }
 
@@ -147,11 +154,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _openTournaments();
             return;
           }
+          if (i == 2) {
+            _openWallet();
+            return;
+          }
           setState(() => _navIndex = i);
           if (i != 0) {
             const labels = ['Home', 'Tournaments', 'Wallet', 'Profile'];
             _notImplemented(labels[i]);
-            // Reset back to Home since those screens don't exist yet --
+            // Reset back to Home since Profile doesn't exist yet --
             // avoids a nav bar stuck pointing at a blank tab.
             Future.microtask(() => setState(() => _navIndex = 0));
           }
