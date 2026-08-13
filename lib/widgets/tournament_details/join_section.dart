@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/formatters.dart';
 import '../../models/tournament_detail_model.dart';
+import '../../providers/game_profile_providers.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/tournament_providers.dart';
 import '../../services/home_service.dart' show UnauthenticatedException;
 import '../../services/tournament_service.dart';
 import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
+import '../game_profile/add_game_profile_sheet.dart';
 
 class JoinSection extends ConsumerStatefulWidget {
   const JoinSection({super.key, required this.tournament});
@@ -22,6 +24,28 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
   bool _joining = false;
 
   Future<void> _join() async {
+    // Before joining, make sure the user has saved their in-game
+    // Nickname/UID for this tournament's game. Without it the
+    // organizer has no way to find them in the match -- so we stop
+    // here and open the same Add Game Profile sheet used in the Game
+    // Profiles screen, and only continue to the actual join once it's
+    // saved.
+    final games = await ref.read(gamesByIdProvider.future);
+    final game = games[widget.tournament.gameId];
+    if (game != null && game.profileSchema.isNotEmpty) {
+      final hasProfile = await ref.read(
+        hasGameProfileProvider(widget.tournament.gameId).future,
+      );
+      if (!hasProfile) {
+        if (!mounted) return;
+        final saved = await AddGameProfileSheet.show(context, game);
+        if (saved != true) return; // user backed out of the sheet
+        ref.invalidate(myGameProfilesProvider);
+        ref.invalidate(hasGameProfileProvider(widget.tournament.gameId));
+      }
+    }
+
+    if (!mounted) return;
     setState(() => _joining = true);
     try {
       await tournamentService.joinSolo(widget.tournament.id);

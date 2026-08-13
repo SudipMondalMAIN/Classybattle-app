@@ -32,6 +32,36 @@ class PushNotificationHandler {
   final _localNotifications = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
   Timer? _pollTimer;
+  ProviderContainer? _container;
+
+  static const _pollInterval = Duration(seconds: 60);
+
+  void _startTimer(ProviderContainer container) {
+    _container = container;
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(
+      _pollInterval,
+      (_) => _silentRefreshAll(container),
+    );
+  }
+
+  /// Call when the app goes to the background (paused/inactive/hidden
+  /// lifecycle states). Stops the background poll entirely — no point
+  /// refetching data for screens nobody can see.
+  void pause() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
+  }
+
+  /// Call when the app returns to the foreground. Does one immediate
+  /// refresh (in case something changed while backgrounded) and
+  /// restarts the periodic poll.
+  void resume() {
+    final container = _container;
+    if (container == null) return;
+    _silentRefreshAll(container);
+    _startTimer(container);
+  }
 
   Future<void> init(ProviderContainer container) async {
     if (_initialized) return;
@@ -64,15 +94,12 @@ class PushNotificationHandler {
     });
 
     // Fallback for when the backend doesn't (or can't) send a push for
-    // every change: every 30s while the app is open, quietly re-check
-    // everything the same way a push would. Cheap — FutureProviders
-    // with no active screen watching them just stay dirty and skip the
-    // network call until something reads them.
-    _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => _silentRefreshAll(container),
-    );
+    // every change: every 60s while the app is open and in the
+    // foreground, quietly re-check everything the same way a push
+    // would. Paused automatically while the app is backgrounded (see
+    // [pause]/[resume]) so it doesn't burn battery/data or contend with
+    // the UI thread when nothing is even visible.
+    _startTimer(container);
 
     try {
       final token = await FirebaseMessaging.instance.getToken();

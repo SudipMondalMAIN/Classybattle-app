@@ -107,6 +107,16 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                       GlassContainer(
                         borderRadius: 18,
                         padding: const EdgeInsets.all(16),
+                        child: RecentTransactionsSection(
+                          async: recentAsync,
+                          onViewAll: _openViewAll,
+                          onRetry: () => ref.invalidate(recentTransactionsProvider),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      GlassContainer(
+                        borderRadius: 18,
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -121,16 +131,6 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                             const SizedBox(height: 14),
                             WalletSummaryGrid(summary: summaryAsync.valueOrNull),
                           ],
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      GlassContainer(
-                        borderRadius: 18,
-                        padding: const EdgeInsets.all(16),
-                        child: RecentTransactionsSection(
-                          async: recentAsync,
-                          onViewAll: _openViewAll,
-                          onRetry: () => ref.invalidate(recentTransactionsProvider),
                         ),
                       ),
                       const SizedBox(height: 18),

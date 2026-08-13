@@ -205,55 +205,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 14)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: Consumer(builder: (context, ref, _) {
+                    SliverToBoxAdapter(
+                      child: Consumer(builder: (context, ref, _) {
                         final entriesAsync =
                             ref.watch(myTournamentsForTabProvider);
                         final gamesAsync = ref.watch(gamesByIdProvider);
                         return entriesAsync.when(
-                          loading: () => const SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                    color: AppColors.purple),
-                              ),
+                          loading: () => const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                  color: AppColors.purple),
                             ),
                           ),
-                          error: (_, __) => const SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Text(
-                                'Could not load your tournaments.',
-                                style: TextStyle(color: AppColors.textMuted),
-                              ),
+                          error: (_, __) => const Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 20),
+                            child: Text(
+                              'Could not load your tournaments.',
+                              style: TextStyle(color: AppColors.textMuted),
                             ),
                           ),
                           data: (entries) {
                             if (entries.isEmpty) {
-                              return const SliverToBoxAdapter(
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 20),
-                                  child: Center(
-                                    child: Text(
-                                      'Nothing here yet.',
-                                      style: TextStyle(
-                                          color: AppColors.textMuted),
-                                    ),
+                              return const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 20),
+                                child: Center(
+                                  child: Text(
+                                    'Nothing here yet.',
+                                    style:
+                                        TextStyle(color: AppColors.textMuted),
                                   ),
                                 ),
                               );
                             }
                             final games = gamesAsync.valueOrNull ?? const {};
-                            return SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, i) {
+                            // Horizontal swipe instead of a long vertical
+                            // scroll — one card-width peek of the next
+                            // card signals there's more to swipe to.
+                            return SizedBox(
+                              height: 96,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: entries.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 10),
+                                itemBuilder: (context, i) {
                                   final e = entries[i];
-                                  return Padding(
-                                    padding: EdgeInsets.only(
-                                        bottom:
-                                            i == entries.length - 1 ? 0 : 10),
+                                  return SizedBox(
+                                    width: MediaQuery.of(context).size.width -
+                                        64,
                                     child: ProfileTournamentCard(
                                       tournament: e.tournament,
                                       game: games[e.tournament.gameId],
@@ -269,7 +273,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                     ),
                                   );
                                 },
-                                childCount: entries.length,
                               ),
                             );
                           },

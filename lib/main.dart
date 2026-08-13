@@ -35,8 +35,46 @@ void main() async {
   );
 }
 
-class ClassyBattleApp extends StatelessWidget {
+class ClassyBattleApp extends StatefulWidget {
   const ClassyBattleApp({super.key});
+
+  @override
+  State<ClassyBattleApp> createState() => _ClassyBattleAppState();
+}
+
+class _ClassyBattleAppState extends State<ClassyBattleApp>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Stop the 60s background poll while the app isn't visible, and
+    // catch up with one refresh the moment it's visible again -- this
+    // is the single biggest lever for "app feels smooth": no silent
+    // network/rebuild work fights the UI thread when the user is
+    // actually looking at the screen and scrolling.
+    switch (state) {
+      case AppLifecycleState.resumed:
+        PushNotificationHandler.instance.resume();
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.detached:
+        PushNotificationHandler.instance.pause();
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
