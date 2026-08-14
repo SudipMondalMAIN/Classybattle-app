@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../core/formatters.dart';
 import '../../models/wallet_transaction_model.dart';
 import '../../theme/app_theme.dart';
 import 'transaction_meta.dart';
 
-final DateFormat _dateFmt = DateFormat('dd MMM yyyy, hh:mm a');
-
 class TransactionRow extends StatelessWidget {
-  const TransactionRow({super.key, required this.txn, this.onTap, this.showDivider = true});
+  const TransactionRow({
+    super.key,
+    required this.txn,
+    this.onTap,
+    this.showDivider = true,
+  });
 
   final WalletTransactionModel txn;
   final VoidCallback? onTap;
@@ -27,7 +29,9 @@ class TransactionRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: showDivider
             ? const BoxDecoration(
-                border: Border(bottom: BorderSide(color: AppColors.glassBorder, width: 1)),
+                border: Border(
+                  bottom: BorderSide(color: AppColors.glassBorder, width: 1),
+                ),
               )
             : null,
         child: Row(
@@ -35,7 +39,10 @@ class TransactionRow extends StatelessWidget {
             Container(
               width: 42,
               height: 42,
-              decoration: BoxDecoration(shape: BoxShape.circle, color: meta.iconBg),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: meta.iconBg,
+              ),
               child: Icon(meta.icon, size: 20, color: meta.iconColor),
             ),
             const SizedBox(width: 12),
@@ -55,11 +62,30 @@ class TransactionRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${referenceLabel(txn.referenceType)} • ${_dateFmt.format(txn.createdAt)}',
+                    '${referenceLabel(txn.referenceType)} • ${formatIstDateTime(txn.createdAt)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                    style: const TextStyle(
+                      color: AppColors.textMuted,
+                      fontSize: 12,
+                    ),
                   ),
+                  // Only deposits/withdrawals carry a txn_no from the
+                  // backend — everything else (tournament entry, prize
+                  // payout, etc.) leaves this null and nothing renders.
+                  if (txn.txnNo != null && txn.txnNo!.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'TXN ID: ${txn.txnNo}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -88,7 +114,11 @@ class TransactionRow extends StatelessWidget {
             ),
             if (onTap != null) ...[
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.textMuted),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppColors.textMuted,
+              ),
             ],
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/formatters.dart';
 import '../../models/game_mode_model.dart';
 import '../../models/game_model.dart';
 import '../../models/map_model.dart';
@@ -57,6 +58,22 @@ class TournamentInfoCard extends StatelessWidget {
       if (map != null) _InfoField(Icons.map_outlined, 'Map', map!.name),
       if (tournament.organizer.isNotEmpty)
         _InfoField(Icons.badge_outlined, 'Organizer', tournament.organizer),
+      // Room-publish / go-live time and auto-complete time were being
+      // parsed from the backend but never actually shown anywhere in
+      // the UI. Shown here in Indian time, 12-hour clock (e.g.
+      // "14 Aug 2026, 3:45 PM"), regardless of the device's own locale.
+      if (tournament.publishedAt != null)
+        _InfoField(
+          Icons.wifi_tethering_rounded,
+          'Live Since',
+          formatIstDateTime(tournament.publishedAt!),
+        ),
+      if (tournament.autoCompleteAt != null)
+        _InfoField(
+          Icons.timer_outlined,
+          'Completes At',
+          formatIstDateTime(tournament.autoCompleteAt!),
+        ),
     ];
 
     return GlassContainer(

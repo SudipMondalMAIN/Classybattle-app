@@ -83,6 +83,10 @@ class WalletTransactionModel {
   final String? referenceType;
   final String? referenceId;
   final DateTime createdAt;
+  // Human-facing 10-digit transaction number for deposits/withdrawals
+  // only (reference_type payment_deposit / withdrawal_request). Null
+  // for every other transaction type.
+  final String? txnNo;
 
   WalletTransactionModel({
     required this.id,
@@ -94,6 +98,7 @@ class WalletTransactionModel {
     required this.referenceType,
     required this.referenceId,
     required this.createdAt,
+    this.txnNo,
   });
 
   factory WalletTransactionModel.fromJson(Map<String, dynamic> json) {
@@ -106,8 +111,10 @@ class WalletTransactionModel {
       description: json['description'] as String?,
       referenceType: json['reference_type'] as String?,
       referenceId: json['reference_id'] as String?,
-      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(json['created_at'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
+      txnNo: json['txn_no'] as String?,
     );
   }
 

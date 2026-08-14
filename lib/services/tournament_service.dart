@@ -3,6 +3,7 @@ import '../core/api_client.dart';
 import '../models/game_mode_model.dart';
 import '../models/map_model.dart';
 import '../models/participant_model.dart';
+import '../models/participant_public_model.dart';
 import '../models/prize_pool_model.dart';
 import '../models/tournament_detail_model.dart';
 import '../models/tournament_model.dart';
@@ -103,6 +104,34 @@ class TournamentService {
       if (e.response?.statusCode == 404 || e.response?.statusCode == 401) {
         return null;
       }
+      rethrow;
+    }
+  }
+
+  /// GET /tournaments/{id}/participants -- full public roster for the
+  /// Tournament Details screen: every participant's avatar/name/in-game
+  /// nickname+uid, and (once the tournament has results) their
+  /// rank/win/prize too. Paginated; page_size 100 covers the vast
+  /// majority of tournaments in one call.
+  Future<PagedResult<ParticipantPublicModel>> fetchTournamentParticipants(
+    String tournamentId, {
+    int page = 1,
+    int pageSize = 100,
+  }) async {
+    try {
+      final res = await _dio.get(
+        '/tournaments/$tournamentId/participants',
+        queryParameters: {'page': page, 'page_size': pageSize},
+      );
+      final items = (res.data['items'] as List)
+          .map(
+            (e) => ParticipantPublicModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+      final total = (res.data['total'] as num?)?.toInt() ?? items.length;
+      return PagedResult(items, total);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
       rethrow;
     }
   }
