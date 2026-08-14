@@ -5,6 +5,7 @@ import '../providers/tournament_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
 import '../widgets/tournament_details/details_header_bar.dart';
+import '../widgets/tournament_details/custom_result_section.dart';
 import '../widgets/tournament_details/join_section.dart';
 import '../widgets/tournament_details/participants_section.dart';
 import '../widgets/tournament_details/prize_pool_section.dart';
@@ -123,6 +124,10 @@ class TournamentDetailsScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(16),
                             child: RoomDetailsSection(tournament: tournament),
                           ),
+                          if (CustomResultSection.shouldShow(tournament)) ...[
+                            const SizedBox(height: 16),
+                            CustomResultSection(tournament: tournament),
+                          ],
                           const SizedBox(height: 16),
                           GlassContainer(
                             borderRadius: 18,

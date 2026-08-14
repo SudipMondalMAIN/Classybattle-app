@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/custom_match_claim_model.dart';
 import '../models/game_mode_model.dart';
 import '../models/map_model.dart';
 import '../models/participant_model.dart';
@@ -52,10 +53,12 @@ final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
   final search = ref.watch(tournamentSearchQueryProvider);
   final gameId = ref.watch(tournamentGameFilterProvider);
   final category = ref.watch(tournamentCategoryFilterProvider);
+  final isCustom = category == 'custom';
   final result = await tournamentService.fetchTournaments(
     search: search,
     gameId: gameId,
-    category: category,
+    category: isCustom ? null : category,
+    isCustom: isCustom ? true : null,
     pageSize: 100,
   );
   return result.items;
@@ -107,11 +110,13 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
       }
     }
 
+    final isCustom = category == 'custom';
     final result = await tournamentService.fetchTournaments(
       status: tab.statusAlias,
       search: search,
       gameId: gameId,
-      category: category,
+      category: isCustom ? null : category,
+      isCustom: isCustom ? true : null,
       pageSize: 100,
     );
     return result.items;
@@ -192,4 +197,12 @@ final tournamentParticipantsProvider =
         tournamentId,
       );
       return result.items;
+    });
+
+/// Self-declared win/loss claim state for a 1v1 Custom Tournament (null
+/// if this isn't an eligible custom 1v1 tournament, or the user isn't a
+/// participant, or nothing's been submitted / room isn't live yet).
+final customMatchClaimProvider =
+    FutureProvider.family<CustomMatchClaimPairModel?, String>((ref, tournamentId) {
+      return tournamentService.fetchCustomResult(tournamentId);
     });

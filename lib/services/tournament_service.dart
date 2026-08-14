@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
 import '../core/api_client.dart';
+import '../models/custom_match_claim_model.dart';
 import '../models/game_mode_model.dart';
 import '../models/map_model.dart';
 import '../models/participant_model.dart';
@@ -8,6 +10,14 @@ import '../models/prize_pool_model.dart';
 import '../models/tournament_detail_model.dart';
 import '../models/tournament_model.dart';
 import 'home_service.dart' show UnauthenticatedException;
+
+/// Thrown when a self-declared custom-tournament result submission fails
+/// for a known, user-facing reason (missing proof, room not live yet,
+/// already resolved, etc).
+class SubmitResultException implements Exception {
+  SubmitResultException(this.message);
+  final String message;
+}
 
 /// Thrown when POST join fails for a known, user-facing reason (e.g.
 /// insufficient wallet balance, missing game profile, already joined).
@@ -36,12 +46,15 @@ class TournamentService {
 
   /// GET /tournaments -- list with optional status alias
   /// (all|ongoing|upcoming|past), free-text search, game filter and
-  /// category filter (solo|squad).
+  /// category filter (solo|squad). Pass [isCustom]=true to list
+  /// user-hosted Custom Tournaments instead -- those never have a
+  /// solo/squad category, so `category` is ignored when set.
   Future<PagedResult<TournamentModel>> fetchTournaments({
     String? status,
     String? search,
     String? gameId,
     String? category,
+    bool? isCustom,
     int page = 1,
     int pageSize = 50,
   }) async {
@@ -51,7 +64,10 @@ class TournamentService {
         if (status != null && status != 'all') 'status': status,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         if (gameId != null) 'game_id': gameId,
-        if (category != null) 'category': category,
+        if (isCustom == true)
+          'is_custom': true
+        else if (category != null)
+          'category': category,
         'page': page,
         'page_size': pageSize,
       },
@@ -246,6 +262,73 @@ class TournamentService {
           .toList();
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
+
+  /// ---- Custom Tournament self-declared results (1v1 only) ----
+  ///
+  /// Claiming "loss" needs no proof and instantly pays the opponent.
+  /// Claiming "win" requires a proof screenshot -- upload it first via
+  /// [uploadResultProof], then pass the returned url here.
+
+  /// POST /tournaments/{id}/custom-result/proof -- uploads a win-claim
+  /// screenshot, returns its URL.
+  Future<String> uploadResultProof(String tournamentId, File screenshot) async {
+    try {
+      final fileName = screenshot.path.split('/').last;
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(screenshot.path, filename: fileName),
+      });
+      final res = await _dio.post(
+        '/tournaments/$tournamentId/custom-result/proof',
+        data: formData,
+      );
+      return res.data['message'] as String;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      final detail = e.response?.data is Map ? e.response?.data['detail'] : null;
+      throw SubmitResultException(
+        detail?.toString() ?? 'Couldn\'t upload the screenshot. Try again.',
+      );
+    }
+  }
+
+  /// POST /tournaments/{id}/custom-result -- submit "win" (with
+  /// [proofUrl]) or "loss" (no proof needed).
+  Future<CustomMatchClaimPairModel> submitCustomResult(
+    String tournamentId, {
+    required String outcome,
+    String? proofUrl,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/tournaments/$tournamentId/custom-result',
+        data: {
+          'outcome': outcome,
+          if (proofUrl != null) 'proof_url': proofUrl,
+        },
+      );
+      return CustomMatchClaimPairModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      final detail = e.response?.data is Map ? e.response?.data['detail'] : null;
+      throw SubmitResultException(
+        detail?.toString() ?? 'Couldn\'t submit the result. Try again.',
+      );
+    }
+  }
+
+  /// GET /tournaments/{id}/custom-result -- current claim state for
+  /// both players.
+  Future<CustomMatchClaimPairModel?> fetchCustomResult(String tournamentId) async {
+    try {
+      final res = await _dio.get('/tournaments/$tournamentId/custom-result');
+      return CustomMatchClaimPairModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      // Not a participant / not a custom 1v1 tournament -- nothing to show.
+      if (e.response?.statusCode == 403 || e.response?.statusCode == 400) return null;
       rethrow;
     }
   }

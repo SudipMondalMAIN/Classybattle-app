@@ -80,6 +80,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// The "Custom" tile in the Solo/Squad/Custom grid browses tournaments
+  /// other users have already hosted (join via room_id, squad-based --
+  /// no solo/squad sub-filter needed). This is distinct from the
+  /// standalone "host your own" banner above it, which still opens the
+  /// creation form directly.
+  void _openCustomTournaments() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const TournamentsScreen(initialCategory: 'custom'),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,7 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     SliverToBoxAdapter(
                       child: HomeCategoryBoxesSection(
                         onSoloOrSquadTap: _openTournamentsFiltered,
-                        onCustomTap: _openCreateCustomTournament,
+                        onCustomTap: _openCustomTournaments,
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),

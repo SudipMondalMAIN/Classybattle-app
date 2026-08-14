@@ -12,6 +12,7 @@ import '../widgets/tournaments/search_filter_bar.dart';
 import '../widgets/tournaments/tournament_filtered_list.dart';
 import '../widgets/tournaments/tournament_tabs.dart';
 import '../widgets/tournaments/your_tournaments_section.dart';
+import 'create_custom_tournament_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
@@ -63,6 +64,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
       MaterialPageRoute(
         builder: (_) => TournamentDetailsScreen(tournamentId: id),
       ),
+    );
+  }
+
+  void _openCreateCustomTournament() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const CreateCustomTournamentScreen()),
     );
   }
 
@@ -197,6 +204,17 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
           ),
         ),
       ),
+      floatingActionButton: widget.initialCategory == 'custom'
+          ? FloatingActionButton.extended(
+              onPressed: _openCreateCustomTournament,
+              backgroundColor: AppColors.purple,
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                'Host One',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+            )
+          : null,
       bottomNavigationBar: BottomNavBar(
         currentIndex: 1,
         onTap: (i) {
