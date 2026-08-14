@@ -91,6 +91,14 @@ class TournamentDetailsScreen extends ConsumerWidget {
                       final prizePoolAsync = ref.watch(
                         tournamentPrizePoolProvider(tournament.id),
                       );
+                      final currentUser =
+                          ref.watch(currentUserProvider).valueOrNull;
+                      // Only Custom Tournaments (user-hosted, no schedule
+                      // category) let the host publish room id/password --
+                      // admin/schedule tournaments are published by admins.
+                      final isHost = currentUser != null &&
+                          tournament.createdBy == currentUser.id &&
+                          tournament.category == null;
 
                       return ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
@@ -122,7 +130,10 @@ class TournamentDetailsScreen extends ConsumerWidget {
                           GlassContainer(
                             borderRadius: 18,
                             padding: const EdgeInsets.all(16),
-                            child: RoomDetailsSection(tournament: tournament),
+                            child: RoomDetailsSection(
+                              tournament: tournament,
+                              isHost: isHost,
+                            ),
                           ),
                           if (CustomResultSection.shouldShow(tournament)) ...[
                             const SizedBox(height: 16),

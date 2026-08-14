@@ -29,6 +29,7 @@ class TournamentDetailModel {
   final String registrationMode; // solo | team_invite | auto_random
   final int teamSize;
   final String? category; // solo | squad
+  final String? createdBy;
 
   TournamentDetailModel({
     required this.id,
@@ -57,6 +58,7 @@ class TournamentDetailModel {
     required this.registrationMode,
     required this.teamSize,
     this.category,
+    this.createdBy,
   });
 
   bool get isLive => status == 'live';
@@ -105,6 +107,7 @@ class TournamentDetailModel {
       registrationMode: json['registration_mode'] as String? ?? 'solo',
       teamSize: (json['team_size'] as num?)?.toInt() ?? 1,
       category: json['category'] as String?,
+      createdBy: json['created_by'] as String?,
     );
   }
 }

@@ -2,25 +2,24 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
-/// Dark frosted-glass card: blurred translucent fill, thin bright
-/// border, soft outer glow. Used for every "glass" surface in the
-/// Home Screen (header chips, hero card, category card, tournament
-/// cards, bottom nav).
+/// Dark frosted-glass-look card: translucent fill, thin bright border,
+/// soft outer glow. Used for every "glass" surface in the app (header
+/// chips, hero card, category card, tournament cards, bottom nav).
 ///
-/// PERFORMANCE: the default blurSigma runs a real BackdropFilter blur
-/// every frame this widget is on screen -- expensive, especially on
-/// mid/low-end Android. Fine for a one-off surface (a header, a modal,
-/// a bottom nav). For any widget repeated inside a ListView/GridView
-/// (a card per item), pass `blurSigma: 0` -- the flat fillColor alone
-/// reads as "glass" against this app's gradient background, and it
-/// removes one blur pass per visible card per scroll frame.
+/// PERFORMANCE: blurSigma defaults to 0 (no real-time blur). A real
+/// BackdropFilter blur was causing noticeable lag/jank when scrolling
+/// and switching tabs, since many GlassContainers are often on screen
+/// at once. The flat, semi-transparent fillColor alone reads as
+/// "glass" against this app's gradient background without the per-
+/// frame blur cost. Pass a positive blurSigma only for a one-off
+/// surface where the extra blur is worth it (rare).
 class GlassContainer extends StatelessWidget {
   const GlassContainer({
     super.key,
     required this.child,
     this.borderRadius = 20,
     this.padding,
-    this.blurSigma = 16,
+    this.blurSigma = 0,
     this.fillColor,
     this.borderColor,
     this.glow = false,
@@ -39,6 +38,19 @@ class GlassContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(borderRadius);
+    final content = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: fillColor ?? AppColors.glassFill,
+        borderRadius: radius,
+        border: Border.all(
+          color: borderColor ?? AppColors.glassBorder,
+          width: 1,
+        ),
+      ),
+      child: child,
+    );
+
     return Container(
       margin: margin,
       decoration: glow
@@ -53,29 +65,20 @@ class GlassContainer extends StatelessWidget {
               ],
             )
           : null,
-      child: ClipRRect(
-        borderRadius: radius,
-        // RepaintBoundary isolates this blur's repaint from the rest of
-        // the tree — without it, every scroll frame can force nearby
-        // glass surfaces to re-run their (expensive) blur pass too.
-        child: RepaintBoundary(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-            child: Container(
-              padding: padding,
-              decoration: BoxDecoration(
-                color: fillColor ?? AppColors.glassFill,
-                borderRadius: radius,
-                border: Border.all(
-                  color: borderColor ?? AppColors.glassBorder,
-                  width: 1,
+      child: blurSigma <= 0
+          ? ClipRRect(borderRadius: radius, child: content)
+          : ClipRRect(
+              borderRadius: radius,
+              // RepaintBoundary isolates this blur's repaint from the
+              // rest of the tree -- without it, every scroll frame can
+              // force nearby glass surfaces to re-run their blur too.
+              child: RepaintBoundary(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+                  child: content,
                 ),
               ),
-              child: child,
             ),
-          ),
-        ),
-      ),
     );
   }
 }

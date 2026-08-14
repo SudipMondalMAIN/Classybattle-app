@@ -85,6 +85,29 @@ class TournamentService {
     return TournamentDetailModel.fromJson(res.data as Map<String, dynamic>);
   }
 
+  /// POST /tournaments/{id}/publish-room -- host (or admin) sets
+  /// room_id/room_password, tournament auto-flips to LIVE.
+  Future<TournamentDetailModel> publishRoom({
+    required String tournamentId,
+    required String roomId,
+    required String roomPassword,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/tournaments/$tournamentId/publish-room',
+        data: {'room_id': roomId, 'room_password': roomPassword},
+      );
+      return TournamentDetailModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      final detail = e.response?.data is Map
+          ? (e.response?.data as Map)['detail']
+          : null;
+      throw SubmitResultException(
+        detail is String ? detail : 'Could not publish room details.',
+      );
+    }
+  }
+
   /// GET /game-modes/{id}
   Future<GameModeModel?> fetchGameMode(String? id) async {
     if (id == null) return null;

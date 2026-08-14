@@ -52,7 +52,7 @@ class ProfileTournamentCard extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: NetworkImageBox(
-                  url: tournament.bannerUrl,
+                  url: tournament.bannerUrl ?? game?.iconUrl,
                   borderRadius: BorderRadius.circular(12),
                   cacheWidth: 128,
                   cacheHeight: 128,

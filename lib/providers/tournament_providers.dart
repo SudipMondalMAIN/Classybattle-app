@@ -58,7 +58,9 @@ final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
     search: search,
     gameId: gameId,
     category: isCustom ? null : category,
-    isCustom: isCustom ? true : null,
+    // solo/squad must explicitly exclude user-hosted Custom Tournaments,
+    // or a stray custom tournament sharing that category leaks in.
+    isCustom: isCustom ? true : (category != null ? false : null),
     pageSize: 100,
   );
   return result.items;
@@ -116,7 +118,7 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
       search: search,
       gameId: gameId,
       category: isCustom ? null : category,
-      isCustom: isCustom ? true : null,
+      isCustom: isCustom ? true : (category != null ? false : null),
       pageSize: 100,
     );
     return result.items;

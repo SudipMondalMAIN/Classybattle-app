@@ -34,7 +34,7 @@ class UpcomingTournamentRow extends StatelessWidget {
             width: 64,
             height: 64,
             child: NetworkImageBox(
-              url: tournament.bannerUrl,
+              url: tournament.bannerUrl ?? game?.iconUrl,
               borderRadius: BorderRadius.circular(12),
               cacheWidth: 128,
               cacheHeight: 128,

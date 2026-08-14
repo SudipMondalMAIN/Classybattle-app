@@ -37,7 +37,7 @@ class LiveTournamentCard extends StatelessWidget {
                 AspectRatio(
                   aspectRatio: 600 / 410,
                   child: NetworkImageBox(
-                    url: tournament.bannerUrl,
+                    url: tournament.bannerUrl ?? game?.iconUrl,
                     fit: BoxFit.cover,
                     cacheWidth: 600,
                     cacheHeight: 410,

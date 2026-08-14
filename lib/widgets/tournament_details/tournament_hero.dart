@@ -59,7 +59,7 @@ class TournamentHero extends StatelessWidget {
               height: 340,
               width: double.infinity,
               child: NetworkImageBox(
-                url: tournament.bannerUrl ?? tournament.coverUrl,
+                url: tournament.bannerUrl ?? tournament.coverUrl ?? game?.iconUrl,
                 fit: BoxFit.cover,
                 cacheWidth: 800,
                 cacheHeight: 680,
