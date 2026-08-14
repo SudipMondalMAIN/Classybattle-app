@@ -28,6 +28,7 @@ class NotificationCard extends StatelessWidget {
         child: GlassContainer(
           borderRadius: 18,
           padding: const EdgeInsets.all(14),
+          blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
           fillColor: unread
               ? AppColors.glassFillStrong
               : Colors.white.withValues(alpha: 0.04),

@@ -155,6 +155,7 @@ class GameProfilesScreen extends ConsumerWidget {
                           return GlassContainer(
                             borderRadius: 18,
                             padding: EdgeInsets.zero,
+                            blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
                             child: InkWell(
                               borderRadius: BorderRadius.circular(18),
                               onTap: profilesLoading

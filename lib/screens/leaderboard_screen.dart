@@ -161,6 +161,7 @@ class _PlayerRow extends StatelessWidget {
       borderRadius: 16,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       borderColor: isMe ? AppColors.purple.withValues(alpha: 0.7) : null,
+      blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
       child: Row(
         children: [
           SizedBox(

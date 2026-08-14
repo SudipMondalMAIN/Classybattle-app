@@ -6,6 +6,14 @@ import '../../theme/app_theme.dart';
 /// border, soft outer glow. Used for every "glass" surface in the
 /// Home Screen (header chips, hero card, category card, tournament
 /// cards, bottom nav).
+///
+/// PERFORMANCE: the default blurSigma runs a real BackdropFilter blur
+/// every frame this widget is on screen -- expensive, especially on
+/// mid/low-end Android. Fine for a one-off surface (a header, a modal,
+/// a bottom nav). For any widget repeated inside a ListView/GridView
+/// (a card per item), pass `blurSigma: 0` -- the flat fillColor alone
+/// reads as "glass" against this app's gradient background, and it
+/// removes one blur pass per visible card per scroll frame.
 class GlassContainer extends StatelessWidget {
   const GlassContainer({
     super.key,

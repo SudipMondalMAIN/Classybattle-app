@@ -27,6 +27,7 @@ class UpcomingTournamentRow extends StatelessWidget {
     return GlassContainer(
       borderRadius: 16,
       padding: const EdgeInsets.all(10),
+      blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
       child: Row(
         children: [
           SizedBox(

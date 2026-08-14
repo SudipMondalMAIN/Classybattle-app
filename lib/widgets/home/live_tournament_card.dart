@@ -23,6 +23,12 @@ class LiveTournamentCard extends StatelessWidget {
       child: GlassContainer(
         borderRadius: 18,
         padding: EdgeInsets.zero,
+        // Real-time blur here is pure cost with no visible payoff -- this
+        // card sits over a flat background gradient (not detailed content),
+        // and it's one of many rendered per scroll frame in a horizontal
+        // list. A flat fill looks the same and removes a BackdropFilter
+        // pass per card per frame.
+        blurSigma: 0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

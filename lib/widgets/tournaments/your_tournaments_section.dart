@@ -47,6 +47,7 @@ class YourTournamentsSection extends ConsumerWidget {
             return GlassContainer(
               borderRadius: 18,
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+              blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
               child: Row(
                 children: [
                   Expanded(
