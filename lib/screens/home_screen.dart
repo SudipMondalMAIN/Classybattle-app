@@ -6,6 +6,7 @@ import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/home/header_bar.dart';
 import '../widgets/home/custom_tournament_box.dart';
 import '../widgets/home/hero_banner_carousel.dart';
+import '../widgets/home/home_category_boxes_section.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
 import 'create_custom_tournament_screen.dart';
@@ -68,6 +69,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  void _openTournamentsFiltered(String gameId, String category) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TournamentsScreen(
+          initialGameId: gameId,
+          initialCategory: category,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,6 +139,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: CustomTournamentBox(
                           onTap: _openCreateCustomTournament,
                         ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 26)),
+                    SliverToBoxAdapter(
+                      child: HomeCategoryBoxesSection(
+                        onSoloOrSquadTap: _openTournamentsFiltered,
+                        onCustomTap: _openCreateCustomTournament,
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),

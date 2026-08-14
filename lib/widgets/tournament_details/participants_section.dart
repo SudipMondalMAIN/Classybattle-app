@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/formatters.dart';
 import '../../models/participant_public_model.dart';
 import '../../theme/app_theme.dart';
+import 'report_player_dialog.dart';
 
 /// Full participant roster for a tournament: every participant's
 /// avatar/name/in-game nickname+uid, and — once the tournament has
@@ -14,10 +15,15 @@ class ParticipantsSection extends StatelessWidget {
     super.key,
     required this.participants,
     required this.totalCount,
+    this.currentUserId,
   });
 
   final List<ParticipantPublicModel> participants;
   final int totalCount;
+
+  /// The signed-in user's id, used to hide the "Report" action on their
+  /// own tile. Null (signed out) shows no report action at all.
+  final String? currentUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +74,11 @@ class ParticipantsSection extends StatelessWidget {
                   padding: EdgeInsets.only(
                     bottom: i == participants.length - 1 ? 0 : 10,
                   ),
-                  child: _ParticipantTile(participant: participants[i]),
+                  child: _ParticipantTile(
+                    participant: participants[i],
+                    canReport: currentUserId != null &&
+                        currentUserId != participants[i].userId,
+                  ),
                 ),
             ],
           ),
@@ -78,8 +88,9 @@ class ParticipantsSection extends StatelessWidget {
 }
 
 class _ParticipantTile extends StatelessWidget {
-  const _ParticipantTile({required this.participant});
+  const _ParticipantTile({required this.participant, required this.canReport});
   final ParticipantPublicModel participant;
+  final bool canReport;
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +173,39 @@ class _ParticipantTile extends StatelessWidget {
           if (p.hasResult) ...[
             const SizedBox(width: 8),
             _ResultBadge(participant: p),
+          ],
+          if (canReport) ...[
+            const SizedBox(width: 4),
+            PopupMenuButton<void>(
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                size: 18,
+                color: AppColors.textMuted,
+              ),
+              padding: EdgeInsets.zero,
+              color: AppColors.background,
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  child: const Row(
+                    children: [
+                      Icon(Icons.flag_outlined, size: 16, color: AppColors.live),
+                      SizedBox(width: 8),
+                      Text('Report player',
+                          style: TextStyle(color: AppColors.live)),
+                    ],
+                  ),
+                  onTap: () {
+                    Future.microtask(() => showReportPlayerDialog(
+                          context,
+                          userId: p.userId,
+                          playerName: p.fullName.isNotEmpty
+                              ? p.fullName
+                              : 'this player',
+                        ));
+                  },
+                ),
+              ],
+            ),
           ],
         ],
       ),

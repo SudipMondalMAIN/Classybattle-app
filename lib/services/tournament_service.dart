@@ -35,11 +35,13 @@ class TournamentService {
   final Dio _dio;
 
   /// GET /tournaments -- list with optional status alias
-  /// (all|ongoing|upcoming|past), free-text search and game filter.
+  /// (all|ongoing|upcoming|past), free-text search, game filter and
+  /// category filter (solo|squad).
   Future<PagedResult<TournamentModel>> fetchTournaments({
     String? status,
     String? search,
     String? gameId,
+    String? category,
     int page = 1,
     int pageSize = 50,
   }) async {
@@ -49,6 +51,7 @@ class TournamentService {
         if (status != null && status != 'all') 'status': status,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         if (gameId != null) 'game_id': gameId,
+        if (category != null) 'category': category,
         'page': page,
         'page_size': pageSize,
       },

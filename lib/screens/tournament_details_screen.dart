@@ -165,6 +165,12 @@ class TournamentDetailsScreen extends ConsumerWidget {
                                   data: (participants) => ParticipantsSection(
                                     participants: participants,
                                     totalCount: participants.length,
+                                    currentUserId: ref
+                                        .watch(currentUserProvider)
+                                        .maybeWhen(
+                                          data: (u) => u?.id,
+                                          orElse: () => null,
+                                        ),
                                   ),
                                 );
                               },

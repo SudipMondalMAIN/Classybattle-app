@@ -18,13 +18,46 @@ import 'tournament_details_screen.dart';
 import 'wallet_screen.dart';
 
 class TournamentsScreen extends ConsumerStatefulWidget {
-  const TournamentsScreen({super.key});
+  const TournamentsScreen({super.key, this.initialGameId, this.initialCategory});
+
+  /// Pre-applied game/category filter when arriving from a home-screen
+  /// category box (e.g. "Free Fire Solo") -- null means no filter, the
+  /// normal entry point from the bottom nav.
+  final String? initialGameId;
+  final String? initialCategory;
 
   @override
   ConsumerState<TournamentsScreen> createState() => _TournamentsScreenState();
 }
 
 class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialGameId != null || widget.initialCategory != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (widget.initialGameId != null) {
+          ref.read(tournamentGameFilterProvider.notifier).state =
+              widget.initialGameId;
+        }
+        if (widget.initialCategory != null) {
+          ref.read(tournamentCategoryFilterProvider.notifier).state =
+              widget.initialCategory;
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Don't leak a category-box filter into the next time Tournaments is
+    // opened normally (e.g. from the bottom nav).
+    ref.read(tournamentGameFilterProvider.notifier).state = null;
+    ref.read(tournamentCategoryFilterProvider.notifier).state = null;
+    super.dispose();
+  }
+
   void _openTournament(String id) {
     Navigator.of(context).push(
       MaterialPageRoute(
