@@ -40,6 +40,10 @@ final tournamentSearchQueryProvider = StateProvider<String>((ref) => '');
 
 final tournamentGameFilterProvider = StateProvider<String?>((ref) => null);
 
+/// Category filter (solo|squad|custom) — driven by tapping a home-screen
+/// category box; null means no category filter applied.
+final tournamentCategoryFilterProvider = StateProvider<String?>((ref) => null);
+
 /// Full "All" list -- used to derive the Live/Upcoming sections at the
 /// top of the Tournaments screen (matches the reference layout).
 final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
@@ -47,9 +51,11 @@ final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
 ) async {
   final search = ref.watch(tournamentSearchQueryProvider);
   final gameId = ref.watch(tournamentGameFilterProvider);
+  final category = ref.watch(tournamentCategoryFilterProvider);
   final result = await tournamentService.fetchTournaments(
     search: search,
     gameId: gameId,
+    category: category,
     pageSize: 100,
   );
   return result.items;
@@ -73,6 +79,7 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
     final tab = ref.watch(selectedTournamentTabProvider);
     final search = ref.watch(tournamentSearchQueryProvider);
     final gameId = ref.watch(tournamentGameFilterProvider);
+    final category = ref.watch(tournamentCategoryFilterProvider);
 
     if (tab == TournamentTab.all) {
       return ref.watch(allTournamentsProvider.future);
@@ -104,6 +111,7 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
       status: tab.statusAlias,
       search: search,
       gameId: gameId,
+      category: category,
       pageSize: 100,
     );
     return result.items;

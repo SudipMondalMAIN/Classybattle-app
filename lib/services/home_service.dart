@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../core/api_client.dart';
 import '../models/banner_model.dart';
 import '../models/game_model.dart';
+import '../models/home_category_box_model.dart';
 import '../models/tournament_model.dart';
 import '../models/user_model.dart';
 import '../models/wallet_model.dart';
@@ -22,6 +23,16 @@ class HomeService {
     final data = res.data as List;
     return data
         .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  /// GET /home-boxes -- public, active home-screen category boxes
+  /// (Solo / Squad / Custom Tournament tap boxes), in sort order.
+  Future<List<HomeCategoryBoxModel>> fetchHomeCategoryBoxes() async {
+    final res = await _dio.get('/home-boxes');
+    final data = res.data as List;
+    return data
+        .map((e) => HomeCategoryBoxModel.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 

@@ -16,6 +16,13 @@ class JoinTournamentException implements Exception {
   final String message;
 }
 
+/// Thrown when POST /tournaments/custom fails for a known, user-facing
+/// reason (validation error, duplicate title, etc).
+class CreateTournamentException implements Exception {
+  CreateTournamentException(this.message);
+  final String message;
+}
+
 class PagedResult<T> {
   PagedResult(this.items, this.total);
   final List<T> items;
@@ -148,6 +155,56 @@ class TournamentService {
       throw JoinTournamentException(
         detail?.toString() ?? 'Could not join this tournament right now.',
       );
+    }
+  }
+
+  /// POST /tournaments/custom -- user-hosted "Custom Tournament" creation.
+  /// Host only sets entry fee + player count; prize_pool is computed by
+  /// the backend (never trusted from the client). Goes live immediately,
+  /// no admin approval.
+  Future<TournamentModel> createCustomTournament({
+    required String title,
+    required String gameId,
+    required double entryFee,
+    required int maxPlayers,
+    String? modeId,
+    String? mapId,
+    String registrationMode = 'solo',
+    int teamSize = 1,
+    int? maxTeams,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/tournaments/custom',
+        data: {
+          'title': title,
+          'game_id': gameId,
+          'entry_fee': entryFee,
+          'max_players': maxPlayers,
+          if (modeId != null) 'mode_id': modeId,
+          if (mapId != null) 'map_id': mapId,
+          'registration_mode': registrationMode,
+          'team_size': teamSize,
+          if (maxTeams != null) 'max_teams': maxTeams,
+        },
+      );
+      return TournamentModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      final data = e.response?.data;
+      String message = 'Could not create the tournament. Please try again.';
+      if (data is Map) {
+        final detail = data['detail'];
+        if (detail is String) {
+          message = detail;
+        } else if (detail is List && detail.isNotEmpty) {
+          final first = detail.first;
+          if (first is Map && first['msg'] != null) {
+            message = first['msg'].toString();
+          }
+        }
+      }
+      throw CreateTournamentException(message);
     }
   }
 

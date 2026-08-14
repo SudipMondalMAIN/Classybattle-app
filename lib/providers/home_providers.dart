@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/banner_model.dart';
 import '../models/game_model.dart';
+import '../models/home_category_box_model.dart';
 import '../models/tournament_model.dart';
 import '../models/user_model.dart';
 import '../models/wallet_model.dart';
@@ -9,6 +10,14 @@ import '../services/home_service.dart';
 /// Active promo banners for the hero carousel.
 final bannersProvider = FutureProvider<List<BannerModel>>((ref) {
   return homeService.fetchBanners();
+});
+
+/// Active home-screen category boxes (Solo / Squad / Custom Tournament),
+/// in sort order -- admin-managed, 3-per-row on the home screen.
+final homeCategoryBoxesProvider = FutureProvider<List<HomeCategoryBoxModel>>((
+  ref,
+) {
+  return homeService.fetchHomeCategoryBoxes();
 });
 
 /// All games, keyed by id, so cards can resolve a tournament's
