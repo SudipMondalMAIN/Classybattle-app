@@ -32,26 +32,27 @@ final liveTournamentsProvider = FutureProvider<List<TournamentModel>>((ref) {
   return homeService.fetchTournaments(status: 'ongoing');
 });
 
-/// Scheduled / not-yet-live tournaments (status == scheduled).
+/// Scheduled / not-yet-live tournaments (status == scheduled). Excludes
+/// user-hosted Custom Tournaments -- those have their own dedicated
+/// browse page and should never appear in the home Upcoming rail.
 final upcomingTournamentsProvider = FutureProvider<List<TournamentModel>>((
   ref,
 ) {
-  return homeService.fetchTournaments(status: 'upcoming');
+  return homeService.fetchTournaments(status: 'upcoming', isCustom: false);
 });
 
-/// The featured live tournament used to fill in the hero banner's
-/// overlay (prize pool / registrations / CTA). Falls back to the
-/// first live tournament if none is explicitly featured.
+/// The featured upcoming tournament used to fill in the hero banner's
+/// overlay (prize pool / registrations / CTA). Once a tournament goes
+/// live it should stop showing on the home banner, so this only ever
+/// looks at featured *upcoming* tournaments -- no live fallback.
 final featuredLiveTournamentProvider = FutureProvider<TournamentModel?>((
   ref,
 ) async {
   final featured = await homeService.fetchTournaments(
-    status: 'ongoing',
+    status: 'upcoming',
     isFeatured: true,
   );
-  if (featured.isNotEmpty) return featured.first;
-  final live = await ref.watch(liveTournamentsProvider.future);
-  return live.isNotEmpty ? live.first : null;
+  return featured.isNotEmpty ? featured.first : null;
 });
 
 /// Wallet balance for the header chip. Null means "not logged in" --

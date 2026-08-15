@@ -81,7 +81,19 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
     ref.invalidate(gamesByIdProvider);
     ref.invalidate(walletProvider);
     ref.invalidate(currentUserProvider);
-    await Future.delayed(const Duration(milliseconds: 300));
+    // Wait for the real re-fetches instead of a fixed delay -- these
+    // calls can take a few seconds, so a short fake delay made the
+    // spinner vanish before fresh data actually arrived (looked like
+    // refresh wasn't doing anything).
+    await Future.wait([
+      ref.read(allTournamentsProvider.future),
+      ref.read(liveTournamentsCountProvider.future),
+      ref.read(tournamentsForSelectedTabProvider.future),
+      ref.read(myTournamentStatsProvider.future),
+      ref.read(gamesByIdProvider.future),
+      ref.read(walletProvider.future),
+      ref.read(currentUserProvider.future),
+    ].map((f) => f.catchError((_) => null)));
   }
 
   @override

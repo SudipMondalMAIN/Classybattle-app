@@ -66,6 +66,19 @@ final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
   return result.items;
 });
 
+/// User-hosted Custom Tournaments (is_custom=true) -- powers the
+/// dedicated Custom Tournaments browse page, kept separate from the
+/// main Tournaments screen and its tabs.
+final customTournamentsProvider = FutureProvider<List<TournamentModel>>((
+  ref,
+) async {
+  final result = await tournamentService.fetchTournaments(
+    isCustom: true,
+    pageSize: 100,
+  );
+  return result.items;
+});
+
 /// Live tournament count for the "Live" tab badge -- real count, not
 /// hardcoded.
 final liveTournamentsCountProvider = FutureProvider<int>((ref) async {

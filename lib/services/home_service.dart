@@ -50,6 +50,7 @@ class HomeService {
   Future<List<TournamentModel>> fetchTournaments({
     required String status,
     bool? isFeatured,
+    bool? isCustom,
     int pageSize = 20,
   }) async {
     final res = await _dio.get(
@@ -58,6 +59,7 @@ class HomeService {
         'status': status,
         'page_size': pageSize,
         if (isFeatured != null) 'is_featured': isFeatured,
+        if (isCustom != null) 'is_custom': isCustom,
         // Chronological order, not created_at batch order -- see
         // TournamentService.fetchTournaments for why.
         'sort_by': 'starts_at',

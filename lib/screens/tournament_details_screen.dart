@@ -29,7 +29,18 @@ class TournamentDetailsScreen extends ConsumerWidget {
     ref.invalidate(myRegistrationProvider(tournamentId));
     ref.invalidate(tournamentParticipantsProvider(tournamentId));
     ref.invalidate(walletProvider);
-    await Future.delayed(const Duration(milliseconds: 250));
+    // Wait for the actual re-fetches to land -- some of these (e.g.
+    // participants) can take several seconds, so without this the
+    // pull-to-refresh spinner disappears almost immediately while the
+    // data is still loading in the background, making refresh look
+    // broken/no-op even though it's working.
+    await Future.wait([
+      ref.read(tournamentDetailProvider(tournamentId).future),
+      ref.read(tournamentPrizePoolProvider(tournamentId).future),
+      ref.read(myRegistrationProvider(tournamentId).future),
+      ref.read(tournamentParticipantsProvider(tournamentId).future),
+      ref.read(walletProvider.future),
+    ].map((f) => f.catchError((_) => null)));
   }
 
   @override

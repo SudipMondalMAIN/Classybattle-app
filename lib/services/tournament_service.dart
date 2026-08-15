@@ -64,8 +64,8 @@ class TournamentService {
         if (status != null && status != 'all') 'status': status,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         if (gameId != null) 'game_id': gameId,
-        if (isCustom == true)
-          'is_custom': true
+        if (isCustom != null)
+          'is_custom': isCustom
         else if (category != null)
           'category': category,
         'page': page,

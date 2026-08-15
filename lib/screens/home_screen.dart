@@ -11,6 +11,7 @@ import '../widgets/home/home_category_boxes_section.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
 import 'create_custom_tournament_screen.dart';
+import 'custom_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
@@ -106,16 +107,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// The "Custom" tile in the Solo/Squad/Custom grid browses tournaments
-  /// other users have already hosted (join via room_id, squad-based --
-  /// no solo/squad sub-filter needed). This is distinct from the
-  /// standalone "host your own" banner above it, which still opens the
-  /// creation form directly.
+  /// The "Custom" tile in the Solo/Squad/Custom grid opens its own
+  /// dedicated browse page (not the main Tournaments screen) -- lists
+  /// tournaments other users have already hosted (join via room_id,
+  /// squad-based -- no solo/squad sub-filter needed). This is distinct
+  /// from the standalone "host your own" banner above it, which still
+  /// opens the creation form directly.
   void _openCustomTournaments() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const TournamentsScreen(initialCategory: 'custom'),
-      ),
+      MaterialPageRoute(builder: (_) => const CustomTournamentsScreen()),
     );
   }
 
