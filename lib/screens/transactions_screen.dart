@@ -25,7 +25,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.backgroundGradientTop, AppColors.backgroundGradientBottom],
+            colors: [
+              AppColors.backgroundGradientTop,
+              AppColors.backgroundGradientBottom,
+            ],
           ),
         ),
         child: SafeArea(
@@ -37,16 +40,30 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.of(context).maybePop(),
-                      child: const Icon(Icons.arrow_back,
-                          color: AppColors.textPrimary, size: 22),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: AppColors.textPrimary,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 14),
-                    const Text(
-                      'All Transactions',
-                      style: TextStyle(
+                    const Expanded(
+                      child: Text(
+                        'All Transactions',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () =>
+                          ref.invalidate(transactionsPageProvider(_page)),
+                      child: const Icon(
+                        Icons.refresh_rounded,
                         color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                        size: 22,
                       ),
                     ),
                   ],
@@ -55,7 +72,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               Expanded(
                 child: pageAsync.when(
                   loading: () => const Center(
-                    child: CircularProgressIndicator(color: AppColors.purpleSoft),
+                    child: CircularProgressIndicator(
+                      color: AppColors.purpleSoft,
+                    ),
                   ),
                   error: (_, __) => Center(
                     child: Column(
@@ -63,7 +82,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       children: [
                         const Text(
                           "Couldn't load your transactions.",
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 13,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         OutlinedButton(
@@ -71,7 +93,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               ref.invalidate(transactionsPageProvider(_page)),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.purpleSoft,
-                            side: const BorderSide(color: AppColors.glassBorder),
+                            side: const BorderSide(
+                              color: AppColors.glassBorder,
+                            ),
                           ),
                           child: const Text('Retry'),
                         ),
@@ -83,20 +107,38 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                       return const Center(
                         child: Text(
                           'No transactions yet',
-                          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                          style: TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 13,
+                          ),
                         ),
                       );
                     }
-                    final totalPages = paged.totalPages == 0 ? 1 : paged.totalPages;
+                    final totalPages = paged.totalPages == 0
+                        ? 1
+                        : paged.totalPages;
                     return Column(
                       children: [
                         Expanded(
-                          child: ListView.builder(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            itemCount: paged.items.length,
-                            itemBuilder: (context, i) => TransactionRow(
-                              txn: paged.items[i],
-                              showDivider: i != paged.items.length - 1,
+                          child: RefreshIndicator(
+                            color: AppColors.purpleSoft,
+                            backgroundColor: AppColors.background,
+                            onRefresh: () async {
+                              ref.invalidate(transactionsPageProvider(_page));
+                              await ref.read(
+                                transactionsPageProvider(_page).future,
+                              );
+                            },
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              itemCount: paged.items.length,
+                              itemBuilder: (context, i) => TransactionRow(
+                                txn: paged.items[i],
+                                showDivider: i != paged.items.length - 1,
+                              ),
                             ),
                           ),
                         ),
@@ -110,20 +152,26 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                                   onPressed: _page > 1
                                       ? () => setState(() => _page--)
                                       : null,
-                                  icon: const Icon(Icons.chevron_left_rounded,
-                                      color: AppColors.textPrimary),
+                                  icon: const Icon(
+                                    Icons.chevron_left_rounded,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                                 Text(
                                   'Page $_page of $totalPages',
                                   style: const TextStyle(
-                                      color: AppColors.textSecondary, fontSize: 13),
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
                                 ),
                                 IconButton(
                                   onPressed: _page < totalPages
                                       ? () => setState(() => _page++)
                                       : null,
-                                  icon: const Icon(Icons.chevron_right_rounded,
-                                      color: AppColors.textPrimary),
+                                  icon: const Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ],
                             ),
@@ -140,3 +188,4 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     );
   }
 }
+  
