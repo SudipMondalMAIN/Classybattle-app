@@ -6,10 +6,8 @@ import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
 import '../common/network_image_box.dart';
 
-/// Note: the backend's Tournament has no start-date/time field (join
-/// is instant while status == scheduled -- see TournamentModel's
-/// doc comment), so unlike the reference mock this row shows real
-/// slot/entry-fee info instead of a fabricated date/time.
+/// Shows the slot's real scheduled kickoff (tournament.startsAt) in
+/// 12-hour IST, alongside slot/entry-fee info.
 class UpcomingTournamentRow extends StatelessWidget {
   const UpcomingTournamentRow({
     super.key,
@@ -65,6 +63,23 @@ class UpcomingTournamentRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
+                if (tournament.startsAt != null) ...[
+                  Row(
+                    children: [
+                      const Icon(Icons.schedule,
+                          size: 13, color: AppColors.textMuted),
+                      const SizedBox(width: 4),
+                      Text(
+                        formatIstDateTime(tournament.startsAt!),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                ],
                 Row(
                   children: [
                     const Icon(Icons.groups_2_outlined,

@@ -56,22 +56,34 @@ class _HeroBannerCarouselState extends ConsumerState<HeroBannerCarousel> {
                 borderColor: AppColors.glassBorderBright,
                 glow: true,
                 padding: EdgeInsets.zero,
-                child: PageView.builder(
-                  controller: _controller,
-                  itemCount: banners.length,
-                  onPageChanged: (i) => setState(() => _index = i),
-                  itemBuilder: (context, i) {
-                    return _HeroSlide(
-                      banner: banners[i],
-                      featured: featuredAsync.valueOrNull,
-                      gameName: gamesAsync.valueOrNull != null &&
-                              featuredAsync.valueOrNull != null
-                          ? gamesAsync.valueOrNull![
-                                  featuredAsync.valueOrNull!.gameId]
-                              ?.name
-                          : null,
-                      onJoinTap: () =>
-                          widget.onJoinTap(featuredAsync.valueOrNull),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Decode at the banner's actual on-screen size --
+                    // a hardcoded guess here would under-decode (blurry
+                    // upscale) on wider screens or over-decode (wasted
+                    // memory) on narrow ones.
+                    final w = constraints.maxWidth.round();
+                    final h = constraints.maxHeight.round();
+                    return PageView.builder(
+                      controller: _controller,
+                      itemCount: banners.length,
+                      onPageChanged: (i) => setState(() => _index = i),
+                      itemBuilder: (context, i) {
+                        return _HeroSlide(
+                          banner: banners[i],
+                          featured: featuredAsync.valueOrNull,
+                          gameName: gamesAsync.valueOrNull != null &&
+                                  featuredAsync.valueOrNull != null
+                              ? gamesAsync.valueOrNull![
+                                      featuredAsync.valueOrNull!.gameId]
+                                  ?.name
+                              : null,
+                          onJoinTap: () =>
+                              widget.onJoinTap(featuredAsync.valueOrNull),
+                          cacheWidth: w,
+                          cacheHeight: h,
+                        );
+                      },
                     );
                   },
                 ),
@@ -92,12 +104,16 @@ class _HeroSlide extends StatelessWidget {
     required this.featured,
     required this.gameName,
     required this.onJoinTap,
+    required this.cacheWidth,
+    required this.cacheHeight,
   });
 
   final BannerModel banner;
   final TournamentModel? featured;
   final String? gameName;
   final VoidCallback onJoinTap;
+  final int cacheWidth;
+  final int cacheHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -109,21 +125,25 @@ class _HeroSlide extends StatelessWidget {
         NetworkImageBox(
           url: banner.imageUrl,
           fit: BoxFit.cover,
-          cacheWidth: 800,
-          cacheHeight: 400,
+          cacheWidth: cacheWidth,
+          cacheHeight: cacheHeight,
         ),
-        // Dark gradient overlay so text stays legible over any artwork.
+        // Dark gradient overlay so text stays legible over any artwork --
+        // kept tight to the bottom third where the text/CTA actually
+        // sits, instead of washing the whole banner in a translucent
+        // black tint (which read as "hazy/blurry" even though no actual
+        // blur filter was applied).
         DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.05),
-                Colors.black.withValues(alpha: 0.55),
-                Colors.black.withValues(alpha: 0.75),
+                Colors.transparent,
+                Colors.black.withValues(alpha: 0.45),
+                Colors.black.withValues(alpha: 0.7),
               ],
-              stops: const [0.0, 0.6, 1.0],
+              stops: const [0.45, 0.75, 1.0],
             ),
           ),
         ),

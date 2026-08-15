@@ -58,6 +58,10 @@ class HomeService {
         'status': status,
         'page_size': pageSize,
         if (isFeatured != null) 'is_featured': isFeatured,
+        // Chronological order, not created_at batch order -- see
+        // TournamentService.fetchTournaments for why.
+        'sort_by': 'starts_at',
+        'sort_order': 'asc',
       },
     );
     final items = res.data['items'] as List;

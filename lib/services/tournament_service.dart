@@ -70,6 +70,11 @@ class TournamentService {
           'category': category,
         'page': page,
         'page_size': pageSize,
+        // Chronological order (10:00, then 10:30, then 11:00...) --
+        // NOT created_at, which reflects batch-generation order and
+        // shuffles slots out of time order.
+        'sort_by': 'starts_at',
+        'sort_order': 'asc',
       },
     );
     final items = (res.data['items'] as List)

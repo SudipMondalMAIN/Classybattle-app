@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
@@ -25,6 +26,31 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _navIndex = 0;
+  Timer? _liveStatusTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // A tournament's live/completed status can flip in the background
+    // (admin publishes a room, or the 40-min auto-complete tick fires)
+    // with nobody touching the app -- without this, the hero banner and
+    // live rail only ever refresh on pull-to-refresh, so they can keep
+    // showing a tournament as "LIVE" long after it's actually completed,
+    // or miss a tournament that just went live. Poll the
+    // live-status-sensitive providers while the home screen is visible.
+    _liveStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!mounted) return;
+      ref.invalidate(liveTournamentsProvider);
+      ref.invalidate(featuredLiveTournamentProvider);
+      ref.invalidate(upcomingTournamentsProvider);
+    });
+  }
+
+  @override
+  void dispose() {
+    _liveStatusTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> _refresh() async {
     ref.invalidate(bannersProvider);
