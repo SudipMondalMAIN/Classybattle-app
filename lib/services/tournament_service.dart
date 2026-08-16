@@ -33,6 +33,14 @@ class CreateTournamentException implements Exception {
   final String message;
 }
 
+/// Thrown when cancelling a join or deleting a Custom Tournament fails
+/// for a known, user-facing reason (too early -- opponent may still
+/// join, already has an opponent, etc).
+class CancelTournamentException implements Exception {
+  CancelTournamentException(this.message);
+  final String message;
+}
+
 class PagedResult<T> {
   PagedResult(this.items, this.total);
   final List<T> items;
@@ -252,6 +260,51 @@ class TournamentService {
         }
       }
       throw CreateTournamentException(message);
+    }
+  }
+
+  String _extractErrorDetail(DioException e, String fallback) {
+    final data = e.response?.data;
+    if (data is Map) {
+      final detail = data['detail'];
+      if (detail is String) return detail;
+      if (detail is List && detail.isNotEmpty) {
+        final first = detail.first;
+        if (first is Map && first['msg'] != null) {
+          return first['msg'].toString();
+        }
+      }
+    }
+    return fallback;
+  }
+
+  /// POST /tournaments/{id}/cancel -- cancel your own registration
+  /// (refunds the entry fee if paid). For the host of a user-hosted
+  /// Custom Tournament this is gated server-side: only once an
+  /// opponent still hasn't joined after a grace period.
+  Future<void> cancelCustomJoin(String tournamentId) async {
+    try {
+      await _dio.post('/tournaments/$tournamentId/cancel');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      throw CancelTournamentException(
+        _extractErrorDetail(e, 'Could not cancel your join right now.'),
+      );
+    }
+  }
+
+  /// DELETE /tournaments/{id} -- delete the tournament outright. For a
+  /// non-admin host of a Custom Tournament this is gated server-side
+  /// the same way as [cancelCustomJoin], and refunds the host's own
+  /// entry fee.
+  Future<void> deleteCustomTournament(String tournamentId) async {
+    try {
+      await _dio.delete('/tournaments/$tournamentId');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      throw CancelTournamentException(
+        _extractErrorDetail(e, 'Could not delete this tournament right now.'),
+      );
     }
   }
 

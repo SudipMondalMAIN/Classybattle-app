@@ -30,6 +30,8 @@ class TournamentDetailModel {
   final int teamSize;
   final String? category; // solo | squad
   final String? createdBy;
+  final DateTime? createdAt;
+  final DateTime? startsAt;
 
   TournamentDetailModel({
     required this.id,
@@ -59,7 +61,13 @@ class TournamentDetailModel {
     required this.teamSize,
     this.category,
     this.createdBy,
+    this.createdAt,
+    this.startsAt,
   });
+
+  /// User-hosted Custom Tournament (no schedule category), as opposed
+  /// to an admin/schedule-generated slot.
+  bool get isCustomHosted => category == null && createdBy != null;
 
   bool get isLive => status == 'live';
   int get slotsLeft => (maxPlayers - currentPlayers).clamp(0, maxPlayers);
@@ -108,6 +116,8 @@ class TournamentDetailModel {
       teamSize: (json['team_size'] as num?)?.toInt() ?? 1,
       category: json['category'] as String?,
       createdBy: json['created_by'] as String?,
+      createdAt: parseDate(json['created_at']),
+      startsAt: parseDate(json['starts_at']),
     );
   }
 }

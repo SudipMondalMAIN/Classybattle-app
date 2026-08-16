@@ -46,6 +46,11 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
   bool _submitting = false;
   String? _error;
 
+  // Null until the user picks an outcome. 'loss' submits immediately
+  // (no proof needed, matches the backend rule); 'win' reveals the
+  // screenshot-upload step below before the user can submit.
+  String? _selectedOutcome;
+
   Future<void> _pickProof() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
@@ -53,6 +58,23 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
       imageQuality: 85,
     );
     if (picked != null) setState(() => _proof = File(picked.path));
+  }
+
+  Future<void> _chooseLoss() => _submit('loss');
+
+  void _chooseWin() {
+    setState(() {
+      _selectedOutcome = 'win';
+      _error = null;
+    });
+  }
+
+  void _backToChoice() {
+    setState(() {
+      _selectedOutcome = null;
+      _proof = null;
+      _error = null;
+    });
   }
 
   Future<void> _submit(String outcome) async {
@@ -203,12 +225,96 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
   }
 
   Widget _buildForm() {
+    if (_selectedOutcome != 'win') {
+      // Step 1: just the two outcome buttons -- no screenshot prompt
+      // at all until "I Won" is actually tapped.
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Match over? Report how it went.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          ),
+          if (_error != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              _error!,
+              style: const TextStyle(color: AppColors.live, fontSize: 12.5),
+            ),
+          ],
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _submitting ? null : _chooseLoss,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    side: const BorderSide(color: AppColors.glassBorder),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _submitting
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.textSecondary,
+                          ),
+                        )
+                      : const Text(
+                          'I Lost',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _submitting ? null : _chooseWin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.purple,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('I Won', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
+    // Step 2 (only after "I Won"): require a screenshot before letting
+    // the win claim actually be submitted.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Match over? Report how it went.',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        Row(
+          children: [
+            IconButton(
+              onPressed: _submitting ? null : _backToChoice,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'Attach a screenshot of the winning result.',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         InkWell(
@@ -238,7 +344,7 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
                   child: Text(
                     _proof != null
                         ? 'Screenshot attached'
-                        : 'Attach winning-screenshot (required only if you won)',
+                        : 'Tap to attach winning screenshot',
                     style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
@@ -257,51 +363,31 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
           ),
         ],
         const SizedBox(height: 14),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _submitting ? null : () => _submit('loss'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  side: const BorderSide(color: AppColors.glassBorder),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'I Lost',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _submitting ? null : () => _submit('win'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.purple,
+              padding: const EdgeInsets.symmetric(vertical: 13),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _submitting ? null : () => _submit('win'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.purple,
-                  padding: const EdgeInsets.symmetric(vertical: 13),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            child: _submitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    'Submit Win',
+                    style: TextStyle(color: Colors.white),
                   ),
-                ),
-                child: _submitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'I Won',
-                        style: TextStyle(color: Colors.white),
-                      ),
-              ),
-            ),
-          ],
+          ),
         ),
       ],
     );

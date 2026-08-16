@@ -10,7 +10,6 @@ import '../widgets/home/hero_banner_carousel.dart';
 import '../widgets/home/home_category_boxes_section.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
-import 'create_custom_tournament_screen.dart';
 import 'custom_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
@@ -89,13 +88,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _openCreateCustomTournament() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (_) => const CreateCustomTournamentScreen()),
-    );
-  }
-
   void _openTournamentsFiltered(String gameId, String category) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -107,12 +99,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// The "Custom" tile in the Solo/Squad/Custom grid opens its own
-  /// dedicated browse page (not the main Tournaments screen) -- lists
-  /// tournaments other users have already hosted (join via room_id,
-  /// squad-based -- no solo/squad sub-filter needed). This is distinct
-  /// from the standalone "host your own" banner above it, which still
-  /// opens the creation form directly.
+  /// Both the "Custom" tile in the Solo/Squad/Custom grid and the
+  /// standalone "host your own" banner above it open the same dedicated
+  /// browse page (not the main Tournaments screen, and not straight to
+  /// the creation form) -- lists tournaments other users have already
+  /// hosted (join via room_id, squad-based -- no solo/squad sub-filter
+  /// needed). Creating one's own is still one tap away via the "Host
+  /// One" button on that page.
   void _openCustomTournaments() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const CustomTournamentsScreen()),
@@ -176,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverToBoxAdapter(
                         child: CustomTournamentBox(
-                          onTap: _openCreateCustomTournament,
+                          onTap: _openCustomTournaments,
                         ),
                       ),
                     ),

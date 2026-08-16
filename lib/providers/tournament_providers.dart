@@ -76,7 +76,11 @@ final customTournamentsProvider = FutureProvider<List<TournamentModel>>((
     isCustom: true,
     pageSize: 100,
   );
-  return result.items;
+  // Completed (and cancelled) custom tournaments have nothing left to
+  // join/host -- keep the browse list to scheduled/live ones only.
+  return result.items
+      .where((t) => t.status != 'completed' && t.status != 'cancelled')
+      .toList();
 });
 
 /// Live tournament count for the "Live" tab badge -- real count, not

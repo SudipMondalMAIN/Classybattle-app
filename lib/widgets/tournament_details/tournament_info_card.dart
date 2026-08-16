@@ -58,6 +58,16 @@ class TournamentInfoCard extends StatelessWidget {
       if (map != null) _InfoField(Icons.map_outlined, 'Map', map!.name),
       if (tournament.organizer.isNotEmpty)
         _InfoField(Icons.badge_outlined, 'Organizer', tournament.organizer),
+      // Scheduled kickoff -- admin/schedule slot time, or the creation
+      // instant for one-off Custom Tournaments (see Tournament.starts_at
+      // on the backend). Shown in IST, 12-hour clock, same as the other
+      // timestamps below.
+      if (tournament.startsAt != null)
+        _InfoField(
+          Icons.event_outlined,
+          'Starts At',
+          formatIstDateTime(tournament.startsAt!),
+        ),
       // Room-publish / go-live time and auto-complete time were being
       // parsed from the backend but never actually shown anywhere in
       // the UI. Shown here in Indian time, 12-hour clock (e.g.
