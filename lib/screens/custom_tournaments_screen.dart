@@ -38,10 +38,12 @@ class _CustomTournamentsScreenState
   Future<void> _refresh() async {
     ref.invalidate(customTournamentsProvider);
     ref.invalidate(gamesByIdProvider);
-    await Future.wait([
-      ref.read(customTournamentsProvider.future),
-      ref.read(gamesByIdProvider.future),
-    ].map((f) => f.catchError((_) => null)));
+    await Future.wait(
+      [
+        ref.read(customTournamentsProvider.future),
+        ref.read(gamesByIdProvider.future),
+      ].map((f) => f.catchError((_) => null)),
+    );
   }
 
   void _openTournament(String id) {
@@ -113,8 +115,11 @@ class _CustomTournamentsScreenState
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: Row(
                         children: [
-                          const Icon(Icons.search,
-                              size: 20, color: AppColors.textMuted),
+                          const Icon(
+                            Icons.search,
+                            size: 20,
+                            color: AppColors.textMuted,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextField(
@@ -131,11 +136,13 @@ class _CustomTournamentsScreenState
                                 ),
                                 border: InputBorder.none,
                                 isDense: true,
-                                contentPadding:
-                                    EdgeInsets.symmetric(vertical: 14),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                               ),
-                              onChanged: (v) =>
-                                  setState(() => _query = v.trim().toLowerCase()),
+                              onChanged: (v) => setState(
+                                () => _query = v.trim().toLowerCase(),
+                              ),
                             ),
                           ),
                         ],
@@ -175,9 +182,10 @@ class _CustomTournamentsScreenState
                       final filtered = _query.isEmpty
                           ? tournaments
                           : tournaments
-                              .where((t) =>
-                                  t.title.toLowerCase().contains(_query))
-                              .toList();
+                                .where(
+                                  (t) => t.title.toLowerCase().contains(_query),
+                                )
+                                .toList();
                       if (filtered.isEmpty) {
                         return SliverToBoxAdapter(
                           child: Padding(
@@ -199,8 +207,7 @@ class _CustomTournamentsScreenState
                       final games = gamesAsync.valueOrNull ?? const {};
                       return SliverList.separated(
                         itemCount: filtered.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 12),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, i) {
                           final t = filtered[i];
                           return GestureDetector(
@@ -227,7 +234,7 @@ class _CustomTournamentsScreenState
         backgroundColor: AppColors.purple,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          'Host One',
+          'Create Tournament',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
