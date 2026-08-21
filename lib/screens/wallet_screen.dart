@@ -6,10 +6,8 @@ import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
 import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/wallet/recent_transactions_section.dart';
-import '../widgets/wallet/security_banner.dart';
 import '../widgets/wallet/wallet_balance_card.dart';
 import '../widgets/wallet/wallet_header_bar.dart';
-import '../widgets/wallet/wallet_summary_grid.dart';
 import 'add_money_screen.dart';
 import 'home_screen.dart';
 import 'notifications_screen.dart';
@@ -26,12 +24,6 @@ class WalletScreen extends ConsumerStatefulWidget {
 }
 
 class _WalletScreenState extends ConsumerState<WalletScreen> {
-  void _notImplemented(String what) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$what — coming soon')),
-    );
-  }
-
   Future<void> _refresh() async {
     ref.invalidate(walletProvider);
     ref.invalidate(walletSummaryProvider);
@@ -60,7 +52,6 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
   @override
   Widget build(BuildContext context) {
     final walletAsync = ref.watch(walletProvider);
-    final summaryAsync = ref.watch(walletSummaryProvider);
     final recentAsync = ref.watch(recentTransactionsProvider);
 
     return Scaffold(
@@ -96,45 +87,31 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
               ),
               const SizedBox(height: 18),
               Expanded(
-                child: RefreshIndicator(
-                  color: AppColors.purple,
-                  backgroundColor: AppColors.background,
-                  onRefresh: _refresh,
-                  child: ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 110),
+                child: GlassContainer(
+                  borderRadius: 18,
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      GlassContainer(
-                        borderRadius: 18,
-                        padding: const EdgeInsets.all(16),
-                        child: RecentTransactionsSection(
-                          async: recentAsync,
-                          onViewAll: _openViewAll,
-                          onRetry: () => ref.invalidate(recentTransactionsProvider),
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      GlassContainer(
-                        borderRadius: 18,
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Wallet Summary',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
+                      RecentTransactionsHeader(onViewAll: _openViewAll),
+                      const SizedBox(height: 4),
+                      Expanded(
+                        child: RefreshIndicator(
+                          color: AppColors.purple,
+                          backgroundColor: AppColors.background,
+                          onRefresh: _refresh,
+                          child: ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.only(bottom: 110),
+                            children: [
+                              RecentTransactionsList(
+                                async: recentAsync,
+                                onRetry: () => ref.invalidate(recentTransactionsProvider),
                               ),
-                            ),
-                            const SizedBox(height: 14),
-                            WalletSummaryGrid(summary: summaryAsync.valueOrNull),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      SecurityBanner(onTap: () => _notImplemented('Security details')),
                     ],
                   ),
                 ),
