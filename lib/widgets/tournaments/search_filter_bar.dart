@@ -32,18 +32,23 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
 
   Future<void> _openFilters() async {
     final games = ref.read(gamesByIdProvider).valueOrNull?.values.toList() ?? [];
-    final current = ref.read(tournamentGameFilterProvider);
+    final currentGame = ref.read(tournamentGameFilterProvider);
+    final currentFormat = ref.read(tournamentCategoryFilterProvider);
 
     await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
         return _FilterSheet(
           games: games,
-          selectedGameId: current,
-          onSelected: (gameId) {
+          selectedGameId: currentGame,
+          selectedFormat: currentFormat,
+          onGameSelected: (gameId) {
             ref.read(tournamentGameFilterProvider.notifier).state = gameId;
-            Navigator.of(context).pop();
+          },
+          onFormatSelected: (format) {
+            ref.read(tournamentCategoryFilterProvider.notifier).state = format;
           },
         );
       },
@@ -52,7 +57,8 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
 
   @override
   Widget build(BuildContext context) {
-    final activeFilter = ref.watch(tournamentGameFilterProvider) != null;
+    final activeFilter = ref.watch(tournamentGameFilterProvider) != null ||
+        ref.watch(tournamentCategoryFilterProvider) != null;
 
     return Row(
       children: [
@@ -120,16 +126,37 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
   }
 }
 
-class _FilterSheet extends StatelessWidget {
+class _FilterSheet extends StatefulWidget {
   const _FilterSheet({
     required this.games,
     required this.selectedGameId,
-    required this.onSelected,
+    required this.selectedFormat,
+    required this.onGameSelected,
+    required this.onFormatSelected,
   });
 
   final List<GameModel> games;
   final String? selectedGameId;
-  final ValueChanged<String?> onSelected;
+  final String? selectedFormat;
+  final ValueChanged<String?> onGameSelected;
+  final ValueChanged<String?> onFormatSelected;
+
+  @override
+  State<_FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<_FilterSheet> {
+  static const _formats = [
+    ('All', null),
+    ('Solo', 'solo'),
+    ('Duo', 'duo'),
+    ('Squad', 'squad'),
+    ('Free', 'free'),
+    ('Custom', 'custom'),
+  ];
+
+  late String? _gameId = widget.selectedGameId;
+  late String? _format = widget.selectedFormat;
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +174,7 @@ class _FilterSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Filter by game',
+              'Format',
               style: TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 16,
@@ -159,9 +186,59 @@ class _FilterSheet extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _chip('All games', null),
-                for (final g in games) _chip(g.name, g.id),
+                for (final f in _formats)
+                  _chip(f.$1, f.$2, _format == f.$2, () {
+                    setState(() => _format = f.$2);
+                  }),
               ],
+            ),
+            const SizedBox(height: 22),
+            const Text(
+              'Game',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _chip('All games', null, _gameId == null, () {
+                  setState(() => _gameId = null);
+                }),
+                for (final g in widget.games)
+                  _chip(g.name, g.id, _gameId == g.id, () {
+                    setState(() => _gameId = g.id);
+                  }),
+              ],
+            ),
+            const SizedBox(height: 22),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  widget.onGameSelected(_gameId);
+                  widget.onFormatSelected(_format);
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.purple,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: const Text(
+                  'Apply',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -169,10 +246,9 @@ class _FilterSheet extends StatelessWidget {
     );
   }
 
-  Widget _chip(String label, String? id) {
-    final active = selectedGameId == id;
+  Widget _chip(String label, String? value, bool active, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () => onSelected(id),
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(

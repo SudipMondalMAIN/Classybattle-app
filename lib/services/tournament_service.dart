@@ -63,6 +63,7 @@ class TournamentService {
     String? gameId,
     String? category,
     bool? isCustom,
+    String? format,
     int page = 1,
     int pageSize = 50,
   }) async {
@@ -72,7 +73,13 @@ class TournamentService {
         if (status != null && status != 'all') 'status': status,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         if (gameId != null) 'game_id': gameId,
-        if (isCustom != null)
+        // format (solo|duo|squad|free|custom) is the single "browse
+        // tournaments" filter chip -- prefer it when present. Falls
+        // back to the older category/is_custom pair for any callers
+        // that still pass those directly.
+        if (format != null)
+          'format': format
+        else if (isCustom != null)
           'is_custom': isCustom
         else if (category != null)
           'category': category,

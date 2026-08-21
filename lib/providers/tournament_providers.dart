@@ -41,8 +41,10 @@ final tournamentSearchQueryProvider = StateProvider<String>((ref) => '');
 
 final tournamentGameFilterProvider = StateProvider<String?>((ref) => null);
 
-/// Category filter (solo|squad|custom) — driven by tapping a home-screen
-/// category box; null means no category filter applied.
+/// Format filter (solo|duo|squad|free|custom) — driven by tapping a
+/// home-screen category box OR a filter chip on the Tournaments screen;
+/// null means no filter applied. Sent straight through to the backend's
+/// `format` query param (see tournament_routes.list_tournaments).
 final tournamentCategoryFilterProvider = StateProvider<String?>((ref) => null);
 
 /// Full "All" list -- used to derive the Live/Upcoming sections at the
@@ -52,15 +54,11 @@ final allTournamentsProvider = FutureProvider<List<TournamentModel>>((
 ) async {
   final search = ref.watch(tournamentSearchQueryProvider);
   final gameId = ref.watch(tournamentGameFilterProvider);
-  final category = ref.watch(tournamentCategoryFilterProvider);
-  final isCustom = category == 'custom';
+  final format = ref.watch(tournamentCategoryFilterProvider);
   final result = await tournamentService.fetchTournaments(
     search: search,
     gameId: gameId,
-    category: isCustom ? null : category,
-    // solo/squad must explicitly exclude user-hosted Custom Tournaments,
-    // or a stray custom tournament sharing that category leaks in.
-    isCustom: isCustom ? true : (category != null ? false : null),
+    format: format,
     pageSize: 100,
   );
   return result.items;
@@ -129,13 +127,11 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
       }
     }
 
-    final isCustom = category == 'custom';
     final result = await tournamentService.fetchTournaments(
       status: tab.statusAlias,
       search: search,
       gameId: gameId,
-      category: isCustom ? null : category,
-      isCustom: isCustom ? true : (category != null ? false : null),
+      format: category,
       pageSize: 100,
     );
     return result.items;
