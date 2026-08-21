@@ -26,7 +26,6 @@ class TournamentDetailsScreen extends ConsumerWidget {
 
   Future<void> _refresh(WidgetRef ref) async {
     ref.invalidate(tournamentDetailProvider(tournamentId));
-    ref.invalidate(tournamentPrizePoolProvider(tournamentId));
     ref.invalidate(myRegistrationProvider(tournamentId));
     ref.invalidate(tournamentParticipantsProvider(tournamentId));
     ref.invalidate(walletProvider);
@@ -37,7 +36,6 @@ class TournamentDetailsScreen extends ConsumerWidget {
     // broken/no-op even though it's working.
     await Future.wait([
       ref.read(tournamentDetailProvider(tournamentId).future),
-      ref.read(tournamentPrizePoolProvider(tournamentId).future),
       ref.read(myRegistrationProvider(tournamentId).future),
       ref.read(tournamentParticipantsProvider(tournamentId).future),
       ref.read(walletProvider.future),
@@ -100,9 +98,6 @@ class TournamentDetailsScreen extends ConsumerWidget {
                       final map = ref
                           .watch(tournamentMapProvider(tournament.mapId))
                           .valueOrNull;
-                      final prizePoolAsync = ref.watch(
-                        tournamentPrizePoolProvider(tournament.id),
-                      );
                       final currentUser =
                           ref.watch(currentUserProvider).valueOrNull;
                       // Only Custom Tournaments (user-hosted, no schedule
@@ -163,8 +158,7 @@ class TournamentDetailsScreen extends ConsumerWidget {
                             borderRadius: 18,
                             padding: const EdgeInsets.all(16),
                             child: PrizePoolSection(
-                              prizePool: prizePoolAsync.valueOrNull,
-                              fallbackTotal: tournament.prizePool,
+                              tournament: tournament,
                             ),
                           ),
                           const SizedBox(height: 16),

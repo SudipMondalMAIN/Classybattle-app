@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../core/formatters.dart';
-import '../../models/prize_pool_model.dart';
+import '../../models/tournament_detail_model.dart';
 import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
 
+/// Shows how this tournament actually pays out winners, driven directly
+/// by the tournament's own prize_type config (set by admin at schedule
+/// time, editable per-slot afterwards) -- no separate "publish" step
+/// needed, unlike the older rank-only PrizePool/payout system.
 class PrizePoolSection extends StatelessWidget {
-  const PrizePoolSection({super.key, required this.prizePool, this.fallbackTotal});
+  const PrizePoolSection({super.key, required this.tournament});
 
-  /// Real configured pool -- null when the organizer hasn't set one up.
-  final PrizePoolModel? prizePool;
-
-  /// Tournament.prize_pool (total amount) shown as a graceful fallback
-  /// when no rank-by-rank distribution has been configured yet.
-  final double? fallbackTotal;
+  final TournamentDetailModel tournament;
 
   @override
   Widget build(BuildContext context) {
@@ -32,49 +31,177 @@ class PrizePoolSection extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            if (prizePool != null && prizePool!.ranks.length > 3)
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'View Prize Distribution',
-                    style: TextStyle(
-                      color: AppColors.purpleSoft,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, size: 16, color: AppColors.purpleSoft),
-                ],
-              ),
+            _PrizeTypeBadge(prizeType: tournament.prizeType),
           ],
         ),
         const SizedBox(height: 12),
-        if (prizePool == null || prizePool!.ranks.isEmpty)
-          GlassContainer(
-            borderRadius: 14,
-            padding: const EdgeInsets.all(14),
-            child: Text(
-              fallbackTotal != null && fallbackTotal! > 0
-                  ? 'Total prize pool: ${formatRupees(fallbackTotal!)}. Rank-wise distribution hasn\'t been published yet.'
-                  : 'Prize distribution hasn\'t been published for this tournament yet.',
-              style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+        _buildBody(context),
+      ],
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    switch (tournament.prizeType) {
+      case 'per_kill':
+        return _PerKillCard(amount: tournament.perKillAmount);
+      case 'win':
+        return _WinCard(amount: tournament.winAmount);
+      case 'rank':
+      default:
+        return _RankRow(rules: tournament.rankPrizeRules, fallbackTotal: tournament.prizePool);
+    }
+  }
+}
+
+class _PrizeTypeBadge extends StatelessWidget {
+  const _PrizeTypeBadge({required this.prizeType});
+  final String prizeType;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (prizeType) {
+      'per_kill' => 'Per Kill',
+      'win' => 'Win Bonus',
+      _ => 'Rank-wise',
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.purple.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.purple.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.purpleSoft,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+/// Rank-based: top 3 tiles side by side, same look as before.
+class _RankRow extends StatelessWidget {
+  const _RankRow({required this.rules, required this.fallbackTotal});
+
+  final List<RankPrizeRule> rules;
+  final double fallbackTotal;
+
+  @override
+  Widget build(BuildContext context) {
+    if (rules.isEmpty) {
+      return GlassContainer(
+        borderRadius: 14,
+        padding: const EdgeInsets.all(14),
+        child: Text(
+          fallbackTotal > 0
+              ? 'Total prize pool: ${formatRupees(fallbackTotal)}. Rank-wise distribution hasn\'t been published yet.'
+              : 'Prize distribution hasn\'t been published for this tournament yet.',
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 12.5),
+        ),
+      );
+    }
+
+    final sorted = [...rules]..sort((a, b) => a.rank.compareTo(b.rank));
+    final top3 = sorted.take(3).toList();
+
+    return Row(
+      children: [
+        for (var i = 0; i < top3.length; i++)
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: i == top3.length - 1 ? 0 : 10),
+              child: _PrizeTile(rank: top3[i].rank, amount: top3[i].amount),
             ),
-          )
-        else
-          Row(
-            children: prizePool!.ranks.take(3).map((rank) {
-              final amount = prizePool!.payoutForRank(rank);
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                      right: rank == prizePool!.ranks.take(3).last ? 0 : 10),
-                  child: _PrizeTile(rank: rank, amount: amount),
-                ),
-              );
-            }).toList(),
           ),
       ],
+    );
+  }
+}
+
+/// Per-kill: single wide card, e.g. "₹10 per kill".
+class _PerKillCard extends StatelessWidget {
+  const _PerKillCard({required this.amount});
+  final double? amount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 14,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+      borderColor: AppColors.gold.withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          const Icon(Icons.gps_fixed_rounded, color: AppColors.gold, size: 28),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Per Kill Reward',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  amount != null
+                      ? '${formatRupees(amount!)} / kill'
+                      : 'Not configured yet',
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Win-only: single wide card, e.g. "₹500 for the win".
+class _WinCard extends StatelessWidget {
+  const _WinCard({required this.amount});
+  final double? amount;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 14,
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+      borderColor: AppColors.gold.withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          const Icon(Icons.emoji_events, color: AppColors.gold, size: 28),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Winner Bonus',
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  amount != null ? formatRupees(amount!) : 'Not configured yet',
+                  style: const TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

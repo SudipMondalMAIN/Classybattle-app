@@ -1,5 +1,7 @@
 /// Mirrors app/schemas/wallet.py -> WalletReadWithTotal on the backend.
 class WalletModel {
+  final double depositBalance;
+  final double winningsBalance;
   final double availableBalance;
   final double lockedBalance;
   final double totalBalance;
@@ -7,6 +9,8 @@ class WalletModel {
   final bool isFrozen;
 
   WalletModel({
+    required this.depositBalance,
+    required this.winningsBalance,
     required this.availableBalance,
     required this.lockedBalance,
     required this.totalBalance,
@@ -16,6 +20,8 @@ class WalletModel {
 
   factory WalletModel.fromJson(Map<String, dynamic> json) {
     return WalletModel(
+      depositBalance: double.tryParse('${json['deposit_balance']}') ?? 0,
+      winningsBalance: double.tryParse('${json['winnings_balance']}') ?? 0,
       availableBalance: double.tryParse('${json['available_balance']}') ?? 0,
       lockedBalance: double.tryParse('${json['locked_balance']}') ?? 0,
       totalBalance: double.tryParse('${json['total_balance']}') ?? 0,

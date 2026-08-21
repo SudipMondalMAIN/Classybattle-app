@@ -1,3 +1,18 @@
+/// One rank's payout amount, mirrors app/schemas/schedule.py -> RankPrizeRule.
+class RankPrizeRule {
+  final int rank;
+  final double amount;
+
+  const RankPrizeRule({required this.rank, required this.amount});
+
+  factory RankPrizeRule.fromJson(Map<String, dynamic> json) {
+    return RankPrizeRule(
+      rank: (json['rank'] as num).toInt(),
+      amount: double.tryParse('${json['amount']}') ?? 0,
+    );
+  }
+}
+
 /// Mirrors app/schemas/tournament.py -> TournamentRead on the backend.
 /// Used for the Tournament Details screen, which needs fields (rules,
 /// room_id/room_password, mode_id/map_id, description, category...)
@@ -17,6 +32,13 @@ class TournamentDetailModel {
   final String organizer;
   final double entryFee;
   final double prizePool;
+  // Prize type config -- how winners actually get paid. Set by admin at
+  // schedule-creation time (or per-tournament override), always present
+  // (no publish step needed), unlike the older PrizePool/payout system.
+  final String prizeType; // rank | per_kill | win
+  final List<RankPrizeRule> rankPrizeRules; // used when prizeType == 'rank'
+  final double? perKillAmount; // used when prizeType == 'per_kill'
+  final double? winAmount; // used when prizeType == 'win'
   final int maxPlayers;
   final int currentPlayers;
   final String status; // scheduled | live | completed | cancelled
@@ -48,6 +70,10 @@ class TournamentDetailModel {
     required this.organizer,
     required this.entryFee,
     required this.prizePool,
+    this.prizeType = 'rank',
+    this.rankPrizeRules = const [],
+    this.perKillAmount,
+    this.winAmount,
     required this.maxPlayers,
     required this.currentPlayers,
     required this.status,
@@ -103,6 +129,17 @@ class TournamentDetailModel {
       organizer: json['organizer'] as String? ?? '',
       entryFee: double.tryParse('${json['entry_fee']}') ?? 0,
       prizePool: double.tryParse('${json['prize_pool']}') ?? 0,
+      prizeType: json['prize_type'] as String? ?? 'rank',
+      rankPrizeRules: (json['rank_prize_rules'] as List?)
+              ?.map((e) => RankPrizeRule.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          const [],
+      perKillAmount: json['per_kill_amount'] == null
+          ? null
+          : double.tryParse('${json['per_kill_amount']}'),
+      winAmount: json['win_amount'] == null
+          ? null
+          : double.tryParse('${json['win_amount']}'),
       maxPlayers: (json['max_players'] as num?)?.toInt() ?? 0,
       currentPlayers: (json['current_players'] as num?)?.toInt() ?? 0,
       status: json['status'] as String,
