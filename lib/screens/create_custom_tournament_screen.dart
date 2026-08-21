@@ -84,8 +84,7 @@ class _CreateCustomTournamentScreenState
       ref.invalidate(myRegistrationProvider(tournament.id));
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) =>
-              TournamentDetailsScreen(tournamentId: tournament.id),
+          builder: (_) => TournamentDetailsScreen(tournamentId: tournament.id),
         ),
       );
     } on CreateTournamentException catch (e) {
@@ -101,175 +100,198 @@ class _CreateCustomTournamentScreenState
   Widget build(BuildContext context) {
     final gamesAsync = ref.watch(gamesByIdProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.backgroundGradientTop,
-              AppColors.backgroundGradientBottom,
-            ],
+    return PopScope(
+      // Bug fix: block back navigation (system gesture + button) while
+      // the create request is in flight. Without this, popping mid-request
+      // let the tournament get created + wallet debited on the backend,
+      // but skipped the success handling (list/wallet cache invalidation)
+      // below since it's all guarded by `if (!mounted) return;` -- so the
+      // tournament silently existed but never showed up until a manual
+      // pull-to-refresh.
+      canPop: !_creating,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.backgroundGradientTop,
+                AppColors.backgroundGradientBottom,
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 20, 8),
-                child: Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.textPrimary),
-                    ),
-                    const Text(
-                      'Custom Tournament',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                  children: [
-                    const _FieldLabel('Tournament Title'),
-                    const SizedBox(height: 8),
-                    _InputField(
-                      controller: _titleCtrl,
-                      hint: 'e.g. Friday Night Squad Fight',
-                    ),
-                    const SizedBox(height: 18),
-                    const _FieldLabel('Game'),
-                    const SizedBox(height: 8),
-                    gamesAsync.when(
-                      data: (games) => _GamePicker(
-                        games: games.values.toList(),
-                        selectedId: _gameId,
-                        onSelect: (id) => setState(() => _gameId = id),
-                      ),
-                      loading: () => const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.purple),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 4, 20, 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: _creating
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          size: 18,
+                          color: AppColors.textPrimary,
                         ),
                       ),
-                      error: (_, __) => const Text(
-                        'Could not load games.',
-                        style: TextStyle(color: AppColors.live, fontSize: 12),
+                      const Text(
+                        'Custom Tournament',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const _FieldLabel('Entry Fee (₹)'),
-                              const SizedBox(height: 8),
-                              _InputField(
-                                controller: _entryFeeCtrl,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ],
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                    children: [
+                      const _FieldLabel('Tournament Title'),
+                      const SizedBox(height: 8),
+                      _InputField(
+                        controller: _titleCtrl,
+                        hint: 'e.g. Friday Night Squad Fight',
+                      ),
+                      const SizedBox(height: 18),
+                      const _FieldLabel('Game'),
+                      const SizedBox(height: 8),
+                      gamesAsync.when(
+                        data: (games) => _GamePicker(
+                          games: games.values.toList(),
+                          selectedId: _gameId,
+                          onSelect: (id) => setState(() => _gameId = id),
+                        ),
+                        loading: () => const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.purple,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const _FieldLabel('Players'),
-                              const SizedBox(height: 8),
-                              _InputField(
-                                controller: _maxPlayersCtrl,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ],
+                        error: (_, __) => const Text(
+                          'Could not load games.',
+                          style: TextStyle(color: AppColors.live, fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _FieldLabel('Entry Fee (₹)'),
+                                const SizedBox(height: 8),
+                                _InputField(
+                                  controller: _entryFeeCtrl,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const _FieldLabel('Players'),
+                                const SizedBox(height: 8),
+                                _InputField(
+                                  controller: _maxPlayersCtrl,
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      _PrizePreview(
+                        totalPool: _totalPool,
+                        prizePool: _prizePool,
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        'You\'ll be auto-joined as the first player and your '
+                        'wallet will be charged the entry fee.',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 11.5,
+                          height: 1.3,
+                        ),
+                      ),
+                      if (_error != null) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          _error!,
+                          style: const TextStyle(
+                            color: AppColors.live,
+                            fontSize: 12,
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 18),
-                    _PrizePreview(
-                      totalPool: _totalPool,
-                      prizePool: _prizePool,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'You\'ll be auto-joined as the first player and your '
-                      'wallet will be charged the entry fee.',
-                      style: TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11.5,
-                        height: 1.3,
-                      ),
-                    ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 14),
-                      Text(_error!,
-                          style: const TextStyle(
-                              color: AppColors.live, fontSize: 12)),
-                    ],
-                    const SizedBox(height: 28),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.purpleButton,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _creating ? null : _create,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
+                      const SizedBox(height: 28),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: AppColors.purpleButton,
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          child: _creating
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white),
-                                )
-                              : const Text(
-                                  'Create Tournament',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
+                          child: ElevatedButton(
+                            onPressed: _creating ? null : _create,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: _creating
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Create Tournament',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -371,8 +393,7 @@ class _GamePicker extends StatelessWidget {
             child: Text(
               g.name,
               style: TextStyle(
-                color:
-                    selected ? Colors.white : AppColors.textSecondary,
+                color: selected ? Colors.white : AppColors.textSecondary,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -404,7 +425,9 @@ class _PrizePreview extends StatelessWidget {
                 const Text(
                   'Total Pool',
                   style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12),
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -427,7 +450,9 @@ class _PrizePreview extends StatelessWidget {
                 const Text(
                   'Winner Gets',
                   style: TextStyle(
-                      color: AppColors.textSecondary, fontSize: 12),
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(

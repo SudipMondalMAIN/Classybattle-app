@@ -195,6 +195,33 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
       );
     }
 
+    // Bug fix: the match can already be resolved even when *this* user
+    // never submitted a claim -- e.g. the opponent claimed WIN with
+    // proof and an admin approved it before this user tapped anything.
+    // Previously this fell straight through to `_buildForm()` below,
+    // showing "I Lost / I Won" buttons on an already-settled match. Use
+    // the opponent's claim + the pair's `resolved` flag to detect that
+    // case: an ADMIN_APPROVED/AUTO_RESOLVED opponent WIN claim means
+    // this user lost (and was never charged a loss claim), so show the
+    // same resolved banner instead of the stale form.
+    final opponent = pair?.opponentClaim;
+    if (mine == null &&
+        pair != null &&
+        pair.resolved &&
+        opponent != null &&
+        opponent.isResolved) {
+      final opponentWon = opponent.isWin;
+      return _StatusBanner(
+        icon: opponentWon
+            ? Icons.sports_esports_outlined
+            : Icons.celebration_outlined,
+        color: opponentWon ? AppColors.textSecondary : AppColors.success,
+        text: opponentWon
+            ? 'Result confirmed. Better luck next time!'
+            : 'You won! Prize credited to your wallet. 🏆',
+      );
+    }
+
     if (mine != null && mine.isPending) {
       return _StatusBanner(
         icon: Icons.hourglass_top_outlined,
@@ -281,7 +308,10 @@ class _CustomResultSectionState extends ConsumerState<CustomResultSection> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text('I Won', style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    'I Won',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],

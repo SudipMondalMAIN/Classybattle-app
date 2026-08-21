@@ -10,7 +10,11 @@ import '../services/settings_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
 import '../widgets/profile/account_section.dart';
+import '../content/legal_content.dart';
 import 'edit_profile_screen.dart';
+import 'faq_screen.dart';
+import 'legal_info_screen.dart';
+import 'support_chat_screen.dart';
 import 'auth/login_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -36,14 +40,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         .showSnackBar(SnackBar(content: Text('$what — not available yet')));
   }
 
-  Future<void> _openMail(String subject) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'support@classybattle.com',
-      query: 'subject=${Uri.encodeComponent(subject)}',
-    );
-    if (!await launchUrl(uri)) {
-      if (mounted) _notAvailable('Mail app');
+  Future<void> _openReportForm() async {
+    final uri = Uri.parse('https://forms.gle/LdntkNogVcGAuC3F7');
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) _notAvailable('Report form');
     }
   }
 
@@ -237,25 +237,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       AccountRow(
                         icon: Icons.headset_mic_outlined,
                         label: 'Help & Support',
-                        onTap: () => _openMail('Help & Support'),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SupportChatScreen(),
+                          ),
+                        ),
                       ),
                       AccountRow(
                         icon: Icons.mail_outline_rounded,
                         label: 'Contact Support',
-                        onTap: () => _openMail('Contact Support'),
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SupportChatScreen(),
+                          ),
+                        ),
                       ),
                       AccountRow(
                         icon: Icons.help_outline_rounded,
                         label: 'FAQ',
-                        onTap: () => _showInfo(
-                          'FAQ',
-                          'FAQs will be available here soon.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const FaqScreen()),
                         ),
                       ),
                       AccountRow(
                         icon: Icons.flag_outlined,
                         label: 'Report a Problem',
-                        onTap: () => _openMail('Report a Problem'),
+                        onTap: () => _openReportForm(),
                       ),
                     ]),
                     const SizedBox(height: 24),
@@ -264,27 +271,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       AccountRow(
                         icon: Icons.article_outlined,
                         label: 'About ClassyBattle',
-                        onTap: () => _showInfo(
-                          'About ClassyBattle',
-                          'ClassyBattle is a competitive eSports tournament '
-                              'platform — join tournaments, compete, and win '
-                              'real prizes.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LegalInfoScreen(
+                              title: 'About ClassyBattle',
+                              sections: aboutSections,
+                            ),
+                          ),
                         ),
                       ),
                       AccountRow(
                         icon: Icons.description_outlined,
                         label: 'Terms & Conditions',
-                        onTap: () => _showInfo(
-                          'Terms & Conditions',
-                          'Terms & Conditions will be available here soon.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LegalInfoScreen(
+                              title: 'Terms & Conditions',
+                              sections: termsSections,
+                              lastUpdated: 'August 2026',
+                            ),
+                          ),
                         ),
                       ),
                       AccountRow(
                         icon: Icons.policy_outlined,
                         label: 'Privacy Policy',
-                        onTap: () => _showInfo(
-                          'Privacy Policy',
-                          'Privacy Policy will be available here soon.',
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const LegalInfoScreen(
+                              title: 'Privacy Policy',
+                              sections: privacySections,
+                              lastUpdated: 'August 2026',
+                            ),
+                          ),
                         ),
                       ),
                     ]),

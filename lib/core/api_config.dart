@@ -18,4 +18,17 @@ class ApiConfig {
 
   /// e.g. http://10.0.2.2:8000/api/v1
   static String get baseUrl => '$_base/api/v1';
+
+  /// Same host as [baseUrl] but with the scheme swapped for its
+  /// WebSocket equivalent (https -> wss, http -> ws), used for the
+  /// live support chat socket. e.g. wss://classybattle.onrender.com/api/v1
+  static String get wsBaseUrl {
+    if (_base.startsWith('https://')) {
+      return 'wss://${_base.substring('https://'.length)}/api/v1';
+    }
+    if (_base.startsWith('http://')) {
+      return 'ws://${_base.substring('http://'.length)}/api/v1';
+    }
+    return '$_base/api/v1';
+  }
 }
