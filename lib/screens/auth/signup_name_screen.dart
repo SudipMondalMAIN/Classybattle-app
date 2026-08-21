@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/auth/auth_legal_footer.dart';
 import '../../widgets/auth/auth_primary_button.dart';
 import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/auth_text_field.dart';
@@ -86,6 +87,8 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
         ],
         const SizedBox(height: 26),
         AuthPrimaryButton(label: 'Create account', onPressed: _submit, loading: _loading),
+        const SizedBox(height: 20),
+        const AuthLegalFooter(),
       ],
     );
   }

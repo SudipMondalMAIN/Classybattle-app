@@ -18,9 +18,9 @@ class ProfileCard extends StatelessWidget {
 
   void _copyUid(BuildContext context) {
     Clipboard.setData(ClipboardData(text: user.playerUid));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('UID copied')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('UID copied')));
   }
 
   @override
@@ -56,10 +56,23 @@ class ProfileCard extends StatelessWidget {
                         ),
                         if (user.isEmailVerified) ...[
                           const SizedBox(width: 6),
-                          const Icon(Icons.verified_rounded,
-                              size: 18, color: AppColors.purple),
+                          const Icon(
+                            Icons.verified_rounded,
+                            size: 18,
+                            color: AppColors.purple,
+                          ),
                         ],
                       ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user.email,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     GestureDetector(
@@ -75,8 +88,11 @@ class ProfileCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Icon(Icons.copy_rounded,
-                              size: 14, color: AppColors.textMuted),
+                          const Icon(
+                            Icons.copy_rounded,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
                         ],
                       ),
                     ),
@@ -85,6 +101,17 @@ class ProfileCard extends StatelessWidget {
               ),
             ],
           ),
+          if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Text(
+              user.bio!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
           const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerRight,
@@ -96,8 +123,10 @@ class ProfileCard extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
               ),
               icon: const Icon(Icons.edit_outlined, size: 16),
               label: const Text(
@@ -162,8 +191,11 @@ class _Avatar extends StatelessWidget {
                   color: Colors.black87,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.camera_alt_rounded,
-                    size: 13, color: Colors.white),
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  size: 13,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
