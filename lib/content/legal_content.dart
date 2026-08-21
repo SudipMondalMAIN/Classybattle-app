@@ -111,6 +111,72 @@ const termsSections = <InfoSection>[
   ),
 ];
 
+/// Content shown on Settings > About > Refund Policy.
+///
+/// NOTE: same caveat as the Terms content above -- this is a good-faith
+/// starting point grounded in how the app's wallet/entry-fee flow works
+/// (cancelled tournaments, wallet vs. original-source refunds), not a
+/// substitute for legal review before launch.
+const refundSections = <InfoSection>[
+  InfoSection(
+    '1. Tournament entry fees',
+    'Entry fees are deducted from your ClassyBattle wallet when you join '
+        'a tournament. Once a tournament has started or results have been '
+        'declared, entry fees are non-refundable, except as described '
+        'below.',
+  ),
+  InfoSection(
+    '2. Cancelled or rescheduled tournaments',
+    'If ClassyBattle cancels a tournament (for example, due to '
+        'insufficient participants, a technical issue, or an organizer '
+        'decision), the entry fee is automatically refunded to your '
+        'wallet. If a tournament is rescheduled rather than cancelled, '
+        'your entry carries over to the new time and no refund is '
+        'issued.',
+  ),
+  InfoSection(
+    '3. Disqualification & fair-play action',
+    'Entry fees are not refunded if you are disqualified or your account '
+        'is actioned for violating the Fair Play & Conduct terms. Fees '
+        'for the affected match may also be withheld pending review of a '
+        'reported issue.',
+  ),
+  InfoSection(
+    '4. Wallet top-ups',
+    'Money added to your wallet is intended for use within ClassyBattle '
+        '(entry fees, etc.). Unused wallet balance can be withdrawn '
+        'subject to the minimum/maximum limits shown on the Withdraw '
+        'screen; we don\'t refund top-ups back to your original payment '
+        'method directly -- withdrawals go through the standard payout '
+        'flow instead.',
+  ),
+  InfoSection(
+    '5. How refunds are paid',
+    'All refunds under this policy are credited to your ClassyBattle '
+        'wallet, not your original payment method. From there, you can '
+        'use the balance for future tournaments or withdraw it through '
+        'Settings > Withdraw, subject to admin review and standard '
+        'processing time.',
+  ),
+  InfoSection(
+    '6. Disputed or failed payments',
+    'If a wallet top-up is deducted from your payment method but not '
+        'credited to your wallet due to a technical failure, contact '
+        'Support with your transaction reference -- we\'ll investigate '
+        'and credit your wallet once verified.',
+  ),
+  InfoSection(
+    '7. Changes to this policy',
+    'We may update this policy from time to time. Material changes will '
+        'be reflected here with an updated date.',
+  ),
+  InfoSection(
+    '8. Contact',
+    'Refund questions can be sent through Settings > Support (Live Chat '
+        'or Report a Problem).',
+  ),
+];
+
 /// Content shown on Settings > About > Privacy Policy.
 ///
 /// NOTE: same caveat as the Terms content above -- this is a good-faith

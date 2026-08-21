@@ -36,8 +36,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _notAvailable(String what) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('$what — not available yet')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$what — not available yet')));
   }
 
   Future<void> _openReportForm() async {
@@ -52,14 +53,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF14101F),
-        title: Text(title, style: const TextStyle(color: AppColors.textPrimary)),
-        content: Text(body,
-            style: const TextStyle(color: AppColors.textSecondary)),
+        title: Text(
+          title,
+          style: const TextStyle(color: AppColors.textPrimary),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close',
-                style: TextStyle(color: AppColors.purpleSoft)),
+            child: const Text(
+              'Close',
+              style: TextStyle(color: AppColors.purpleSoft),
+            ),
           ),
         ],
       ),
@@ -71,8 +79,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF14101F),
-        title: const Text('Log out?',
-            style: TextStyle(color: AppColors.textPrimary)),
+        title: const Text(
+          'Log out?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
         content: const Text(
           'You will need to log in again to access your account.',
           style: TextStyle(color: AppColors.textSecondary),
@@ -80,13 +90,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel',
-                style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Log out',
-                style: TextStyle(color: AppColors.live)),
+            child: const Text(
+              'Log out',
+              style: TextStyle(color: AppColors.live),
+            ),
           ),
         ],
       ),
@@ -145,8 +159,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.textPrimary),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     const Text(
                       'Settings',
@@ -165,45 +182,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     const _SectionLabel('Account'),
                     userAsync.when(
-                      data: (user) => AccountSectionCard(rows: [
-                        AccountRow(
-                          icon: Icons.person_outline_rounded,
-                          label: 'Edit Profile',
-                          onTap: user == null
-                              ? () => _notAvailable('Edit Profile')
-                              : () => Navigator.of(context).push(
+                      data: (user) => AccountSectionCard(
+                        rows: [
+                          AccountRow(
+                            icon: Icons.person_outline_rounded,
+                            label: 'Edit Profile',
+                            onTap: user == null
+                                ? () => _notAvailable('Edit Profile')
+                                : () => Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (_) =>
                                           EditProfileScreen(user: user),
                                     ),
                                   ),
-                        ),
-                        AccountRow(
-                          icon: Icons.lock_outline_rounded,
-                          label: 'Change Password',
-                          onTap: user == null
-                              ? () => _notAvailable('Change Password')
-                              : () => _startChangePassword(user.email),
-                        ),
-                        AccountRow(
-                          icon: Icons.shield_outlined,
-                          label: 'Security',
-                          onTap: () => _showInfo(
-                            'Security',
-                            'Your login activity and account risk score are '
-                                'tracked automatically for your protection.',
                           ),
-                        ),
-                        AccountRow(
-                          icon: Icons.privacy_tip_outlined,
-                          label: 'Privacy',
-                          onTap: () => _showInfo(
-                            'Privacy',
-                            'Your data is used only to run tournaments, '
-                                'payouts, and your ClassyBattle account.',
+                          AccountRow(
+                            icon: Icons.lock_outline_rounded,
+                            label: 'Change Password',
+                            onTap: user == null
+                                ? () => _notAvailable('Change Password')
+                                : () => _startChangePassword(user.email),
                           ),
-                        ),
-                      ]),
+                          AccountRow(
+                            icon: Icons.shield_outlined,
+                            label: 'Security',
+                            onTap: () => _showInfo(
+                              'Security',
+                              'Your login activity and account risk score are '
+                                  'tracked automatically for your protection.',
+                            ),
+                          ),
+                          AccountRow(
+                            icon: Icons.privacy_tip_outlined,
+                            label: 'Privacy',
+                            onTap: () => _showInfo(
+                              'Privacy',
+                              'Your data is used only to run tournaments, '
+                                  'payouts, and your ClassyBattle account.',
+                            ),
+                          ),
+                        ],
+                      ),
                       loading: () => const _CardSkeleton(),
                       error: (_, __) => const _CardSkeleton(),
                     ),
@@ -211,8 +230,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const _SectionLabel('Notifications'),
                     prefsAsync.when(
                       data: (prefs) => _NotificationsCard(
-                        key: ValueKey(prefs?.pushEnabled.toString() ??
-                            'logged-out'),
+                        key: ValueKey(
+                          prefs?.pushEnabled.toString() ?? 'logged-out',
+                        ),
                         initialPrefs: prefs,
                         onUnauthenticated: () =>
                             _notAvailable('Notification settings'),
@@ -222,102 +242,125 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     const SizedBox(height: 24),
                     const _SectionLabel('Application'),
-                    AccountSectionCard(rows: [
-                      AccountRow(
-                        icon: Icons.info_outline_rounded,
-                        label: 'App Version',
-                        trailingText: _appVersion.isEmpty ? '—' : _appVersion,
-                        trailing: const SizedBox.shrink(),
-                        onTap: () {},
-                      ),
-                    ]),
+                    AccountSectionCard(
+                      rows: [
+                        AccountRow(
+                          icon: Icons.info_outline_rounded,
+                          label: 'App Version',
+                          trailingText: _appVersion.isEmpty ? '—' : _appVersion,
+                          trailing: const SizedBox.shrink(),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
                     const _SectionLabel('Support'),
-                    AccountSectionCard(rows: [
-                      AccountRow(
-                        icon: Icons.headset_mic_outlined,
-                        label: 'Help & Support',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SupportChatScreen(),
+                    AccountSectionCard(
+                      rows: [
+                        AccountRow(
+                          icon: Icons.headset_mic_outlined,
+                          label: 'Help & Support',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SupportChatScreen(),
+                            ),
                           ),
                         ),
-                      ),
-                      AccountRow(
-                        icon: Icons.mail_outline_rounded,
-                        label: 'Contact Support',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SupportChatScreen(),
+                        AccountRow(
+                          icon: Icons.mail_outline_rounded,
+                          label: 'Contact Support',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const SupportChatScreen(),
+                            ),
                           ),
                         ),
-                      ),
-                      AccountRow(
-                        icon: Icons.help_outline_rounded,
-                        label: 'FAQ',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const FaqScreen()),
+                        AccountRow(
+                          icon: Icons.help_outline_rounded,
+                          label: 'FAQ',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const FaqScreen(),
+                            ),
+                          ),
                         ),
-                      ),
-                      AccountRow(
-                        icon: Icons.flag_outlined,
-                        label: 'Report a Problem',
-                        onTap: () => _openReportForm(),
-                      ),
-                    ]),
+                        AccountRow(
+                          icon: Icons.flag_outlined,
+                          label: 'Report a Problem',
+                          onTap: () => _openReportForm(),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
                     const _SectionLabel('About'),
-                    AccountSectionCard(rows: [
-                      AccountRow(
-                        icon: Icons.article_outlined,
-                        label: 'About ClassyBattle',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const LegalInfoScreen(
-                              title: 'About ClassyBattle',
-                              sections: aboutSections,
+                    AccountSectionCard(
+                      rows: [
+                        AccountRow(
+                          icon: Icons.article_outlined,
+                          label: 'About ClassyBattle',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalInfoScreen(
+                                title: 'About ClassyBattle',
+                                sections: aboutSections,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      AccountRow(
-                        icon: Icons.description_outlined,
-                        label: 'Terms & Conditions',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const LegalInfoScreen(
-                              title: 'Terms & Conditions',
-                              sections: termsSections,
-                              lastUpdated: 'August 2026',
+                        AccountRow(
+                          icon: Icons.description_outlined,
+                          label: 'Terms & Conditions',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalInfoScreen(
+                                title: 'Terms & Conditions',
+                                sections: termsSections,
+                                lastUpdated: 'August 2026',
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      AccountRow(
-                        icon: Icons.policy_outlined,
-                        label: 'Privacy Policy',
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const LegalInfoScreen(
-                              title: 'Privacy Policy',
-                              sections: privacySections,
-                              lastUpdated: 'August 2026',
+                        AccountRow(
+                          icon: Icons.policy_outlined,
+                          label: 'Privacy Policy',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalInfoScreen(
+                                title: 'Privacy Policy',
+                                sections: privacySections,
+                                lastUpdated: 'August 2026',
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ]),
+                        AccountRow(
+                          icon: Icons.currency_exchange_rounded,
+                          label: 'Refund Policy',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LegalInfoScreen(
+                                title: 'Refund Policy',
+                                sections: refundSections,
+                                lastUpdated: 'August 2026',
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 24),
                     const _SectionLabel('Account Actions'),
-                    AccountSectionCard(rows: [
-                      AccountRow(
-                        icon: Icons.logout_rounded,
-                        iconColor: AppColors.live,
-                        label: 'Logout',
-                        trailing: const SizedBox.shrink(),
-                        onTap: _confirmLogout,
-                      ),
-                    ]),
+                    AccountSectionCard(
+                      rows: [
+                        AccountRow(
+                          icon: Icons.logout_rounded,
+                          iconColor: AppColors.live,
+                          label: 'Logout',
+                          trailing: const SizedBox.shrink(),
+                          onTap: _confirmLogout,
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -364,7 +407,9 @@ class _CardSkeleton extends StatelessWidget {
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
-                strokeWidth: 2, color: AppColors.purple),
+              strokeWidth: 2,
+              color: AppColors.purple,
+            ),
           ),
         ),
       ),
@@ -396,11 +441,7 @@ class _NotificationsCardState extends State<_NotificationsCard> {
     _prefs = widget.initialPrefs;
   }
 
-  Future<void> _toggle({
-    bool? push,
-    bool? inApp,
-    bool? email,
-  }) async {
+  Future<void> _toggle({bool? push, bool? inApp, bool? email}) async {
     final prefs = _prefs;
     if (prefs == null) {
       widget.onUnauthenticated();
@@ -448,10 +489,11 @@ class _NotificationsCardState extends State<_NotificationsCard> {
             onChanged: (v) => _toggle(push: v),
           ),
           const Divider(
-              height: 1,
-              color: AppColors.glassBorder,
-              indent: 16,
-              endIndent: 16),
+            height: 1,
+            color: AppColors.glassBorder,
+            indent: 16,
+            endIndent: 16,
+          ),
           _ToggleRow(
             icon: Icons.apps_rounded,
             label: 'In-App Notifications',
@@ -460,10 +502,11 @@ class _NotificationsCardState extends State<_NotificationsCard> {
             onChanged: (v) => _toggle(inApp: v),
           ),
           const Divider(
-              height: 1,
-              color: AppColors.glassBorder,
-              indent: 16,
-              endIndent: 16),
+            height: 1,
+            color: AppColors.glassBorder,
+            indent: 16,
+            endIndent: 16,
+          ),
           _ToggleRow(
             icon: Icons.mail_outline_rounded,
             label: 'Email Notifications',
@@ -556,7 +599,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     });
     try {
       await settingsService.verifyPasswordResetOtp(
-          widget.email, _otpCtrl.text.trim());
+        widget.email,
+        _otpCtrl.text.trim(),
+      );
       setState(() => _otpVerified = true);
     } on SettingsActionException catch (e) {
       setState(() => _error = e.message);
@@ -585,7 +630,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password changed. Please log in again.')),
+          const SnackBar(
+            content: Text('Password changed. Please log in again.'),
+          ),
         );
       }
     } on SettingsActionException catch (e) {
@@ -640,8 +687,10 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               ),
             if (_error != null) ...[
               const SizedBox(height: 10),
-              Text(_error!,
-                  style: const TextStyle(color: AppColors.live, fontSize: 12)),
+              Text(
+                _error!,
+                style: const TextStyle(color: AppColors.live, fontSize: 12),
+              ),
             ],
             const SizedBox(height: 18),
             SizedBox(
@@ -653,8 +702,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: ElevatedButton(
-                  onPressed:
-                      _busy ? null : (_otpVerified ? _resetPassword : _verifyOtp),
+                  onPressed: _busy
+                      ? null
+                      : (_otpVerified ? _resetPassword : _verifyOtp),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -667,12 +717,16 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white),
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(
                           _otpVerified ? 'Reset Password' : 'Verify Code',
                           style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.w700),
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                 ),
               ),
