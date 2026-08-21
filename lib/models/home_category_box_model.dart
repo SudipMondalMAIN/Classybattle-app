@@ -1,7 +1,7 @@
 /// Mirrors app/schemas/home_category_box.py -> HomeCategoryBoxRead on the
 /// backend. These are the static, 3-per-row tap boxes on the home screen
 /// (e.g. "Free Fire Solo", "Free Fire Clash Squad", "Custom Tournament").
-enum HomeCategoryBoxType { solo, squad, custom }
+enum HomeCategoryBoxType { solo, duo, squad, free, custom }
 
 HomeCategoryBoxType _boxTypeFromJson(String value) {
   return HomeCategoryBoxType.values.firstWhere(
