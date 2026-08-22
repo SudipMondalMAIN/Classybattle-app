@@ -35,6 +35,31 @@ class SocialService {
       rethrow;
     }
   }
+
+  /// POST /social/friends/requests/{friendship_id}/accept -- accept an
+  /// incoming friend request directly (e.g. from the public profile
+  /// screen's Accept/Reject buttons).
+  Future<FriendshipModel> acceptFriendRequest(String friendshipId) async {
+    try {
+      final res = await _dio.post('/social/friends/requests/$friendshipId/accept');
+      return FriendshipModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
+
+  /// POST /social/friends/requests/{friendship_id}/reject -- reject an
+  /// incoming friend request directly.
+  Future<FriendshipModel> rejectFriendRequest(String friendshipId) async {
+    try {
+      final res = await _dio.post('/social/friends/requests/$friendshipId/reject');
+      return FriendshipModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
 }
 
 final socialService = SocialService(ApiClient.instance.dio);

@@ -7,10 +7,12 @@ import '../services/home_service.dart' show UnauthenticatedException;
 import '../services/social_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
+import '../widgets/tournament_details/report_player_dialog.dart';
 
 /// Another player's public profile -- reached by tapping a row on the
 /// leaderboard. Shows name, uid, avatar, tournament/match *statistics*
-/// only (no match/tournament history) and an Add Friend action.
+/// only (no match/tournament history), Add Friend / Accept / Reject
+/// friend-request actions, and a Report option.
 class PublicProfileScreen extends ConsumerStatefulWidget {
   const PublicProfileScreen({super.key, required this.userId});
 
@@ -22,6 +24,7 @@ class PublicProfileScreen extends ConsumerStatefulWidget {
 
 class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
   bool _sendingRequest = false;
+  bool _respondingRequest = false;
   ProfileRelationship? _relationshipOverride;
   String? _error;
 
@@ -41,6 +44,44 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
       if (mounted) setState(() => _error = 'Could not send request. Try again.');
     } finally {
       if (mounted) setState(() => _sendingRequest = false);
+    }
+  }
+
+  Future<void> _acceptFriendRequest(String friendshipId) async {
+    setState(() {
+      _respondingRequest = true;
+      _error = null;
+    });
+    try {
+      await socialService.acceptFriendRequest(friendshipId);
+      if (mounted) {
+        setState(() => _relationshipOverride = ProfileRelationship.friend);
+      }
+    } on UnauthenticatedException {
+      if (mounted) setState(() => _error = 'Please log in to manage friend requests.');
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Could not accept the request. Try again.');
+    } finally {
+      if (mounted) setState(() => _respondingRequest = false);
+    }
+  }
+
+  Future<void> _rejectFriendRequest(String friendshipId) async {
+    setState(() {
+      _respondingRequest = true;
+      _error = null;
+    });
+    try {
+      await socialService.rejectFriendRequest(friendshipId);
+      if (mounted) {
+        setState(() => _relationshipOverride = ProfileRelationship.none);
+      }
+    } on UnauthenticatedException {
+      if (mounted) setState(() => _error = 'Please log in to manage friend requests.');
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Could not reject the request. Try again.');
+    } finally {
+      if (mounted) setState(() => _respondingRequest = false);
     }
   }
 
@@ -78,13 +119,34 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Text(
-                      'Player Profile',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                    const Expanded(
+                      child: Text(
+                        'Player Profile',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                    ),
+                    profileAsync.maybeWhen(
+                      data: (profile) => GestureDetector(
+                        onTap: () => showReportPlayerDialog(
+                          context,
+                          userId: profile.userId,
+                          playerName: profile.name,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.glassFill,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.flag_outlined,
+                              color: AppColors.textSecondary, size: 20),
+                        ),
+                      ),
+                      orElse: () => const SizedBox.shrink(),
                     ),
                   ],
                 ),
@@ -139,8 +201,17 @@ class _PublicProfileScreenState extends ConsumerState<PublicProfileScreen> {
                       profile: profile,
                       relationshipOverride: _relationshipOverride,
                       sendingRequest: _sendingRequest,
+                      respondingRequest: _respondingRequest,
                       error: _error,
                       onAddFriend: _sendFriendRequest,
+                      onAccept: () {
+                        final id = profile.friendshipId;
+                        if (id != null) _acceptFriendRequest(id);
+                      },
+                      onReject: () {
+                        final id = profile.friendshipId;
+                        if (id != null) _rejectFriendRequest(id);
+                      },
                     ),
                   ),
                 ),
@@ -158,15 +229,21 @@ class _ProfileBody extends StatelessWidget {
     required this.profile,
     required this.relationshipOverride,
     required this.sendingRequest,
+    required this.respondingRequest,
     required this.error,
     required this.onAddFriend,
+    required this.onAccept,
+    required this.onReject,
   });
 
   final PublicProfileModel profile;
   final ProfileRelationship? relationshipOverride;
   final bool sendingRequest;
+  final bool respondingRequest;
   final String? error;
   final VoidCallback onAddFriend;
+  final VoidCallback onAccept;
+  final VoidCallback onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -241,7 +318,10 @@ class _ProfileBody extends StatelessWidget {
         _FriendActionButton(
           relationship: relationship,
           loading: sendingRequest,
+          responding: respondingRequest,
           onAddFriend: onAddFriend,
+          onAccept: onAccept,
+          onReject: onReject,
         ),
         if (error != null) ...[
           const SizedBox(height: 10),
@@ -417,12 +497,18 @@ class _FriendActionButton extends StatelessWidget {
   const _FriendActionButton({
     required this.relationship,
     required this.loading,
+    required this.responding,
     required this.onAddFriend,
+    required this.onAccept,
+    required this.onReject,
   });
 
   final ProfileRelationship relationship;
   final bool loading;
+  final bool responding;
   final VoidCallback onAddFriend;
+  final VoidCallback onAccept;
+  final VoidCallback onReject;
 
   @override
   Widget build(BuildContext context) {
@@ -436,11 +522,48 @@ class _FriendActionButton extends StatelessWidget {
           color: AppColors.success,
         );
       case ProfileRelationship.pending:
-      case ProfileRelationship.incoming:
         return _pill(
           icon: Icons.hourglass_top_rounded,
           label: 'Request Pending',
           color: AppColors.textSecondary,
+        );
+      case ProfileRelationship.incoming:
+        return Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: responding ? null : onReject,
+                icon: const Icon(Icons.close_rounded, size: 18),
+                label: const Text('Reject'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textSecondary,
+                  side: const BorderSide(color: AppColors.glassBorder),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton.icon(
+                onPressed: responding ? null : onAccept,
+                icon: responding
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.check_rounded, size: 18),
+                label: Text(responding ? 'Please wait...' : 'Accept'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.purple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+          ],
         );
       case ProfileRelationship.blocked:
         return _pill(

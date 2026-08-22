@@ -135,9 +135,7 @@ class PublicProfileModel {
           ? null
           : PlayerStatsSummary.fromJson(json['stats'] as Map<String, dynamic>),
       relationship: _relationshipFromString(json['relationship_status'] as String?),
-      // Not returned by ProfileRead directly -- filled in by the service
-      // layer from the incoming/outgoing friend-request lists when needed.
-      friendshipId: null,
+      friendshipId: json['friendship_id'] as String?,
     );
   }
 
