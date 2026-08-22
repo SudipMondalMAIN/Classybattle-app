@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/formatters.dart';
+import '../models/deposit_model.dart';
 import '../models/payment_method_model.dart';
 import '../providers/home_providers.dart';
 import '../services/home_service.dart' show UnauthenticatedException;
+import '../services/payment_service.dart';
 import '../services/withdrawal_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/auth/auth_primary_button.dart';
@@ -23,6 +25,26 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   PaymentMethodModel? _method;
   bool _submitting = false;
   String? _error;
+  PaymentSettingsModel? _settings;
+  bool _loadingSettings = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final settings = await paymentService.fetchSettings();
+      if (mounted) setState(() => _settings = settings);
+    } catch (_) {
+      // Non-fatal — limits just won't be shown/enforced client-side;
+      // backend still validates on submit.
+    } finally {
+      if (mounted) setState(() => _loadingSettings = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -47,6 +69,19 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
     if (amount == null || amount <= 0) {
       setState(() => _error = 'Enter a valid amount.');
       return;
+    }
+    final settings = _settings;
+    if (settings != null) {
+      if (amount < settings.minWithdrawalAmount) {
+        setState(() => _error =
+            'Minimum withdrawal amount is ${formatRupees(settings.minWithdrawalAmount)}.');
+        return;
+      }
+      if (amount > settings.maxWithdrawalAmount) {
+        setState(() => _error =
+            'Maximum withdrawal amount is ${formatRupees(settings.maxWithdrawalAmount)}.');
+        return;
+      }
     }
     setState(() {
       _error = null;
@@ -131,6 +166,17 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         prefixIcon: Icons.currency_rupee_rounded,
                       ),
+                      if (!_loadingSettings && _settings != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Min ${formatRupees(_settings!.minWithdrawalAmount)} · '
+                          'Max ${formatRupees(_settings!.maxWithdrawalAmount)}',
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       const Text(
                         'Withdraw To',

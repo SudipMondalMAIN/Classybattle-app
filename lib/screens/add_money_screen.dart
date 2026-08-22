@@ -31,6 +31,26 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
   bool _loadingQr = false;
   bool _submitting = false;
   String? _error;
+  PaymentSettingsModel? _settings;
+  bool _loadingSettings = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final settings = await paymentService.fetchSettings();
+      if (mounted) setState(() => _settings = settings);
+    } catch (_) {
+      // Non-fatal — limits just won't be shown/enforced client-side;
+      // backend still validates on submit.
+    } finally {
+      if (mounted) setState(() => _loadingSettings = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -44,6 +64,19 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
     if (amount == null || amount <= 0) {
       setState(() => _error = 'Enter a valid amount.');
       return;
+    }
+    final settings = _settings;
+    if (settings != null) {
+      if (amount < settings.minDepositAmount) {
+        setState(() => _error =
+            'Minimum deposit amount is ${formatRupees(settings.minDepositAmount)}.');
+        return;
+      }
+      if (amount > settings.maxDepositAmount) {
+        setState(() => _error =
+            'Maximum deposit amount is ${formatRupees(settings.maxDepositAmount)}.');
+        return;
+      }
     }
     setState(() {
       _error = null;
@@ -155,6 +188,17 @@ class _AddMoneyScreenState extends State<AddMoneyScreen> {
                           prefixIcon: Icons.currency_rupee_rounded,
                           onSubmitted: (_) => _generateQr(),
                         ),
+                        if (!_loadingSettings && _settings != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Min ${formatRupees(_settings!.minDepositAmount)} · '
+                            'Max ${formatRupees(_settings!.maxDepositAmount)}',
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                         if (_error != null) ...[
                           const SizedBox(height: 12),
                           Text(_error!, style: const TextStyle(color: AppColors.live, fontSize: 13)),

@@ -34,11 +34,15 @@ class PaymentSettingsModel {
   final bool isUpiEnabled;
   final double minDepositAmount;
   final double maxDepositAmount;
+  final double minWithdrawalAmount;
+  final double maxWithdrawalAmount;
 
   PaymentSettingsModel({
     required this.isUpiEnabled,
     required this.minDepositAmount,
     required this.maxDepositAmount,
+    required this.minWithdrawalAmount,
+    required this.maxWithdrawalAmount,
   });
 
   factory PaymentSettingsModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +50,10 @@ class PaymentSettingsModel {
       isUpiEnabled: json['is_upi_enabled'] as bool? ?? true,
       minDepositAmount: double.tryParse('${json['min_deposit_amount']}') ?? 0,
       maxDepositAmount: double.tryParse('${json['max_deposit_amount']}') ?? 0,
+      minWithdrawalAmount:
+          double.tryParse('${json['min_withdrawal_amount']}') ?? 0,
+      maxWithdrawalAmount:
+          double.tryParse('${json['max_withdrawal_amount']}') ?? 0,
     );
   }
 }
