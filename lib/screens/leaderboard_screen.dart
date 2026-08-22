@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/formatters.dart';
@@ -6,6 +7,7 @@ import '../providers/home_providers.dart';
 import '../providers/leaderboard_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
+import 'public_profile_screen.dart';
 
 /// Global player leaderboard, ranked by ranking_score
 /// (GET /leaderboard/players/top). The current user's own row is
@@ -157,80 +159,98 @@ class _PlayerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassContainer(
-      borderRadius: 16,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      borderColor: isMe ? AppColors.purple.withValues(alpha: 0.7) : null,
-      blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
-      child: Row(
-        children: [
-          SizedBox(
-            width: 30,
-            child: rank <= 3
-                ? Icon(Icons.emoji_events_rounded, color: _rankColor, size: 22)
-                : Text(
-                    '#$rank',
-                    style: const TextStyle(
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 10),
-          CircleAvatar(
-            radius: 18,
-            backgroundColor: AppColors.glassFillStrong,
-            child: const Icon(Icons.person, size: 18, color: AppColors.textSecondary),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        isMe ? 'You' : 'Player ${player.userId.substring(0, 8)}',
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: isMe
+          ? null
+          : () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => PublicProfileScreen(userId: player.userId),
+                ),
+              ),
+      child: GlassContainer(
+        borderRadius: 16,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        borderColor: isMe ? AppColors.purple.withValues(alpha: 0.7) : null,
+        blurSigma: 0, // per-row card in a scrolling list -- see live_tournament_card.dart
+        child: Row(
+          children: [
+            SizedBox(
+              width: 30,
+              child: rank <= 3
+                  ? Icon(Icons.emoji_events_rounded, color: _rankColor, size: 22)
+                  : Text(
+                      '#$rank',
+                      style: const TextStyle(
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
                       ),
                     ),
-                  ],
+            ),
+            const SizedBox(width: 10),
+            CircleAvatar(
+              radius: 18,
+              backgroundColor: AppColors.glassFillStrong,
+              backgroundImage: player.user?.avatarUrl != null
+                  ? CachedNetworkImageProvider(player.user!.avatarUrl!)
+                  : null,
+              child: player.user?.avatarUrl == null
+                  ? const Icon(Icons.person, size: 18, color: AppColors.textSecondary)
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          isMe ? 'You' : player.displayName,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${player.matchesWon}/${player.matchesPlayed} wins · '
+                    '${player.winRate.toStringAsFixed(0)}% win rate',
+                    style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  formatRupees(player.prizeMoneyEarned),
+                  style: const TextStyle(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${player.matchesWon}/${player.matchesPlayed} wins · '
-                  '${player.winRate.toStringAsFixed(0)}% win rate',
-                  style: const TextStyle(color: AppColors.textMuted, fontSize: 11.5),
+                  'won',
+                  style: TextStyle(color: AppColors.textMuted, fontSize: 10.5),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                formatRupees(player.prizeMoneyEarned),
-                style: const TextStyle(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'won',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 10.5),
-              ),
+            if (!isMe) ...[
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted, size: 18),
             ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

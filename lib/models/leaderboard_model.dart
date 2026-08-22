@@ -1,3 +1,29 @@
+/// Mirrors app/schemas/leaderboard.py -> LeaderboardUserBrief. Lightweight
+/// name/avatar info the leaderboard endpoint joins in per-row so the app
+/// doesn't need one profile request per player.
+class LeaderboardUserBrief {
+  final String id;
+  final String fullName;
+  final String playerUid;
+  final String? avatarUrl;
+
+  LeaderboardUserBrief({
+    required this.id,
+    required this.fullName,
+    required this.playerUid,
+    this.avatarUrl,
+  });
+
+  factory LeaderboardUserBrief.fromJson(Map<String, dynamic> json) {
+    return LeaderboardUserBrief(
+      id: json['id'] as String,
+      fullName: json['full_name'] as String? ?? '',
+      playerUid: json['player_uid'] as String? ?? '',
+      avatarUrl: json['avatar_url'] as String?,
+    );
+  }
+}
+
 /// Mirrors app/schemas/leaderboard.py -> PlayerStatisticsRead on the
 /// backend. Returned by GET /leaderboard/players/top, already sorted
 /// by rank.
@@ -12,6 +38,7 @@ class PlayerStatsModel {
   final double rankingScore;
   final int? currentRank;
   final int? previousRank;
+  final LeaderboardUserBrief? user;
 
   PlayerStatsModel({
     required this.userId,
@@ -24,7 +51,15 @@ class PlayerStatsModel {
     required this.rankingScore,
     this.currentRank,
     this.previousRank,
+    this.user,
   });
+
+  /// Best-effort display name -- falls back to a short player id when
+  /// the joined user brief is missing (e.g. deleted account).
+  String get displayName =>
+      (user != null && user!.fullName.isNotEmpty)
+          ? user!.fullName
+          : 'Player ${userId.substring(0, 8)}';
 
   factory PlayerStatsModel.fromJson(Map<String, dynamic> json) {
     return PlayerStatsModel(
@@ -40,6 +75,9 @@ class PlayerStatsModel {
           double.tryParse(json['ranking_score']?.toString() ?? '') ?? 0,
       currentRank: json['current_rank'] as int?,
       previousRank: json['previous_rank'] as int?,
+      user: json['user'] == null
+          ? null
+          : LeaderboardUserBrief.fromJson(json['user'] as Map<String, dynamic>),
     );
   }
 }
