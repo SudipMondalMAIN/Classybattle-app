@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/formatters.dart';
 import '../../models/participant_public_model.dart';
+import '../../screens/public_profile_screen.dart';
 import '../../theme/app_theme.dart';
 import 'report_player_dialog.dart';
 
@@ -76,8 +77,12 @@ class ParticipantsSection extends StatelessWidget {
                   ),
                   child: _ParticipantTile(
                     participant: participants[i],
-                    canReport: currentUserId != null &&
+                    canReport:
+                        currentUserId != null &&
                         currentUserId != participants[i].userId,
+                    isMe:
+                        currentUserId != null &&
+                        currentUserId == participants[i].userId,
                   ),
                 ),
             ],
@@ -88,9 +93,14 @@ class ParticipantsSection extends StatelessWidget {
 }
 
 class _ParticipantTile extends StatelessWidget {
-  const _ParticipantTile({required this.participant, required this.canReport});
+  const _ParticipantTile({
+    required this.participant,
+    required this.canReport,
+    required this.isMe,
+  });
   final ParticipantPublicModel participant;
   final bool canReport;
+  final bool isMe;
 
   @override
   Widget build(BuildContext context) {
@@ -110,64 +120,82 @@ class _ParticipantTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.background,
-            backgroundImage: p.avatarId != null
-                ? AssetImage('assets/avatars/${p.avatarId}.png')
-                : null,
-            onBackgroundImageError: p.avatarId != null ? (_, __) {} : null,
-            child: p.avatarId == null
-                ? const Icon(
-                    Icons.person,
-                    size: 20,
-                    color: AppColors.textSecondary,
-                  )
-                : null,
-          ),
-          const SizedBox(width: 12),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        p.fullName.isNotEmpty ? p.fullName : 'Player',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                        ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: isMe
+                  ? null
+                  : () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => PublicProfileScreen(userId: p.userId),
                       ),
                     ),
-                    if (p.isWinner) ...[
-                      const SizedBox(width: 6),
-                      const Icon(
-                        Icons.emoji_events_rounded,
-                        size: 14,
-                        color: AppColors.gold,
-                      ),
-                    ],
-                  ],
-                ),
-                if (subtitleParts.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      subtitleParts.join(' • '),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11.5,
-                      ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.background,
+                    backgroundImage: p.avatarId != null
+                        ? AssetImage('assets/avatars/${p.avatarId}.png')
+                        : null,
+                    onBackgroundImageError: p.avatarId != null
+                        ? (_, __) {}
+                        : null,
+                    child: p.avatarId == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 20,
+                            color: AppColors.textSecondary,
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                p.fullName.isNotEmpty ? p.fullName : 'Player',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            if (p.isWinner) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.emoji_events_rounded,
+                                size: 14,
+                                color: AppColors.gold,
+                              ),
+                            ],
+                          ],
+                        ),
+                        if (subtitleParts.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              subtitleParts.join(' • '),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
+                ],
+              ),
             ),
           ),
           if (p.hasResult) ...[
@@ -188,20 +216,28 @@ class _ParticipantTile extends StatelessWidget {
                 PopupMenuItem(
                   child: const Row(
                     children: [
-                      Icon(Icons.flag_outlined, size: 16, color: AppColors.live),
+                      Icon(
+                        Icons.flag_outlined,
+                        size: 16,
+                        color: AppColors.live,
+                      ),
                       SizedBox(width: 8),
-                      Text('Report player',
-                          style: TextStyle(color: AppColors.live)),
+                      Text(
+                        'Report player',
+                        style: TextStyle(color: AppColors.live),
+                      ),
                     ],
                   ),
                   onTap: () {
-                    Future.microtask(() => showReportPlayerDialog(
-                          context,
-                          userId: p.userId,
-                          playerName: p.fullName.isNotEmpty
-                              ? p.fullName
-                              : 'this player',
-                        ));
+                    Future.microtask(
+                      () => showReportPlayerDialog(
+                        context,
+                        userId: p.userId,
+                        playerName: p.fullName.isNotEmpty
+                            ? p.fullName
+                            : 'this player',
+                      ),
+                    );
                   },
                 ),
               ],

@@ -24,6 +24,11 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
   bool _joining = false;
 
   Future<void> _join() async {
+    // Guard first: a fast double/triple-tap before setState even runs
+    // must not start a second overlapping join.
+    if (_joining) return;
+    setState(() => _joining = true);
+
     // Before joining, make sure the user has saved their in-game
     // Nickname/UID for this tournament's game. Without it the
     // organizer has no way to find them in the match -- so we stop
@@ -39,19 +44,24 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
       if (!hasProfile) {
         if (!mounted) return;
         final saved = await AddGameProfileSheet.show(context, game);
-        if (saved != true) return; // user backed out of the sheet
+        if (saved != true) {
+          // User backed out of the sheet -- release the lock so they
+          // can tap Join again instead of it staying stuck spinning.
+          if (mounted) setState(() => _joining = false);
+          return;
+        }
         ref.invalidate(myGameProfilesProvider);
         ref.invalidate(hasGameProfileProvider(widget.tournament.gameId));
       }
     }
 
     if (!mounted) return;
-    setState(() => _joining = true);
     try {
       await tournamentService.joinSolo(widget.tournament.id);
       if (!mounted) return;
       ref.invalidate(myRegistrationProvider(widget.tournament.id));
       ref.invalidate(tournamentDetailProvider(widget.tournament.id));
+      ref.invalidate(tournamentParticipantsProvider(widget.tournament.id));
       ref.invalidate(walletProvider);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

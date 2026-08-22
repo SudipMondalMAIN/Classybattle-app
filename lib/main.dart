@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'services/push_notification_handler.dart';
+import 'core/navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +80,7 @@ class _ClassyBattleAppState extends State<ClassyBattleApp>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'ClassyBattle',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,

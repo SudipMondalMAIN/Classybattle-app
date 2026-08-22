@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../providers/notification_providers.dart';
 import '../providers/home_providers.dart';
@@ -11,6 +12,9 @@ import '../providers/tournament_providers.dart';
 import 'notification_service.dart' show notificationService;
 import 'home_service.dart' show UnauthenticatedException;
 import '../core/token_storage.dart';
+import '../core/navigation.dart';
+import '../models/notification_model.dart';
+import '../widgets/notifications/notification_router.dart';
 
 /// Top-level handler required by FirebaseMessaging.onBackgroundMessage --
 /// must not be a class member (isolate entry point requirement).
@@ -73,6 +77,39 @@ class PushNotificationHandler {
     await _registerWithBackend(token);
   }
 
+  /// Builds the same routing decision the in-app notification list uses
+  /// (see notification_router.dart), but from a raw FCM data payload
+  /// instead of a fetched [NotificationModel] -- so tapping a push from
+  /// the OS tray lands on the same screen as tapping it in-app.
+  ///
+  /// [data] is whatever the backend sent as the FCM message's `data`
+  /// map (event_type, notification_id, and flattened meta_data such as
+  /// tournament_id/transaction_id -- see
+  /// NotificationDispatchService._send_push_best_effort).
+  void _navigateForPushData(Map<String, dynamic> data) {
+    final context = navigatorKey.currentState?.context;
+    if (context == null) return;
+
+    final model = NotificationModel(
+      id: data['notification_id']?.toString() ?? '',
+      title: '',
+      body: '',
+      eventType: NotificationEventType.fromRaw(data['event_type'] as String?),
+      isRead: true,
+      createdAt: DateTime.now(),
+      metaData: data,
+    );
+    navigateForNotification(context, model);
+
+    // Best-effort: keep the in-app list's unread state consistent with
+    // what the user just opened from the tray. Failures are harmless --
+    // the list will still reflect it next silent refresh.
+    final notificationId = data['notification_id'];
+    if (notificationId != null) {
+      notificationService.markRead(notificationId.toString()).catchError((_) {});
+    }
+  }
+
   void _startTimer(ProviderContainer container) {
     _container = container;
     _pollTimer?.cancel();
@@ -128,6 +165,25 @@ class PushNotificationHandler {
         );
       }
       _silentRefreshAll(container);
+    });
+
+    // User tapped a push while the app was backgrounded (not terminated).
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _navigateForPushData(message.data);
+    });
+
+    // App was fully closed and got opened *by* tapping a push -- the
+    // tap that launched the app doesn't fire onMessageOpenedApp, so it
+    // has to be checked for separately. The navigator/widget tree may
+    // not be mounted yet at this point, so defer to the first frame.
+    FirebaseMessaging.instance.getInitialMessage().then((message) async {
+      if (message == null) return;
+      // SplashScreen holds the screen for ~2.6s then does its own
+      // pushReplacement to Home -- firing right after the first frame
+      // would get clobbered by that. Wait it out first so this lands
+      // on top of Home instead of underneath it.
+      await Future.delayed(const Duration(milliseconds: 3000));
+      _navigateForPushData(message.data);
     });
 
     // Fallback for when the backend doesn't (or can't) send a push for
