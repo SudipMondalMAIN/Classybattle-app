@@ -100,9 +100,12 @@ class UpcomingTournamentRow extends StatelessWidget {
                       tournament.entryFee > 0
                           ? '${formatRupees(tournament.entryFee)} entry'
                           : 'Free entry',
-                      style: const TextStyle(
-                        color: AppColors.textMuted,
-                        fontSize: 11,
+                      style: TextStyle(
+                        color: tournament.entryFee > 0
+                            ? AppColors.textPrimary
+                            : AppColors.success,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
@@ -114,12 +117,14 @@ class UpcomingTournamentRow extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text(
-                'Prize Pool',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 10),
+              Text(
+                tournament.prizeBadgeLabel,
+                style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
               ),
               Text(
-                formatRupees(tournament.prizePool),
+                tournament.prizeType == 'per_kill'
+                    ? '${formatRupees(tournament.prizeBadgeAmount)}/kill'
+                    : formatRupees(tournament.prizeBadgeAmount),
                 style: const TextStyle(
                   color: AppColors.gold,
                   fontSize: 13,

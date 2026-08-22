@@ -103,8 +103,10 @@ class LiveTournamentCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: _Stat(
-                          label: 'Prize Pool',
-                          value: formatRupees(tournament.prizePool),
+                          label: tournament.prizeBadgeLabel,
+                          value: tournament.prizeType == 'per_kill'
+                              ? '${formatRupees(tournament.prizeBadgeAmount)}/kill'
+                              : formatRupees(tournament.prizeBadgeAmount),
                           valueColor: AppColors.gold,
                         ),
                       ),
@@ -118,6 +120,8 @@ class LiveTournamentCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  _EntryFeeBadge(entryFee: tournament.entryFee),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -171,6 +175,50 @@ class LiveTournamentCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EntryFeeBadge extends StatelessWidget {
+  const _EntryFeeBadge({required this.entryFee});
+  final double entryFee;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFree = entryFee <= 0;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      decoration: BoxDecoration(
+        color: isFree
+            ? AppColors.success.withValues(alpha: 0.14)
+            : AppColors.purple.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isFree
+              ? AppColors.success.withValues(alpha: 0.4)
+              : AppColors.purple.withValues(alpha: 0.4),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            isFree ? Icons.celebration_rounded : Icons.currency_rupee_rounded,
+            size: 14,
+            color: isFree ? AppColors.success : AppColors.purpleSoft,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isFree ? 'FREE ENTRY' : 'Entry ${formatRupees(entryFee)}',
+            style: TextStyle(
+              color: isFree ? AppColors.success : AppColors.purpleSoft,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }

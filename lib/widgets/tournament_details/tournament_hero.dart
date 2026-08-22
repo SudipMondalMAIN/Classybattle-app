@@ -225,15 +225,29 @@ class TournamentHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const _ShadowedLabel('PRIZE POOL'),
+          _ShadowedLabel(tournament.prizeBadgeLabel),
           const SizedBox(height: 2),
           Text(
-            formatRupees(tournament.prizePool),
+            tournament.prizeType == 'per_kill'
+                ? '${formatRupees(tournament.prizeBadgeAmount)}/kill'
+                : formatRupees(tournament.prizeBadgeAmount),
             style: const TextStyle(
               color: AppColors.gold,
               fontSize: 17,
               fontWeight: FontWeight.w800,
               shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
+            ),
+          ),
+          const SizedBox(height: 10),
+          const _ShadowedLabel('ENTRY FEE'),
+          const SizedBox(height: 2),
+          Text(
+            tournament.isFree ? 'FREE' : formatRupees(tournament.entryFee),
+            style: TextStyle(
+              color: tournament.isFree ? AppColors.success : Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+              shadows: const [Shadow(color: Colors.black87, blurRadius: 6)],
             ),
           ),
           const SizedBox(height: 10),

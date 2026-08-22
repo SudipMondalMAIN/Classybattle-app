@@ -1,17 +1,22 @@
 /// Mirrors app/schemas/leaderboard.py -> LeaderboardUserBrief. Lightweight
 /// name/avatar info the leaderboard endpoint joins in per-row so the app
 /// doesn't need one profile request per player.
+///
+/// avatar_id is one of the 6 avatars bundled inside the app
+/// (assets/avatars/avatar_1.png ... avatar_6.png) -- same as everywhere
+/// else in the app (header, profile card, participants list). The
+/// backend never returns a network avatar image URL.
 class LeaderboardUserBrief {
   final String id;
   final String fullName;
   final String playerUid;
-  final String? avatarUrl;
+  final String? avatarId;
 
   LeaderboardUserBrief({
     required this.id,
     required this.fullName,
     required this.playerUid,
-    this.avatarUrl,
+    this.avatarId,
   });
 
   factory LeaderboardUserBrief.fromJson(Map<String, dynamic> json) {
@@ -19,7 +24,7 @@ class LeaderboardUserBrief {
       id: json['id'] as String,
       fullName: json['full_name'] as String? ?? '',
       playerUid: json['player_uid'] as String? ?? '',
-      avatarUrl: json['avatar_url'] as String?,
+      avatarId: json['avatar_id'] as String?,
     );
   }
 }

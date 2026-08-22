@@ -15,6 +15,9 @@ class TournamentModel {
   final String? bannerUrl;
   final double entryFee;
   final double prizePool;
+  final String prizeType; // rank | per_kill | win
+  final double? perKillAmount;
+  final double? winAmount;
   final int maxPlayers;
   final int currentPlayers;
   final String status; // scheduled | live | completed | cancelled
@@ -33,6 +36,9 @@ class TournamentModel {
     this.bannerUrl,
     required this.entryFee,
     required this.prizePool,
+    required this.prizeType,
+    this.perKillAmount,
+    this.winAmount,
     required this.maxPlayers,
     required this.currentPlayers,
     required this.status,
@@ -47,6 +53,21 @@ class TournamentModel {
 
   int get slotsLeft => (maxPlayers - currentPlayers).clamp(0, maxPlayers);
 
+  /// Best label + value for the reward badge shown on tournament
+  /// cards -- mirrors PrizePoolSection's per-type logic so listings
+  /// stay consistent with the tournament details screen.
+  String get prizeBadgeLabel => switch (prizeType) {
+    'per_kill' => 'Per Kill',
+    'win' => 'Win Bonus',
+    _ => 'Prize Pool',
+  };
+
+  double get prizeBadgeAmount => switch (prizeType) {
+    'per_kill' => perKillAmount ?? 0,
+    'win' => winAmount ?? 0,
+    _ => prizePool,
+  };
+
   factory TournamentModel.fromJson(Map<String, dynamic> json) {
     return TournamentModel(
       id: json['id'] as String,
@@ -57,6 +78,13 @@ class TournamentModel {
       bannerUrl: json['banner_url'] as String?,
       entryFee: double.tryParse('${json['entry_fee']}') ?? 0,
       prizePool: double.tryParse('${json['prize_pool']}') ?? 0,
+      prizeType: json['prize_type'] as String? ?? 'rank',
+      perKillAmount: json['per_kill_amount'] != null
+          ? double.tryParse('${json['per_kill_amount']}')
+          : null,
+      winAmount: json['win_amount'] != null
+          ? double.tryParse('${json['win_amount']}')
+          : null,
       maxPlayers: (json['max_players'] as num?)?.toInt() ?? 0,
       currentPlayers: (json['current_players'] as num?)?.toInt() ?? 0,
       status: json['status'] as String,

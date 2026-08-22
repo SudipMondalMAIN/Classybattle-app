@@ -179,12 +179,18 @@ class _HeroSlide extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Win Exciting Prizes',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
+                Row(
+                  children: [
+                    const Text(
+                      'Win Exciting Prizes',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    _EntryFeePill(entryFee: featured!.entryFee),
+                  ],
                 ),
                 // Once a tournament goes live, joining is closed --
                 // so the CTA disappears instead of staying tappable.
@@ -250,6 +256,38 @@ class _LiveBadge extends StatelessWidget {
   }
 }
 
+class _EntryFeePill extends StatelessWidget {
+  const _EntryFeePill({required this.entryFee});
+  final double entryFee;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFree = entryFee <= 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isFree
+            ? AppColors.success.withValues(alpha: 0.2)
+            : AppColors.gold.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isFree
+              ? AppColors.success.withValues(alpha: 0.5)
+              : AppColors.gold.withValues(alpha: 0.5),
+        ),
+      ),
+      child: Text(
+        isFree ? 'FREE ENTRY' : 'Entry ${formatRupees(entryFee)}',
+        style: TextStyle(
+          color: isFree ? AppColors.success : AppColors.gold,
+          fontSize: 12.5,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
 class _JoinButton extends StatelessWidget {
   const _JoinButton({required this.onTap});
 
@@ -300,9 +338,13 @@ class _PrizePanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'PRIZE POOL',
-            style: TextStyle(
+          Text(
+            featured.prizeType == 'per_kill'
+                ? 'PER KILL'
+                : featured.prizeType == 'win'
+                    ? 'WIN BONUS'
+                    : 'PRIZE POOL',
+            style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 10,
               fontWeight: FontWeight.w600,
@@ -316,7 +358,9 @@ class _PrizePanel extends StatelessWidget {
               const Icon(Icons.monetization_on, size: 15, color: AppColors.gold),
               const SizedBox(width: 4),
               Text(
-                formatCount(featured.prizePool),
+                featured.prizeType == 'per_kill'
+                    ? '${formatCount(featured.prizeBadgeAmount)}/kill'
+                    : formatCount(featured.prizeBadgeAmount),
                 style: const TextStyle(
                   color: AppColors.gold,
                   fontWeight: FontWeight.w800,

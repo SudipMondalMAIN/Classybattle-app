@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/formatters.dart';
@@ -191,10 +190,12 @@ class _PlayerRow extends StatelessWidget {
             CircleAvatar(
               radius: 18,
               backgroundColor: AppColors.glassFillStrong,
-              backgroundImage: player.user?.avatarUrl != null
-                  ? CachedNetworkImageProvider(player.user!.avatarUrl!)
+              backgroundImage: player.user?.avatarId != null
+                  ? AssetImage('assets/avatars/${player.user!.avatarId}.png')
                   : null,
-              child: player.user?.avatarUrl == null
+              onBackgroundImageError:
+                  player.user?.avatarId != null ? (_, __) {} : null,
+              child: player.user?.avatarId == null
                   ? const Icon(Icons.person, size: 18, color: AppColors.textSecondary)
                   : null,
             ),

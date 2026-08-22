@@ -98,6 +98,21 @@ class TournamentDetailModel {
   bool get isLive => status == 'live';
   int get slotsLeft => (maxPlayers - currentPlayers).clamp(0, maxPlayers);
   bool get isFree => entryFee <= 0;
+
+  /// Best label + value for a compact prize badge (hero panel, cards)
+  /// -- mirrors PrizePoolSection's per-type logic.
+  String get prizeBadgeLabel => switch (prizeType) {
+    'per_kill' => 'PER KILL',
+    'win' => 'WIN BONUS',
+    _ => 'PRIZE POOL',
+  };
+
+  double get prizeBadgeAmount => switch (prizeType) {
+    'per_kill' => perKillAmount ?? 0,
+    'win' => winAmount ?? 0,
+    _ => prizePool,
+  };
+
   bool get hasRoomDetails =>
       (roomId != null && roomId!.isNotEmpty) &&
       (roomPassword != null && roomPassword!.isNotEmpty);
