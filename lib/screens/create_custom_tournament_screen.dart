@@ -13,7 +13,7 @@ import 'tournament_details_screen.dart';
 /// TournamentService.PLATFORM_COMMISSION_RATE on the backend. Used only
 /// to show a live "you'll receive ~₹x" preview; the real prize_pool is
 /// always computed server-side.
-const double _kPlatformCommissionRate = 0.175;
+const double _kPlatformCommissionRate = 0.10;
 
 class CreateCustomTournamentScreen extends ConsumerStatefulWidget {
   const CreateCustomTournamentScreen({super.key});

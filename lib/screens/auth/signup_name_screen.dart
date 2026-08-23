@@ -38,6 +38,9 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
   }
 
   Future<void> _submit() async {
+    if (_loading) return; // guard against double-submit (e.g. keyboard
+    // "done" firing _submit() while the button tap from the same
+    // gesture is also in flight) sending the signup OTP email twice.
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       setState(() => _error = 'Enter your full name.');

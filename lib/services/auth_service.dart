@@ -109,6 +109,36 @@ class AuthService {
     }
   }
 
+  /// POST /auth/login/otp/request — step 1 of OTP login: sends a login
+  /// OTP if a verified account exists. Rate-limited server-side to
+  /// 2 requests per 5 minutes per IP.
+  Future<void> requestLoginOtp(String email) async {
+    try {
+      await _dio.post('/auth/login/otp/request', data: {'email': email});
+    } on DioException catch (e) {
+      throw AuthException(
+        _messageFrom(e, "Couldn't send the login OTP. Please try again."),
+      );
+    }
+  }
+
+  /// POST /auth/login/otp/verify — step 2 of OTP login: verifies the
+  /// OTP and returns tokens.
+  Future<AuthResult> verifyLoginOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final res = await _dio.post(
+        '/auth/login/otp/verify',
+        data: {'email': email, 'otp': otp},
+      );
+      return _resultFromTokenResponse(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw AuthException(_messageFrom(e, 'Invalid or expired OTP.'));
+    }
+  }
+
   /// POST /auth/password/forgot
   Future<void> forgotPassword(String email) async {
     try {

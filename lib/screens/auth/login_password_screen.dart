@@ -6,6 +6,7 @@ import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/auth_text_field.dart';
 import '../home_screen.dart';
 import 'forgot_email_screen.dart';
+import 'login_otp_screen.dart';
 
 /// Step 2 of the flow-based login: password for the email entered on the
 /// previous screen.
@@ -105,6 +106,25 @@ class _LoginPasswordScreenState extends State<LoginPasswordScreen> {
         ],
         const SizedBox(height: 24),
         AuthPrimaryButton(label: 'Login', onPressed: _login, loading: _loading),
+        const SizedBox(height: 16),
+        Center(
+          child: GestureDetector(
+            onTap: _loading
+                ? null
+                : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => LoginOtpScreen(email: widget.email)),
+                    ),
+            child: const Text(
+              'Login with OTP instead',
+              style: TextStyle(
+                color: AppColors.purpleSoft,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
