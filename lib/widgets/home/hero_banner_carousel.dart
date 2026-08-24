@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/formatters.dart';
 import '../../models/banner_model.dart';
 import '../../models/tournament_model.dart';
@@ -19,8 +20,7 @@ class HeroBannerCarousel extends ConsumerStatefulWidget {
   final void Function(TournamentModel? featured) onJoinTap;
 
   @override
-  ConsumerState<HeroBannerCarousel> createState() =>
-      _HeroBannerCarouselState();
+  ConsumerState<HeroBannerCarousel> createState() => _HeroBannerCarouselState();
 }
 
 class _HeroBannerCarouselState extends ConsumerState<HeroBannerCarousel> {
@@ -73,11 +73,14 @@ class _HeroBannerCarouselState extends ConsumerState<HeroBannerCarousel> {
                         return _HeroSlide(
                           banner: banners[i],
                           featured: featuredAsync.valueOrNull,
-                          gameName: gamesAsync.valueOrNull != null &&
+                          gameName:
+                              gamesAsync.valueOrNull != null &&
                                   featuredAsync.valueOrNull != null
-                              ? gamesAsync.valueOrNull![
-                                      featuredAsync.valueOrNull!.gameId]
-                                  ?.name
+                              ? gamesAsync
+                                    .valueOrNull![featuredAsync
+                                        .valueOrNull!
+                                        .gameId]
+                                    ?.name
                               : null,
                           onJoinTap: () =>
                               widget.onJoinTap(featuredAsync.valueOrNull),
@@ -116,111 +119,131 @@ class _HeroSlide extends StatelessWidget {
   final int cacheWidth;
   final int cacheHeight;
 
+  Future<void> _openRedirectLink(BuildContext context, String link) async {
+    final uri = Uri.tryParse(link);
+    if (uri == null) return;
+    final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not open this link')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // A banner's own redirect_link always takes priority (that's what
+    // an admin configured it to do); the featured-tournament join tap
+    // is only the fallback for banners that don't carry a link.
+    final hasRedirect =
+        banner.redirectLink != null && banner.redirectLink!.isNotEmpty;
+    final VoidCallback? onTap = hasRedirect
+        ? () => _openRedirectLink(context, banner.redirectLink!)
+        : (featured != null ? onJoinTap : null);
+
     return GestureDetector(
-      onTap: featured != null ? onJoinTap : null,
+      onTap: onTap,
       child: Stack(
-      fit: StackFit.expand,
-      children: [
-        NetworkImageBox(
-          url: banner.imageUrl,
-          fit: BoxFit.cover,
-          cacheWidth: cacheWidth,
-          cacheHeight: cacheHeight,
-        ),
-        // Dark gradient overlay so text stays legible over any artwork --
-        // kept tight to the bottom third where the text/CTA actually
-        // sits, instead of washing the whole banner in a translucent
-        // black tint (which read as "hazy/blurry" even though no actual
-        // blur filter was applied).
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withValues(alpha: 0.45),
-                Colors.black.withValues(alpha: 0.7),
-              ],
-              stops: const [0.45, 0.75, 1.0],
+        fit: StackFit.expand,
+        children: [
+          NetworkImageBox(
+            url: banner.imageUrl,
+            fit: BoxFit.cover,
+            cacheWidth: cacheWidth,
+            cacheHeight: cacheHeight,
+          ),
+          // Dark gradient overlay so text stays legible over any artwork --
+          // kept tight to the bottom third where the text/CTA actually
+          // sits, instead of washing the whole banner in a translucent
+          // black tint (which read as "hazy/blurry" even though no actual
+          // blur filter was applied).
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.black.withValues(alpha: 0.7),
+                ],
+                stops: const [0.45, 0.75, 1.0],
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (featured != null && featured!.isLive) const _LiveBadge(),
-              if (featured != null) ...[
-                const SizedBox(height: 10),
-                if (gameName != null)
-                  Text(
-                    gameName!.toUpperCase(),
-                    style: const TextStyle(
-                      color: AppColors.purpleSoft,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                const SizedBox(height: 4),
-                Text(
-                  featured!.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 26,
-                    height: 1.15,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Text(
-                      'Win Exciting Prizes',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
+          Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (featured != null && featured!.isLive) const _LiveBadge(),
+                if (featured != null) ...[
+                  const SizedBox(height: 10),
+                  if (gameName != null)
+                    Text(
+                      gameName!.toUpperCase(),
+                      style: const TextStyle(
+                        color: AppColors.purpleSoft,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    _EntryFeePill(entryFee: featured!.entryFee),
-                  ],
-                ),
-                // Once a tournament goes live, joining is closed --
-                // so the CTA disappears instead of staying tappable.
-                if (!featured!.isLive) ...[
-                  const SizedBox(height: 14),
-                  _JoinButton(onTap: onJoinTap),
-                ],
-              ] else if (banner.title != null) ...[
-                Text(
-                  banner.title!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 24,
+                  const SizedBox(height: 4),
+                  Text(
+                    featured!.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 26,
+                      height: 1.15,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Text(
+                        'Win Exciting Prizes',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      _EntryFeePill(entryFee: featured!.entryFee),
+                    ],
+                  ),
+                  // Once a tournament goes live, joining is closed --
+                  // so the CTA disappears instead of staying tappable.
+                  if (!featured!.isLive) ...[
+                    const SizedBox(height: 14),
+                    _JoinButton(onTap: onJoinTap),
+                  ],
+                ] else if (banner.title != null) ...[
+                  Text(
+                    banner.title!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 24,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-        if (featured != null)
-          Positioned(
-            top: 18,
-            right: 18,
-            child: _PrizePanel(featured: featured!),
-          ),
-      ],
+          if (featured != null)
+            Positioned(
+              top: 18,
+              right: 18,
+              child: _PrizePanel(featured: featured!),
+            ),
+        ],
       ),
     );
   }
@@ -343,8 +366,8 @@ class _PrizePanel extends StatelessWidget {
             featured.prizeType == 'per_kill'
                 ? 'PER KILL'
                 : featured.prizeType == 'win'
-                    ? 'WIN BONUS'
-                    : 'PRIZE POOL',
+                ? 'WIN BONUS'
+                : 'PRIZE POOL',
             style: const TextStyle(
               color: AppColors.textSecondary,
               fontSize: 10,
@@ -356,7 +379,11 @@ class _PrizePanel extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.monetization_on, size: 15, color: AppColors.gold),
+              const Icon(
+                Icons.monetization_on,
+                size: 15,
+                color: AppColors.gold,
+              ),
               const SizedBox(width: 4),
               Text(
                 featured.prizeType == 'per_kill'
@@ -474,7 +501,11 @@ class _HeroError extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.wifi_off_rounded, color: AppColors.textMuted, size: 28),
+              Icon(
+                Icons.wifi_off_rounded,
+                color: AppColors.textMuted,
+                size: 28,
+              ),
               SizedBox(height: 8),
               Text(
                 'Couldn\'t load banners',

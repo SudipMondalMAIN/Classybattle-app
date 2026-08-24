@@ -7,12 +7,14 @@ class PublicUserSummary {
   final String fullName;
   final String playerUid;
   final String? country;
+  final String? avatarId;
 
   PublicUserSummary({
     required this.id,
     required this.fullName,
     required this.playerUid,
     this.country,
+    this.avatarId,
   });
 
   factory PublicUserSummary.fromJson(Map<String, dynamic> json) {
@@ -21,6 +23,7 @@ class PublicUserSummary {
       fullName: json['full_name'] as String? ?? '',
       playerUid: json['player_uid'] as String? ?? '',
       country: json['country'] as String?,
+      avatarId: json['avatar_id'] as String?,
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/social_model.dart';
@@ -257,10 +256,11 @@ class _ProfileBody extends StatelessWidget {
           child: CircleAvatar(
             radius: 44,
             backgroundColor: AppColors.glassFillStrong,
-            backgroundImage: profile.avatarUrl != null
-                ? CachedNetworkImageProvider(profile.avatarUrl!)
+            backgroundImage: profile.user?.avatarId != null
+                ? AssetImage('assets/avatars/${profile.user!.avatarId}.png')
+                    as ImageProvider
                 : null,
-            child: profile.avatarUrl == null
+            child: profile.user?.avatarId == null
                 ? const Icon(Icons.person, size: 40, color: AppColors.textSecondary)
                 : null,
           ),
