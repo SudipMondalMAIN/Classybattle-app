@@ -116,15 +116,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Future<void> _startChangePassword(String email) async {
-    try {
-      await settingsService.requestPasswordResetOtp(email);
-    } catch (_) {
-      // still proceed to the OTP sheet -- forgot-password is designed
-      // to always return a generic success message either way.
-    }
-    if (!mounted) return;
-    await showModalBottomSheet(
+  void _startChangePassword(String email) {
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -577,6 +570,7 @@ class _ChangePasswordSheet extends StatefulWidget {
 class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   final _otpCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  bool _otpSent = false;
   bool _otpVerified = false;
   bool _busy = false;
   String? _error;
@@ -586,6 +580,26 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     _otpCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _sendOtp() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      await settingsService.requestPasswordResetOtp(widget.email);
+    } catch (_) {
+      // still proceed -- forgot-password is designed to always return
+      // a generic success message either way.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _otpSent = true;
+        });
+      }
+    }
   }
 
   Future<void> _verifyOtp() async {
@@ -662,7 +676,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              _otpVerified ? 'Set New Password' : 'Change Password',
+              _otpVerified
+                  ? 'Set New Password'
+                  : (_otpSent ? 'Change Password' : 'Change Password'),
               style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 18,
@@ -673,18 +689,20 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
             Text(
               _otpVerified
                   ? 'Enter your new password.'
-                  : 'We sent a verification code to ${widget.email}',
+                  : (_otpSent
+                      ? 'We sent a verification code to ${widget.email}'
+                      : 'We\'ll send a verification code to ${widget.email}'),
               style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
             ),
             const SizedBox(height: 18),
-            if (!_otpVerified)
-              _SheetField(controller: _otpCtrl, hint: 'Verification code')
-            else
+            if (_otpVerified)
               _SheetField(
                 controller: _passwordCtrl,
                 hint: 'New password',
                 obscure: true,
-              ),
+              )
+            else if (_otpSent)
+              _SheetField(controller: _otpCtrl, hint: 'Verification code'),
             if (_error != null) ...[
               const SizedBox(height: 10),
               Text(
@@ -704,7 +722,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 child: ElevatedButton(
                   onPressed: _busy
                       ? null
-                      : (_otpVerified ? _resetPassword : _verifyOtp),
+                      : (_otpVerified
+                          ? _resetPassword
+                          : (_otpSent ? _verifyOtp : _sendOtp)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
@@ -722,7 +742,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                           ),
                         )
                       : Text(
-                          _otpVerified ? 'Reset Password' : 'Verify Code',
+                          _otpVerified
+                              ? 'Reset Password'
+                              : (_otpSent ? 'Verify Code' : 'Send OTP'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
