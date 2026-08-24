@@ -7,6 +7,7 @@ import '../../providers/home_providers.dart';
 import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
 import '../common/network_image_box.dart';
+import '../common/skeleton.dart';
 
 /// Large hero banner: PageView of real /banners images, with the
 /// real featured-live-tournament stats (LIVE badge, game, title,
@@ -430,8 +431,30 @@ class _HeroSkeleton extends StatelessWidget {
       aspectRatio: 775 / 370,
       child: GlassContainer(
         borderRadius: 24,
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+        padding: const EdgeInsets.all(18),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const Positioned.fill(
+              child: SkeletonBox(borderRadius: 24, height: double.infinity),
+            ),
+            Positioned(
+              left: 4,
+              bottom: 4,
+              right: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  SkeletonBox(width: 70, height: 18, borderRadius: 10),
+                  SizedBox(height: 10),
+                  SkeletonBox(width: 180, height: 20, borderRadius: 6),
+                  SizedBox(height: 8),
+                  SkeletonBox(width: 120, height: 14, borderRadius: 6),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

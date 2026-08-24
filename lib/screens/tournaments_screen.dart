@@ -7,6 +7,7 @@ import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/home/header_bar.dart';
 import '../widgets/home/live_tournament_card.dart';
 import '../widgets/home/section_header.dart';
+import '../widgets/common/skeleton.dart';
 import '../widgets/home/upcoming_tournament_row.dart';
 import '../widgets/tournaments/search_filter_bar.dart';
 import '../widgets/tournaments/tournament_filtered_list.dart';
@@ -289,10 +290,18 @@ class _LiveRow extends ConsumerWidget {
     final gamesAsync = ref.watch(gamesByIdProvider);
 
     return allAsync.when(
-      loading: () => const SizedBox(
-        height: 220,
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+      loading: () => SizedBox(
+        height: 230,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: 3,
+          separatorBuilder: (_, __) => const SizedBox(width: 12),
+          itemBuilder: (context, i) => const SkeletonBox(
+            width: 175,
+            height: double.infinity,
+            borderRadius: 16,
+          ),
         ),
       ),
       error: (_, __) => const Padding(
@@ -345,10 +354,13 @@ class _UpcomingList extends ConsumerWidget {
     final gamesAsync = ref.watch(gamesByIdProvider);
 
     return allAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+      loading: () => Column(
+        children: List.generate(
+          3,
+          (i) => const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: SkeletonBox(height: 64, borderRadius: 16),
+          ),
         ),
       ),
       error: (_, __) => const Text(

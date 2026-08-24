@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/home_providers.dart';
 import '../../theme/app_theme.dart';
+import '../common/skeleton.dart';
 import 'section_header.dart';
 import 'upcoming_tournament_row.dart';
 
@@ -26,10 +27,13 @@ class UpcomingTournamentsSection extends ConsumerWidget {
         SectionHeader(title: 'Upcoming Tournaments', onViewAll: onViewAll),
         const SizedBox(height: 14),
         tournamentsAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.purpleSoft),
+          loading: () => Column(
+            children: List.generate(
+              3,
+              (i) => const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: SkeletonBox(height: 64, borderRadius: 16),
+              ),
             ),
           ),
           error: (e, __) => const Padding(

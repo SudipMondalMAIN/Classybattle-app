@@ -7,6 +7,7 @@ import '../providers/tournament_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/profile/account_section.dart';
+import '../widgets/common/skeleton.dart';
 import '../widgets/profile/profile_card.dart';
 import '../widgets/profile/profile_header_bar.dart';
 import '../widgets/profile/profile_stats_card.dart';
@@ -72,8 +73,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             backgroundColor: AppColors.background,
             onRefresh: _refresh,
             child: userAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.purple),
+              loading: () => Skeletonizer(
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                  children: const [
+                    // Header row (notifications/settings icons already static)
+                    SizedBox(height: 40),
+                    // Profile card (avatar + name)
+                    SkeletonBox(height: 140, borderRadius: 20),
+                    SizedBox(height: 16),
+                    // Stats card
+                    SkeletonBox(height: 90, borderRadius: 18),
+                    SizedBox(height: 26),
+                    SkeletonBox(width: 140, height: 18, borderRadius: 4),
+                    SizedBox(height: 14),
+                    SkeletonBox(height: 64, borderRadius: 16),
+                    SizedBox(height: 12),
+                    SkeletonBox(height: 64, borderRadius: 16),
+                    SizedBox(height: 12),
+                    SkeletonBox(height: 64, borderRadius: 16),
+                  ],
+                ),
               ),
               error: (_, __) => _ErrorState(onRetry: _refresh),
               data: (user) {
@@ -230,11 +251,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                           );
                           final gamesAsync = ref.watch(gamesByIdProvider);
                           return entriesAsync.when(
-                            loading: () => const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 20),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.purple,
+                            loading: () => Column(
+                              children: List.generate(
+                                3,
+                                (i) => const Padding(
+                                  padding: EdgeInsets.only(bottom: 12),
+                                  child: SkeletonBox(
+                                    height: 84,
+                                    borderRadius: 16,
+                                  ),
                                 ),
                               ),
                             ),

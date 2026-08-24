@@ -4,6 +4,7 @@ import '../../core/formatters.dart';
 import '../../providers/tournament_providers.dart';
 import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
+import '../common/skeleton.dart';
 import '../home/section_header.dart';
 
 class YourTournamentsSection extends ConsumerWidget {
@@ -22,10 +23,8 @@ class YourTournamentsSection extends ConsumerWidget {
         const SizedBox(height: 14),
         statsAsync.when(
           loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 20),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.purpleSoft),
-            ),
+            padding: EdgeInsets.symmetric(vertical: 4),
+            child: SkeletonBox(height: 92, borderRadius: 18),
           ),
           error: (_, __) => const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),

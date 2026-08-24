@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/home_providers.dart';
 import '../../theme/app_theme.dart';
+import '../common/skeleton.dart';
 import 'live_tournament_card.dart';
 import 'section_header.dart';
 
@@ -29,10 +30,18 @@ class LiveTournamentsSection extends ConsumerWidget {
         ),
         const SizedBox(height: 14),
         tournamentsAsync.when(
-          loading: () => const SizedBox(
-            height: 220,
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.purpleSoft),
+          loading: () => SizedBox(
+            height: 230,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 3,
+              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              itemBuilder: (context, i) => const SkeletonBox(
+                width: 175,
+                height: double.infinity,
+                borderRadius: 16,
+              ),
             ),
           ),
           error: (e, __) => const _InlineMessage('Couldn\'t load live tournaments'),

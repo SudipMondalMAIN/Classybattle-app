@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/home_category_box_model.dart';
 import '../../providers/home_providers.dart';
 import '../../theme/app_theme.dart';
+import '../common/skeleton.dart';
 import 'home_category_box_card.dart';
 import 'section_header.dart';
 
@@ -44,10 +45,22 @@ class HomeCategoryBoxesSection extends ConsumerWidget {
         ),
         const SizedBox(height: 14),
         boxesAsync.when(
-          loading: () => const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
-            child: Center(
-              child: CircularProgressIndicator(color: AppColors.purpleSoft),
+          loading: () => Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: 3,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: 0.82,
+              ),
+              itemBuilder: (context, i) => const SkeletonBox(
+                height: double.infinity,
+                borderRadius: 16,
+              ),
             ),
           ),
           error: (e, __) => const Padding(

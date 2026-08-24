@@ -4,6 +4,7 @@ import '../providers/home_providers.dart';
 import '../providers/tournament_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
+import '../widgets/common/skeleton.dart';
 import '../widgets/tournament_details/details_header_bar.dart';
 import '../widgets/tournament_details/custom_result_section.dart';
 import '../widgets/tournament_details/host_cancel_section.dart';
@@ -171,15 +172,15 @@ class TournamentDetailsScreen extends ConsumerWidget {
                                   tournamentParticipantsProvider(tournament.id),
                                 );
                                 return participantsAsync.when(
-                                  loading: () => const Padding(
-                                    padding: EdgeInsets.symmetric(vertical: 24),
-                                    child: Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: AppColors.purpleSoft,
+                                  loading: () => Row(
+                                    children: List.generate(
+                                      5,
+                                      (i) => Padding(
+                                        padding: EdgeInsets.only(
+                                          left: i == 0 ? 0 : 8,
+                                        ),
+                                        child: const SkeletonBox.circle(
+                                          size: 36,
                                         ),
                                       ),
                                     ),
@@ -257,12 +258,30 @@ class _CenteredLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      children: const [
-        SizedBox(height: 200),
-        Center(child: CircularProgressIndicator(color: AppColors.purpleSoft)),
-      ],
+    return Skeletonizer(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+        children: const [
+          // Hero image
+          SkeletonBox(height: 180, borderRadius: 18),
+          SizedBox(height: 16),
+          // Join button
+          SkeletonBox(height: 52, borderRadius: 16),
+          SizedBox(height: 16),
+          // Info card
+          SkeletonBox(height: 140, borderRadius: 18),
+          SizedBox(height: 16),
+          // Prize pool
+          SkeletonBox(height: 90, borderRadius: 18),
+          SizedBox(height: 16),
+          // Participants
+          SkeletonBox(height: 100, borderRadius: 18),
+          SizedBox(height: 16),
+          // Rules
+          SkeletonBox(height: 120, borderRadius: 18),
+        ],
+      ),
     );
   }
 }

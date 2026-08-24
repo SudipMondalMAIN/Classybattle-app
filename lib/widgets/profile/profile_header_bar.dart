@@ -4,6 +4,7 @@ import '../../core/formatters.dart';
 import '../../providers/home_providers.dart';
 import '../../theme/app_theme.dart';
 import '../common/glass_container.dart';
+import '../common/skeleton.dart';
 
 class ProfileHeaderBar extends ConsumerWidget {
   const ProfileHeaderBar({
@@ -50,11 +51,7 @@ class ProfileHeaderBar extends ConsumerWidget {
                       fontSize: 14,
                     ),
                   ),
-                  loading: () => const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  loading: () => const SkeletonBox(width: 38, height: 14, borderRadius: 4),
                   error: (_, __) => const Text(
                     '—',
                     style: TextStyle(color: AppColors.textMuted, fontSize: 14),

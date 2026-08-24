@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/tournament_providers.dart';
 import '../../theme/app_theme.dart';
+import '../common/skeleton.dart';
 import '../home/upcoming_tournament_row.dart';
 
 /// Full-width list used for the Live / Upcoming / Completed / My
@@ -21,10 +22,13 @@ class TournamentFilteredList extends ConsumerWidget {
     final tab = ref.watch(selectedTournamentTabProvider);
 
     return tournamentsAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 60),
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.purpleSoft),
+      loading: () => Column(
+        children: List.generate(
+          4,
+          (i) => const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: SkeletonBox(height: 64, borderRadius: 16),
+          ),
         ),
       ),
       error: (_, __) => const Padding(

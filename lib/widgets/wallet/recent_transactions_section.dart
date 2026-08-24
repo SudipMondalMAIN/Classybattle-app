@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/wallet_transaction_model.dart';
 import '../../theme/app_theme.dart';
+import '../common/skeleton.dart';
 import 'transaction_row.dart';
 
 /// Pinned "Recent Transactions" title + "View All" row. Kept separate
@@ -65,13 +66,28 @@ class RecentTransactionsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return async.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 32),
-        child: Center(
-          child: SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.purpleSoft),
+      loading: () => Column(
+        children: List.generate(
+          5,
+          (i) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              children: const [
+                SkeletonBox.circle(size: 42),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBox(width: 120, height: 13, borderRadius: 4),
+                      SizedBox(height: 8),
+                      SkeletonBox(width: 80, height: 11, borderRadius: 4),
+                    ],
+                  ),
+                ),
+                SkeletonBox(width: 60, height: 14, borderRadius: 4),
+              ],
+            ),
           ),
         ),
       ),
