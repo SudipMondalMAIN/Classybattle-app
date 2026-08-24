@@ -93,6 +93,76 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
     final full = t.slotsLeft <= 0;
     final joinable = t.status == 'scheduled' && !alreadyJoined && !full;
 
+    // Self-declared 1v1 result (if this is an eligible Custom
+    // Tournament) -- lets the "completed" state say Won / Lost /
+    // Match Void instead of a generic "Tournament Completed", once
+    // the match has actually been resolved.
+    final claimPair = ref.watch(customMatchClaimProvider(t.id)).valueOrNull;
+    String?
+    matchResult; // 'won' | 'lost' | 'void' | null (not resolved / not applicable)
+    if (claimPair != null && claimPair.resolved) {
+      final mine = claimPair.myClaim;
+      final opponent = claimPair.opponentClaim;
+      final iLost = mine?.outcome == 'loss';
+      final opponentLost = opponent?.outcome == 'loss';
+      if (iLost && opponentLost) {
+        matchResult = 'void'; // both claimed loss -> nobody paid
+      } else if (iLost) {
+        matchResult = 'lost';
+      } else if (opponentLost || (mine?.isWin ?? false)) {
+        matchResult = 'won';
+      }
+    }
+
+    // Status-aware label + caption for a joined user, instead of a
+    // flat "You joined the tournament" that never changes once you're
+    // in -- the button and the line under it should track where the
+    // match actually is: waiting for the room, live once the room's
+    // published, then completed/cancelled (and, once completed, the
+    // actual win/loss/void result for a self-reported 1v1).
+    String joinedLabel = 'You joined the tournament';
+    String? joinedCaption =
+        'Wait for the custom room ID & password to be published.';
+    if (alreadyJoined) {
+      switch (t.status) {
+        case 'live':
+          joinedLabel = 'Room Published \u2014 Tournament Live';
+          joinedCaption =
+              'Match is live. Check Room Details above and report your result when it\'s over.';
+          break;
+        case 'completed':
+          switch (matchResult) {
+            case 'won':
+              joinedLabel = 'You Won \ud83c\udfc6';
+              joinedCaption = 'Prize money has been credited to your wallet.';
+              break;
+            case 'lost':
+              joinedLabel = 'Better luck next time';
+              joinedCaption =
+                  'This match is over. Check Match Result above for details.';
+              break;
+            case 'void':
+              joinedLabel = 'Match Void';
+              joinedCaption =
+                  'Both players reported a loss, so this match was voided \u2014 no prize was paid out.';
+              break;
+            default:
+              joinedLabel = 'Tournament Completed';
+              joinedCaption =
+                  'This match has ended. Check Match Result / your wallet for the outcome.';
+          }
+          break;
+        case 'cancelled':
+          joinedLabel = 'Tournament Cancelled';
+          joinedCaption =
+              'This tournament was cancelled. Your entry fee has been refunded to your wallet.';
+          break;
+        default:
+          // scheduled -- keep the defaults set above.
+          break;
+      }
+    }
+
     return GlassContainer(
       borderRadius: 20,
       glow: true,
@@ -202,7 +272,7 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
                         )
                       : Text(
                           alreadyJoined
-                              ? 'You joined the tournament'
+                              ? joinedLabel
                               : full
                               ? 'Tournament Full'
                               : 'JOIN NOW',
@@ -220,20 +290,33 @@ class _JoinSectionState extends ConsumerState<JoinSection> {
                 ),
               ),
             ),
-            if (alreadyJoined) ...[
+            if (alreadyJoined && joinedCaption != null) ...[
               const SizedBox(height: 10),
               Row(
                 children: [
                   Icon(
-                    Icons.hourglass_top_rounded,
+                    switch (t.status) {
+                      'live' => Icons.wifi_tethering_rounded,
+                      'completed' => switch (matchResult) {
+                        'won' => Icons.emoji_events_rounded,
+                        'lost' => Icons.sentiment_dissatisfied_rounded,
+                        'void' => Icons.block_rounded,
+                        _ => Icons.check_circle_outline_rounded,
+                      },
+                      'cancelled' => Icons.cancel_outlined,
+                      _ => Icons.hourglass_top_rounded,
+                    },
                     size: 14,
                     color: Colors.white.withValues(alpha: 0.7),
                   ),
                   const SizedBox(width: 6),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Wait for the custom room ID & password to be published.',
-                      style: TextStyle(color: Colors.white70, fontSize: 12.5),
+                      joinedCaption,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12.5,
+                      ),
                     ),
                   ),
                 ],
