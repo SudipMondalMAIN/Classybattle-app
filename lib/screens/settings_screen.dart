@@ -14,6 +14,7 @@ import '../content/legal_content.dart';
 import 'edit_profile_screen.dart';
 import 'faq_screen.dart';
 import 'legal_info_screen.dart';
+import 'refer_earn_screen.dart';
 import 'support_chat_screen.dart';
 import 'auth/login_screen.dart';
 
@@ -232,6 +233,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       loading: () => const _CardSkeleton(),
                       error: (_, __) => const _CardSkeleton(),
+                    ),
+                    const SizedBox(height: 24),
+                    const _SectionLabel('Refer & Earn'),
+                    AccountSectionCard(
+                      rows: [
+                        AccountRow(
+                          icon: Icons.card_giftcard_rounded,
+                          iconColor: AppColors.gold,
+                          label: 'Refer & Earn',
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ReferEarnScreen(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 24),
                     const _SectionLabel('Application'),
