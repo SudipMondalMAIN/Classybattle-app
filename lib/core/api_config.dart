@@ -19,6 +19,10 @@ class ApiConfig {
   /// e.g. http://10.0.2.2:8000/api/v1
   static String get baseUrl => '$_base/api/v1';
 
+  /// e.g. http://10.0.2.2:8000/api/v2 -- newer endpoints (e.g. the
+  /// Refer & Earn system) live under v2 instead of v1.
+  static String get baseUrlV2 => '$_base/api/v2';
+
   /// Same host as [baseUrl] but with the scheme swapped for its
   /// WebSocket equivalent (https -> wss, http -> ws), used for the
   /// live support chat socket. e.g. wss://classybattle.onrender.com/api/v1

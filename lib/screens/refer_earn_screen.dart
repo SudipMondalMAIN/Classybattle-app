@@ -16,8 +16,7 @@ class ReferEarnScreen extends ConsumerStatefulWidget {
   ConsumerState<ReferEarnScreen> createState() => _ReferEarnScreenState();
 }
 
-class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
-  final _applyCtrl = TextEditingController();
+class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _applyCtrl = TextEditingController();
   bool _applying = false;
   String? _applyError;
   String? _applySuccess;
@@ -81,6 +80,7 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
   Widget build(BuildContext context) {
     final codeAsync = ref.watch(myReferralCodeProvider);
     final historyAsync = ref.watch(referralHistoryProvider);
+    final rulesAsync = ref.watch(referralRulesProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -126,6 +126,7 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
                   onRefresh: () async {
                     ref.invalidate(myReferralCodeProvider);
                     ref.invalidate(referralHistoryProvider);
+                    ref.invalidate(referralRulesProvider);
                   },
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
@@ -141,6 +142,15 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
                           message: e is UnauthenticatedException
                               ? 'Log in to see your referral code.'
                               : 'Could not load your referral code.',
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const _SectionLabel('How it works'),
+                      rulesAsync.when(
+                        data: (rules) => _HowItWorksCard(rules: rules),
+                        loading: () => const _CardSkeleton(height: 160),
+                        error: (_, __) => const _ErrorNotice(
+                          message: 'Could not load the referral rules.',
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -262,6 +272,125 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _HowItWorksCard extends StatelessWidget {
+  const _HowItWorksCard({required this.rules});
+  final ReferralRulesModel rules;
+
+  String _money(double v) => '₹${v.toStringAsFixed(0)}';
+
+  List<String> _buildSteps() {
+    final steps = <String>[
+      'Share your referral code with a friend.',
+      'They sign up on ClassyBattle and apply your code within '
+          '${rules.applyWindowDays} day${rules.applyWindowDays == 1 ? '' : 's'} '
+          'of joining.',
+    ];
+    if (rules.requireDepositStep) {
+      steps.add(
+        'They add at least ${_money(rules.minDepositAmount)} via Add Money.',
+      );
+    }
+    if (rules.requirePaidTournamentStep) {
+      steps.add('They join at least one paid tournament.');
+    }
+    steps.add(
+      'Once every step above is done, you get ${_money(rules.rewardAmount)} '
+      'credited to your wallet.',
+    );
+    return steps;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = _buildSteps();
+    return GlassContainer(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (int i = 0; i < steps.length; i++) ...[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.purpleButton,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${i + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    steps[i],
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (i != steps.length - 1) const SizedBox(height: 12),
+          ],
+          if (rules.milestoneRules.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: AppColors.glassBorder),
+            const SizedBox(height: 14),
+            const Text(
+              'Milestone bonuses',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                for (final rule in rules.milestoneRules)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.glassFillStrong,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.glassBorderBright),
+                    ),
+                    child: Text(
+                      '${rule.threshold} referrals → +${_money(rule.bonus)}',
+                      style: const TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

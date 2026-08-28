@@ -1,3 +1,58 @@
+/// Mirrors app/schemas/referral.py -> ReferralMilestoneRuleOut on the
+/// backend.
+class ReferralMilestoneRuleModel {
+  final int threshold;
+  final double bonus;
+
+  ReferralMilestoneRuleModel({required this.threshold, required this.bonus});
+
+  factory ReferralMilestoneRuleModel.fromJson(Map<String, dynamic> json) {
+    return ReferralMilestoneRuleModel(
+      threshold: json['threshold'] as int? ?? 0,
+      bonus: double.tryParse('${json['bonus']}') ?? 0,
+    );
+  }
+}
+
+/// Mirrors app/schemas/referral.py -> ReferralRulesResponse on the
+/// backend. This is the admin-configured "how it works" / "how much you
+/// earn" info -- nothing here is hardcoded in the app, it always
+/// reflects whatever the admin currently has set.
+class ReferralRulesModel {
+  final double rewardAmount;
+  final double minDepositAmount;
+  final bool requireDepositStep;
+  final bool requirePaidTournamentStep;
+  final int applyWindowDays;
+  final List<ReferralMilestoneRuleModel> milestoneRules;
+
+  ReferralRulesModel({
+    required this.rewardAmount,
+    required this.minDepositAmount,
+    required this.requireDepositStep,
+    required this.requirePaidTournamentStep,
+    required this.applyWindowDays,
+    required this.milestoneRules,
+  });
+
+  factory ReferralRulesModel.fromJson(Map<String, dynamic> json) {
+    final rules = json['milestone_rules'] as List? ?? [];
+    return ReferralRulesModel(
+      rewardAmount: double.tryParse('${json['reward_amount']}') ?? 0,
+      minDepositAmount:
+          double.tryParse('${json['min_deposit_amount']}') ?? 0,
+      requireDepositStep: json['require_deposit_step'] as bool? ?? false,
+      requirePaidTournamentStep:
+          json['require_paid_tournament_step'] as bool? ?? false,
+      applyWindowDays: json['apply_window_days'] as int? ?? 0,
+      milestoneRules: rules
+          .map((e) =>
+              ReferralMilestoneRuleModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 /// Mirrors app/schemas/referral.py -> MyReferralCodeResponse on the backend.
 class MyReferralCodeModel {
   final String referralCode;

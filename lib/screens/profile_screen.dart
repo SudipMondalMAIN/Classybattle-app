@@ -18,6 +18,7 @@ import 'edit_profile_screen.dart';
 import 'game_profiles_screen.dart';
 import 'leaderboard_screen.dart';
 import 'notifications_screen.dart';
+import 'refer_earn_screen.dart';
 import 'settings_screen.dart';
 import 'support_chat_screen.dart';
 import 'tournament_details_screen.dart';
@@ -431,8 +432,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       icon: Icons.diversity_3_rounded,
                                       label: 'Refer & Earn',
                                       trailingBadge: 'Earn Rewards',
-                                      onTap: () =>
-                                          _notImplemented('Refer & Earn'),
+                                      onTap: () => Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              const ReferEarnScreen(),
+                                        ),
+                                      ),
                                     ),
                                     AccountRow(
                                       icon: Icons.headset_mic_outlined,
