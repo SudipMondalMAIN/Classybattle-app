@@ -63,6 +63,7 @@ class MyReferralCodeModel {
   final double totalEarned;
   final int? nextMilestoneAt;
   final double? nextMilestoneBonus;
+  final bool hasAppliedReferralCode;
 
   MyReferralCodeModel({
     required this.referralCode,
@@ -73,6 +74,7 @@ class MyReferralCodeModel {
     required this.totalEarned,
     this.nextMilestoneAt,
     this.nextMilestoneBonus,
+    this.hasAppliedReferralCode = false,
   });
 
   factory MyReferralCodeModel.fromJson(Map<String, dynamic> json) {
@@ -87,6 +89,8 @@ class MyReferralCodeModel {
       nextMilestoneBonus: json['next_milestone_bonus'] == null
           ? null
           : double.tryParse('${json['next_milestone_bonus']}'),
+      hasAppliedReferralCode:
+          json['has_applied_referral_code'] as bool? ?? false,
     );
   }
 }

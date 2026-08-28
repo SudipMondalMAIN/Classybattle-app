@@ -155,6 +155,9 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
                       ),
                       const SizedBox(height: 24),
                       const _SectionLabel('Have a code?'),
+                      if (codeAsync.value?.hasAppliedReferralCode ?? false)
+                        const _ReferralAppliedNotice()
+                      else
                       GlassContainer(
                         borderRadius: 18,
                         padding: const EdgeInsets.all(16),
@@ -587,6 +590,32 @@ class _ReferralHistoryTile extends StatelessWidget {
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReferralAppliedNotice extends StatelessWidget {
+  const _ReferralAppliedNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassContainer(
+      borderRadius: 18,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(
+        children: const [
+          Icon(Icons.check_circle_rounded, color: AppColors.success, size: 20),
+          SizedBox(width: 10),
+          Text(
+            'Referral code applied',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
