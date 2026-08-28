@@ -31,7 +31,8 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
   }
 
   Future<void> _openFilters() async {
-    final games = ref.read(gamesByIdProvider).valueOrNull?.values.toList() ?? [];
+    final games =
+        ref.read(gamesByIdProvider).valueOrNull?.values.toList() ?? [];
     final currentGame = ref.read(tournamentGameFilterProvider);
     final currentFormat = ref.read(tournamentCategoryFilterProvider);
 
@@ -57,7 +58,8 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
 
   @override
   Widget build(BuildContext context) {
-    final activeFilter = ref.watch(tournamentGameFilterProvider) != null ||
+    final activeFilter =
+        ref.watch(tournamentGameFilterProvider) != null ||
         ref.watch(tournamentCategoryFilterProvider) != null;
 
     return Row(
@@ -79,14 +81,17 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
                     ),
                     decoration: const InputDecoration(
                       hintText: 'Search tournaments...',
-                      hintStyle: TextStyle(color: AppColors.textMuted, fontSize: 14),
+                      hintStyle: TextStyle(
+                        color: AppColors.textMuted,
+                        fontSize: 14,
+                      ),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 14),
                     ),
-                    onChanged: (v) => ref
-                        .read(tournamentSearchQueryProvider.notifier)
-                        .state = v,
+                    onChanged: (v) =>
+                        ref.read(tournamentSearchQueryProvider.notifier).state =
+                            v,
                   ),
                 ),
               ],
@@ -106,13 +111,17 @@ class _SearchFilterBarState extends ConsumerState<SearchFilterBar> {
                 Icon(
                   Icons.tune_rounded,
                   size: 18,
-                  color: activeFilter ? AppColors.purpleSoft : AppColors.textPrimary,
+                  color: activeFilter
+                      ? AppColors.purpleSoft
+                      : AppColors.textPrimary,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   'Filters',
                   style: TextStyle(
-                    color: activeFilter ? AppColors.purpleSoft : AppColors.textPrimary,
+                    color: activeFilter
+                        ? AppColors.purpleSoft
+                        : AppColors.textPrimary,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -153,6 +162,12 @@ class _FilterSheetState extends State<_FilterSheet> {
     ('Squad', 'squad'),
     ('Free', 'free'),
     ('Custom', 'custom'),
+    ('CS 1v1', 'cs_1v1'),
+    ('CS HEAD', 'cs_head'),
+    ('CS 4v4', 'cs_4v4'),
+    ('LW 1v1', 'lw_1v1'),
+    ('LW HEAD', 'lw_head'),
+    ('BR SURVIVE', 'br_survive'),
   ];
 
   late String? _gameId = widget.selectedGameId;
