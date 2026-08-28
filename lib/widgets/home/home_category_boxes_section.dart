@@ -8,18 +8,21 @@ import 'home_category_box_card.dart';
 import 'section_header.dart';
 
 /// Admin-managed home-screen tap boxes -- 3 per row, same card design
-/// as a live tournament card but fully static. Solo/Squad boxes filter
-/// the tournament list by game + category; Custom routes into the
-/// user's own tournament-creation flow.
+/// as a live tournament card but fully static. Every non-Custom box
+/// opens its own dedicated per-format browse page (solo/duo/squad/free/
+/// cs_1v1/cs_head/cs_4v4/lw_1v1/lw_head/br_survive), same pattern as
+/// Custom's own dedicated page; Custom routes into the user's own
+/// tournament-creation flow.
 class HomeCategoryBoxesSection extends ConsumerWidget {
   const HomeCategoryBoxesSection({
     super.key,
-    required this.onSoloOrSquadTap,
+    required this.onFormatTap,
     required this.onCustomTap,
   });
 
-  /// gameId + category ("solo" | "squad") for the tapped box.
-  final void Function(String gameId, String category) onSoloOrSquadTap;
+  /// box_type name ("solo" | "duo" | "squad" | "free" | "cs_1v1" | ...)
+  /// for the tapped box -- routes to that format's dedicated screen.
+  final void Function(String format) onFormatTap;
   final VoidCallback onCustomTap;
 
   void _handleTap(HomeCategoryBoxModel box) {
@@ -27,9 +30,7 @@ class HomeCategoryBoxesSection extends ConsumerWidget {
       onCustomTap();
       return;
     }
-    final gameId = box.gameId;
-    if (gameId == null) return; // shouldn't happen -- backend enforces this
-    onSoloOrSquadTap(gameId, box.boxType.name);
+    onFormatTap(box.boxType.name);
   }
 
   @override

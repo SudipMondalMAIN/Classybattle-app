@@ -11,6 +11,16 @@ import '../widgets/home/home_category_boxes_section.dart';
 import '../widgets/home/live_tournaments_section.dart';
 import '../widgets/home/upcoming_tournaments_section.dart';
 import 'custom_tournaments_screen.dart';
+import 'free_tournaments_screen.dart';
+import 'solo_tournaments_screen.dart';
+import 'duo_tournaments_screen.dart';
+import 'squad_tournaments_screen.dart';
+import 'cs_1v1_tournaments_screen.dart';
+import 'cs_head_tournaments_screen.dart';
+import 'cs_4v4_tournaments_screen.dart';
+import 'lw_1v1_tournaments_screen.dart';
+import 'lw_head_tournaments_screen.dart';
+import 'br_survive_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'tournament_details_screen.dart';
@@ -88,15 +98,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _openTournamentsFiltered(String gameId, String category) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => TournamentsScreen(
-          initialGameId: gameId,
-          initialCategory: category,
-        ),
-      ),
-    );
+  /// Every non-Custom home-category box opens its own dedicated
+  /// per-format browse page, same pattern as Custom Tournaments below.
+  void _openFormatTournaments(String format) {
+    final Widget screen = switch (format) {
+      'free' => const FreeTournamentsScreen(),
+      'solo' => const SoloTournamentsScreen(),
+      'duo' => const DuoTournamentsScreen(),
+      'squad' => const SquadTournamentsScreen(),
+      'cs_1v1' => const Cs1v1TournamentsScreen(),
+      'cs_head' => const CsHeadTournamentsScreen(),
+      'cs_4v4' => const Cs4v4TournamentsScreen(),
+      'lw_1v1' => const Lw1v1TournamentsScreen(),
+      'lw_head' => const LwHeadTournamentsScreen(),
+      'br_survive' => const BrSurviveTournamentsScreen(),
+      _ => const TournamentsScreen(),
+    };
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen));
   }
 
   /// Both the "Custom" tile in the Solo/Squad/Custom grid and the
@@ -176,7 +194,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),
                     SliverToBoxAdapter(
                       child: HomeCategoryBoxesSection(
-                        onSoloOrSquadTap: _openTournamentsFiltered,
+                        onFormatTap: _openFormatTournaments,
                         onCustomTap: _openCustomTournaments,
                       ),
                     ),

@@ -81,6 +81,22 @@ final customTournamentsProvider = FutureProvider<List<TournamentModel>>((
       .toList();
 });
 
+/// Tournaments for a single fixed `format` value (solo|duo|squad|free|
+/// cs_1v1|cs_head|cs_4v4|lw_1v1|lw_head|br_survive) -- powers each
+/// dedicated per-box-type browse page (mirrors [customTournamentsProvider]
+/// but keyed by format instead of is_custom). Completed/cancelled ones
+/// have nothing left to join, so they're filtered out same as Custom.
+final formatTournamentsProvider =
+    FutureProvider.family<List<TournamentModel>, String>((ref, format) async {
+      final result = await tournamentService.fetchTournaments(
+        format: format,
+        pageSize: 100,
+      );
+      return result.items
+          .where((t) => t.status != 'completed' && t.status != 'cancelled')
+          .toList();
+    });
+
 /// Live tournament count for the "Live" tab badge -- real count, not
 /// hardcoded.
 final liveTournamentsCountProvider = FutureProvider<int>((ref) async {
