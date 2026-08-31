@@ -49,7 +49,9 @@ class BottomNavBar extends StatelessWidget {
                     Icon(
                       item.icon,
                       size: 22,
-                      color: active ? AppColors.purple : AppColors.textMuted,
+                      color: active
+                          ? AppColors.purple
+                          : AppColors.textSecondary,
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -57,7 +59,9 @@ class BottomNavBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                        color: active ? AppColors.purple : AppColors.textMuted,
+                        color: active
+                            ? AppColors.purple
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],

@@ -12,6 +12,7 @@ import '../widgets/tournament_details/join_section.dart';
 import '../widgets/tournament_details/participants_section.dart';
 import '../widgets/tournament_details/prize_pool_section.dart';
 import '../widgets/tournament_details/report_tournament_dialog.dart';
+import '../widgets/tournament_details/results_link_section.dart';
 import '../widgets/tournament_details/room_details_section.dart';
 import '../widgets/tournament_details/tournament_hero.dart';
 import '../widgets/tournament_details/tournament_info_card.dart';
@@ -214,6 +215,8 @@ class TournamentDetailsScreen extends ConsumerWidget {
                               rules: tournament.rules,
                             ),
                           ),
+                          const SizedBox(height: 16),
+                          const ResultsLinkSection(),
                           const SizedBox(height: 16),
                           // Reportable from the moment the tournament goes
                           // live, and for its lifetime after that (no
