@@ -13,6 +13,7 @@ import 'home_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'transactions_screen.dart';
+import 'transaction_details_screen.dart';
 import 'tournaments_screen.dart';
 import 'withdraw_screen.dart';
 
@@ -107,6 +108,11 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
                               RecentTransactionsList(
                                 async: recentAsync,
                                 onRetry: () => ref.invalidate(recentTransactionsProvider),
+                                onTapTransaction: (txn) => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => TransactionDetailsScreen(initial: txn),
+                                  ),
+                                ),
                               ),
                             ],
                           ),

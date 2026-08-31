@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/wallet_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/wallet/transaction_row.dart';
+import 'transaction_details_screen.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -138,6 +139,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                               itemBuilder: (context, i) => TransactionRow(
                                 txn: paged.items[i],
                                 showDivider: i != paged.items.length - 1,
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => TransactionDetailsScreen(
+                                      initial: paged.items[i],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/wallet_transaction_model.dart';
+import '../models/wallet_transaction_detail_model.dart';
 import '../services/home_service.dart' show UnauthenticatedException;
 import '../services/wallet_service.dart';
 
@@ -35,6 +36,13 @@ final transactionsPageProvider =
   } on UnauthenticatedException {
     return PagedTransactions(const [], 0, 0);
   }
+});
+
+/// Full detail (with balance breakdown) for a single transaction --
+/// powers the Transaction Details screen. Keyed by transaction id.
+final transactionDetailProvider = FutureProvider.family
+    .autoDispose<WalletTransactionDetailModel, String>((ref, id) async {
+  return walletService.fetchTransactionDetail(id);
 });
 
 /// Whether the balance figures should currently be masked ("•••••").

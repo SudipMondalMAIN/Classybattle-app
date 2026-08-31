@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../core/api_client.dart';
 import '../models/wallet_transaction_model.dart';
+import '../models/wallet_transaction_detail_model.dart';
 import 'home_service.dart' show UnauthenticatedException;
 
 class PagedTransactions {
@@ -106,6 +107,22 @@ class WalletService {
       totalWinnings: winnings,
       totalBonus: bonus,
     );
+  }
+  /// GET /wallet/transactions/{id} -- full detail for a single
+  /// transaction, including the balance-after breakdown the list
+  /// endpoint doesn't return.
+  Future<WalletTransactionDetailModel> fetchTransactionDetail(
+    String transactionId,
+  ) async {
+    try {
+      final res = await _dio.get('/wallet/transactions/$transactionId');
+      return WalletTransactionDetailModel.fromJson(
+        res.data as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
   }
 }
 

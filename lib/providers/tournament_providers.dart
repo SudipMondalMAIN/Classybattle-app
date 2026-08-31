@@ -154,32 +154,33 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
   },
 );
 
-/// Real "Your Tournaments" stats: joined / won / total winnings, all
-/// derived from the user's actual registration + payout history.
+/// Real "Your Tournaments" stats: joined / won / total winnings / win
+/// rate, sourced from GET /users/me/stats (backend PlayerStatistics),
+/// which covers wins from both the admin-run and custom 1v1 payout
+/// flows.
 class MyTournamentStats {
   const MyTournamentStats({
     required this.joined,
     required this.won,
     required this.totalWinnings,
+    required this.winRate,
   });
   final int joined;
   final int won;
   final double totalWinnings;
+  final double? winRate;
 }
 
 final myTournamentStatsProvider = FutureProvider<MyTournamentStats?>((
   ref,
 ) async {
   try {
-    final regs = await tournamentService.fetchMyRegistrations(pageSize: 1);
-    final payouts = await tournamentService.fetchMyPrizePayouts();
-    final paid = payouts.where((p) => p.status == 'paid');
-    final wonTournaments = paid.map((p) => p.tournamentId).toSet();
-    final totalWinnings = paid.fold<double>(0, (sum, p) => sum + p.amount);
+    final stats = await tournamentService.fetchMyStats();
     return MyTournamentStats(
-      joined: regs.total,
-      won: wonTournaments.length,
-      totalWinnings: totalWinnings,
+      joined: stats.joined,
+      won: stats.won,
+      totalWinnings: stats.totalWinnings,
+      winRate: stats.winRate,
     );
   } on UnauthenticatedException {
     return null;

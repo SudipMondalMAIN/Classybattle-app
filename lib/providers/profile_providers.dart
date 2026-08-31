@@ -24,13 +24,12 @@ extension ProfileTournamentTabX on ProfileTournamentTab {
 final profileTournamentTabProvider =
     StateProvider<ProfileTournamentTab>((ref) => ProfileTournamentTab.joined);
 
-/// Real win rate derived from the user's actual joined/won counts.
-/// Null when there's no stats yet (logged out, or zero tournaments
-/// joined -- a rate isn't meaningful with a zero denominator).
+/// Real win rate, now sourced directly from the backend
+/// (MyTournamentStats.winRate via GET /users/me/stats) instead of being
+/// derived client-side from joined/won.
 final winRateProvider = FutureProvider<double?>((ref) async {
   final stats = await ref.watch(myTournamentStatsProvider.future);
-  if (stats == null || stats.joined == 0) return null;
-  return (stats.won / stats.joined) * 100;
+  return stats?.winRate;
 });
 
 /// One combined participant+tournament record, so tournament cards can

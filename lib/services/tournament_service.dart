@@ -6,6 +6,7 @@ import '../models/game_mode_model.dart';
 import '../models/map_model.dart';
 import '../models/participant_model.dart';
 import '../models/participant_public_model.dart';
+import '../models/player_stats_model.dart';
 import '../models/prize_pool_model.dart';
 import '../models/tournament_detail_model.dart';
 import '../models/tournament_model.dart';
@@ -331,6 +332,21 @@ class TournamentService {
           .toList();
       final total = (res.data['total'] as num?)?.toInt() ?? items.length;
       return PagedResult(items, total);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
+
+  /// GET /users/me/stats -- real "Joined / Won / Total Winnings / Win
+  /// Rate" summary, sourced from PlayerStatistics on the backend so it
+  /// covers wins from BOTH the admin-run flow and the custom 1v1
+  /// self-claim flow (unlike /prize-payouts/me below, which only the
+  /// admin flow ever populates).
+  Future<PlayerStatsModel> fetchMyStats() async {
+    try {
+      final res = await _dio.get('/users/me/stats');
+      return PlayerStatsModel.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) throw UnauthenticatedException();
       rethrow;
