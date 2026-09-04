@@ -37,24 +37,51 @@ enum SupportChatStatus {
   }
 }
 
+/// Mirrors the backend's `SupportChatMessageType` enum.
+enum SupportChatMessageType {
+  text,
+  image,
+  video;
+
+  static SupportChatMessageType fromRaw(String? raw) {
+    switch (raw) {
+      case 'image':
+        return SupportChatMessageType.image;
+      case 'video':
+        return SupportChatMessageType.video;
+      case 'text':
+      default:
+        return SupportChatMessageType.text;
+    }
+  }
+}
+
 class SupportChatMessage {
   const SupportChatMessage({
     required this.id,
     required this.senderType,
     required this.content,
     required this.createdAt,
+    this.messageType = SupportChatMessageType.text,
+    this.mediaUrl,
   });
 
   final String id;
   final SupportChatSenderType senderType;
   final String content;
   final DateTime createdAt;
+  final SupportChatMessageType messageType;
+  final String? mediaUrl;
+
+  bool get isMedia => messageType != SupportChatMessageType.text;
 
   factory SupportChatMessage.fromJson(Map<String, dynamic> json) {
     return SupportChatMessage(
       id: json['id'].toString(),
       senderType: SupportChatSenderType.fromRaw(json['sender_type'] as String?),
       content: json['content'] as String? ?? '',
+      messageType: SupportChatMessageType.fromRaw(json['message_type'] as String?),
+      mediaUrl: json['media_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String).toLocal(),
     );
   }

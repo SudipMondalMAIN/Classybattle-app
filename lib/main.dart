@@ -7,6 +7,8 @@ import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
 import 'services/push_notification_handler.dart';
 import 'core/navigation.dart';
+import 'providers/connectivity_providers.dart';
+import 'widgets/common/connectivity_banner.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,15 +38,17 @@ void main() async {
   );
 }
 
-class ClassyBattleApp extends StatefulWidget {
+class ClassyBattleApp extends ConsumerStatefulWidget {
   const ClassyBattleApp({super.key});
 
   @override
-  State<ClassyBattleApp> createState() => _ClassyBattleAppState();
+  ConsumerState<ClassyBattleApp> createState() => _ClassyBattleAppState();
 }
 
-class _ClassyBattleAppState extends State<ClassyBattleApp>
+class _ClassyBattleAppState extends ConsumerState<ClassyBattleApp>
     with WidgetsBindingObserver {
+  bool? _wasOnline;
+
   @override
   void initState() {
     super.initState();
@@ -79,6 +83,20 @@ class _ClassyBattleAppState extends State<ClassyBattleApp>
 
   @override
   Widget build(BuildContext context) {
+    // The moment internet comes back (e.g. user flips mobile data
+    // on while the app is already open), quietly re-fetch everything
+    // the same way a resumed-from-background app would -- no restart,
+    // no manual pull-to-refresh needed. Reuses the existing silent
+    // refresh in PushNotificationHandler instead of duplicating it.
+    ref.listen<AsyncValue<bool>>(connectivityProvider, (previous, next) {
+      final online = next.valueOrNull;
+      if (online == null) return;
+      if (_wasOnline == false && online == true) {
+        PushNotificationHandler.instance.resume();
+      }
+      _wasOnline = online;
+    });
+
     return MaterialApp(
       navigatorKey: navigatorKey,
       title: 'ClassyBattle',
@@ -91,6 +109,8 @@ class _ClassyBattleAppState extends State<ClassyBattleApp>
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) =>
+          ConnectivityBanner(child: child ?? const SizedBox.shrink()),
       home: const SplashScreen(),
     );
   }

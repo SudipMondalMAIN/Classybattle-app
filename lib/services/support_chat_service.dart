@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -46,6 +47,35 @@ class SupportChatService {
       return SupportChatSessionWithMessages.fromJson(
         res.data as Map<String, dynamic>,
       );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) throw UnauthenticatedException();
+      rethrow;
+    }
+  }
+
+  /// POST /support/session/{id}/media -- upload an image or video
+  /// attachment. Goes over REST (uploads don't fit the JSON WS
+  /// protocol); the resulting message is broadcast back over the
+  /// socket the same as a text message, so the UI picks it up from
+  /// there rather than from this call's return value.
+  Future<SupportChatMessage> sendMedia(
+    String sessionId,
+    File file, {
+    String caption = '',
+    void Function(int sent, int total)? onProgress,
+  }) async {
+    try {
+      final fileName = file.path.split('/').last;
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(file.path, filename: fileName),
+        'caption': caption,
+      });
+      final res = await _dio.post(
+        '/support/session/$sessionId/media',
+        data: formData,
+        onSendProgress: onProgress,
+      );
+      return SupportChatMessage.fromJson(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) throw UnauthenticatedException();
       rethrow;
