@@ -42,6 +42,7 @@ class AuthService {
     required String email,
     required String phoneNumber,
     required String password,
+    String? captchaToken,
   }) async {
     try {
       await _dio.post(
@@ -51,6 +52,7 @@ class AuthService {
           'email': email,
           'phone_number': phoneNumber,
           'password': password,
+          if (captchaToken != null) 'captcha_token': captchaToken,
         },
       );
     } on DioException catch (e) {
@@ -97,11 +99,16 @@ class AuthService {
   Future<AuthResult> login({
     required String email,
     required String password,
+    String? captchaToken,
   }) async {
     try {
       final res = await _dio.post(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {
+          'email': email,
+          'password': password,
+          if (captchaToken != null) 'captcha_token': captchaToken,
+        },
       );
       return _resultFromTokenResponse(res.data as Map<String, dynamic>);
     } on DioException catch (e) {

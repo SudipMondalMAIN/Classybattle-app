@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/auth/auth_primary_button.dart';
 import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/auth_text_field.dart';
+import '../../widgets/auth/captcha_gate.dart';
 import '../home_screen.dart';
 import 'forgot_email_screen.dart';
 import 'login_otp_screen.dart';
@@ -21,6 +24,7 @@ class LoginPasswordScreen extends StatefulWidget {
 
 class _LoginPasswordScreenState extends State<LoginPasswordScreen> {
   final _passwordCtrl = TextEditingController();
+  final _captchaKey = GlobalKey<CaptchaGateState>();
   bool _obscure = true;
   bool _loading = false;
   String? _error;
@@ -42,7 +46,16 @@ class _LoginPasswordScreenState extends State<LoginPasswordScreen> {
       _error = null;
     });
     try {
-      final result = await authService.login(email: widget.email, password: password);
+      var token = _captchaKey.currentState?.token;
+      if (token == null) {
+        await Future.delayed(const Duration(milliseconds: 800));
+        token = _captchaKey.currentState?.token;
+      }
+      final result = await authService.login(
+        email: widget.email,
+        password: password,
+        captchaToken: token,
+      );
       await authService.persistSession(result);
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -51,6 +64,7 @@ class _LoginPasswordScreenState extends State<LoginPasswordScreen> {
       );
     } on AuthException catch (e) {
       setState(() => _error = e.message);
+      unawaited(_captchaKey.currentState?.refresh());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -104,7 +118,9 @@ class _LoginPasswordScreenState extends State<LoginPasswordScreen> {
           const SizedBox(height: 12),
           Text(_error!, style: const TextStyle(color: AppColors.live, fontSize: 13)),
         ],
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+        CaptchaGate(key: _captchaKey, onTokenReady: (_) {}),
+        const SizedBox(height: 16),
         AuthPrimaryButton(label: 'Login', onPressed: _login, loading: _loading),
         const SizedBox(height: 16),
         Center(

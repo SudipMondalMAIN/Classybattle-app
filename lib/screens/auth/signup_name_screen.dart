@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
@@ -5,6 +7,7 @@ import '../../widgets/auth/auth_legal_footer.dart';
 import '../../widgets/auth/auth_primary_button.dart';
 import '../../widgets/auth/auth_scaffold.dart';
 import '../../widgets/auth/auth_text_field.dart';
+import '../../widgets/auth/captcha_gate.dart';
 import 'signup_otp_screen.dart';
 
 /// Signup step 4 of 4: name. Submitting here calls the backend with all
@@ -28,6 +31,7 @@ class SignupNameScreen extends StatefulWidget {
 
 class _SignupNameScreenState extends State<SignupNameScreen> {
   final _nameCtrl = TextEditingController();
+  final _captchaKey = GlobalKey<CaptchaGateState>();
   bool _loading = false;
   String? _error;
 
@@ -51,11 +55,19 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
       _error = null;
     });
     try {
+      // Wait briefly for the invisible Turnstile challenge to finish if
+      // it hasn't already (it starts as soon as this screen mounts).
+      var token = _captchaKey.currentState?.token;
+      if (token == null) {
+        await Future.delayed(const Duration(milliseconds: 800));
+        token = _captchaKey.currentState?.token;
+      }
       await authService.signup(
         fullName: name,
         email: widget.email,
         phoneNumber: widget.phone,
         password: widget.password,
+        captchaToken: token,
       );
       if (!mounted) return;
       Navigator.push(
@@ -64,6 +76,9 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
       );
     } on AuthException catch (e) {
       setState(() => _error = e.message);
+      // A stale/consumed token would just fail again -- get a fresh one
+      // before the next attempt.
+      unawaited(_captchaKey.currentState?.refresh());
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -88,7 +103,9 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
           const SizedBox(height: 14),
           Text(_error!, style: const TextStyle(color: AppColors.live, fontSize: 13)),
         ],
-        const SizedBox(height: 26),
+        const SizedBox(height: 20),
+        CaptchaGate(key: _captchaKey, onTokenReady: (_) {}),
+        const SizedBox(height: 16),
         AuthPrimaryButton(label: 'Create account', onPressed: _submit, loading: _loading),
         const SizedBox(height: 20),
         const AuthLegalFooter(),
