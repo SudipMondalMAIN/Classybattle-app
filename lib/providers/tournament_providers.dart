@@ -124,13 +124,17 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
     if (tab == TournamentTab.mine) {
       try {
         final regs = await tournamentService.fetchMyRegistrations();
-        final ids = regs.items
-            .where((r) => r.isActive)
-            .map((r) => r.tournamentId)
-            .toSet();
-        if (ids.isEmpty) return [];
-        final all = await tournamentService.fetchTournaments(pageSize: 100);
-        var mine = all.items.where((t) => ids.contains(t.id)).toList();
+        final active = regs.items.where((r) => r.isActive).toList();
+        if (active.isEmpty) return [];
+        // Resolve each registered tournament directly by ID rather than
+        // matching against the bulk `/tournaments` list -- that list
+        // hides PRIVATE tournaments for non-admin callers, and Custom
+        // Tournaments default to visibility=PRIVATE, so matching against
+        // it silently dropped every custom tournament from this tab.
+        final tournaments = await Future.wait(
+          active.map((r) => tournamentService.fetchTournamentById(r.tournamentId)),
+        );
+        var mine = tournaments.whereType<TournamentModel>().toList();
         if (gameId != null)
           mine = mine.where((t) => t.gameId == gameId).toList();
         if (search.trim().isNotEmpty) {

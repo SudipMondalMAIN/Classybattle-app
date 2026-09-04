@@ -43,17 +43,27 @@ class MyTournamentEntry {
 
 /// All of the current user's real registrations, joined against the
 /// matching tournaments. Empty (not error) when signed out.
+///
+/// Each registered tournament is resolved with a direct
+/// GET /tournaments/{id} lookup rather than matched against the bulk
+/// `/tournaments` list. The bulk list hides PRIVATE tournaments for
+/// non-admin callers, and Custom Tournaments default to
+/// visibility=PRIVATE -- matching against that list silently dropped
+/// every custom tournament a user joined or hosted, leaving every tab
+/// (Joined/Upcoming/Completed/Cancelled) empty for anyone whose
+/// history is mostly custom tournaments.
 final myTournamentEntriesProvider = FutureProvider<List<MyTournamentEntry>>((ref) async {
   try {
     final regs = await tournamentService.fetchMyRegistrations(pageSize: 100);
     if (regs.items.isEmpty) return [];
-    final all = await tournamentService.fetchTournaments(pageSize: 100);
-    final byId = {for (final t in all.items) t.id: t};
+    final tournaments = await Future.wait(
+      regs.items.map((r) => tournamentService.fetchTournamentById(r.tournamentId)),
+    );
     final entries = <MyTournamentEntry>[];
-    for (final r in regs.items) {
-      final t = byId[r.tournamentId];
-      if (t == null) continue;
-      entries.add(MyTournamentEntry(tournament: t, participantStatus: r.status));
+    for (var i = 0; i < regs.items.length; i++) {
+      final t = tournaments[i];
+      if (t == null) continue; // tournament since deleted -- skip
+      entries.add(MyTournamentEntry(tournament: t, participantStatus: regs.items[i].status));
     }
     return entries;
   } on UnauthenticatedException {

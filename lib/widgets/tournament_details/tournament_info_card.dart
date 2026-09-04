@@ -56,8 +56,6 @@ class TournamentInfoCard extends StatelessWidget {
           '${tournament.teamSize}',
         ),
       if (map != null) _InfoField(Icons.map_outlined, 'Map', map!.name),
-      if (tournament.organizer.isNotEmpty)
-        _InfoField(Icons.badge_outlined, 'Organizer', tournament.organizer),
       // Scheduled kickoff -- admin/schedule slot time, or the creation
       // instant for one-off Custom Tournaments (see Tournament.starts_at
       // on the backend). Shown in IST, 12-hour clock, same as the other

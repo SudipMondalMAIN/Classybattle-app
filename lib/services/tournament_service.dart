@@ -106,6 +106,24 @@ class TournamentService {
     return TournamentDetailModel.fromJson(res.data as Map<String, dynamic>);
   }
 
+  /// GET /tournaments/{id} -- same endpoint as [fetchTournamentDetail],
+  /// parsed down to the lighter [TournamentModel] used by tournament
+  /// cards. Unlike [fetchTournaments] (bulk `/tournaments` list), this
+  /// single-item lookup is NOT filtered by visibility, so it's the
+  /// right call for "does this specific tournament (which I'm already
+  /// registered for) exist" -- Custom Tournaments default to
+  /// visibility=PRIVATE and would otherwise silently disappear from
+  /// any screen that tries to resolve them via the bulk list.
+  Future<TournamentModel?> fetchTournamentById(String id) async {
+    try {
+      final res = await _dio.get('/tournaments/$id');
+      return TournamentModel.fromJson(res.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      rethrow;
+    }
+  }
+
   /// POST /tournaments/{id}/publish-room -- host (or admin) sets
   /// room_id/room_password, tournament auto-flips to LIVE.
   Future<TournamentDetailModel> publishRoom({

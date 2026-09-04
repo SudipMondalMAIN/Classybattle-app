@@ -121,6 +121,8 @@ class TournamentDetailsScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           JoinSection(tournament: tournament),
+                          const SizedBox(height: 16),
+                          TournamentStatsBar(tournament: tournament),
                           if (HostCancelSection.shouldShow(
                             tournament,
                             currentUser?.id,
@@ -167,6 +169,14 @@ class TournamentDetailsScreen extends ConsumerWidget {
                           GlassContainer(
                             borderRadius: 18,
                             padding: const EdgeInsets.all(16),
+                            child: TournamentRulesSection(
+                              rules: tournament.rules,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          GlassContainer(
+                            borderRadius: 18,
+                            padding: const EdgeInsets.all(16),
                             child: Builder(
                               builder: (context) {
                                 final participantsAsync = ref.watch(
@@ -205,14 +215,6 @@ class TournamentDetailsScreen extends ConsumerWidget {
                                   ),
                                 );
                               },
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          GlassContainer(
-                            borderRadius: 18,
-                            padding: const EdgeInsets.all(16),
-                            child: TournamentRulesSection(
-                              rules: tournament.rules,
                             ),
                           ),
                           const SizedBox(height: 16),

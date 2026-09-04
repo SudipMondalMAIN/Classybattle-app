@@ -38,11 +38,22 @@ class _SplashScreenState extends State<SplashScreen> {
 
     // Real backend calls — never fabricated. Run in parallel since
     // they're independent; each falls back to a no-op (never blocks
-    // the user) if its own request fails.
-    final results = await Future.wait([
-      MaintenanceService.check(),
-      AppVersionService.check(),
-    ]);
+    // the user) if its own request fails. These use the shared Dio
+    // client's normal 45s timeout internally, which is fine for most
+    // requests but far too long to sit on at app-open -- under server
+    // load this made the splash screen appear frozen for up to 45s
+    // before falling back. A short 6s hard cap here means slow/loaded
+    // server conditions still fall back to no-op quickly and the app
+    // opens promptly; it doesn't touch the client's real 45s timeout
+    // used elsewhere for calls that genuinely need to wait longer.
+    final results =
+        await Future.wait([
+          MaintenanceService.check(),
+          AppVersionService.check(),
+        ]).timeout(
+          const Duration(seconds: 6),
+          onTimeout: () => [MaintenanceCheck.noop(), AppVersionCheck.noop()],
+        );
     final maintenanceCheck = results[0] as MaintenanceCheck;
     final versionCheck = results[1] as AppVersionCheck;
 
@@ -75,9 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (versionInfo.forceUpdate) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => ForceUpdateScreen(info: versionInfo),
-        ),
+        MaterialPageRoute(builder: (_) => ForceUpdateScreen(info: versionInfo)),
       );
       return;
     }
@@ -85,9 +94,9 @@ class _SplashScreenState extends State<SplashScreen> {
     // Guest mode: always land on Home whether or not the user is
     // logged in. Login/signup is reachable from the Profile tab.
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   @override

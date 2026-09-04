@@ -22,16 +22,6 @@ class TournamentHero extends StatelessWidget {
   final GameModeModel? gameMode;
   final MapModel? map;
 
-  String _timeLeftLabel() {
-    final d = tournament.timeLeft;
-    if (d == null) return '—';
-    if (d == Duration.zero) return 'Ending';
-    final h = d.inHours;
-    final m = d.inMinutes % 60;
-    if (h > 0) return '${h}h ${m}m';
-    return '${m}m';
-  }
-
   @override
   Widget build(BuildContext context) {
     final chips = <String>[
@@ -72,9 +62,9 @@ class TournamentHero extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.15),
-                      Colors.black.withValues(alpha: 0.55),
-                      Colors.black.withValues(alpha: 0.85),
+                      Colors.black.withValues(alpha: 0.02),
+                      Colors.black.withValues(alpha: 0.28),
+                      Colors.black.withValues(alpha: 0.62),
                     ],
                     stops: const [0.0, 0.55, 1.0],
                   ),
@@ -83,14 +73,9 @@ class TournamentHero extends StatelessWidget {
             ),
             Positioned(top: 14, left: 14, child: _liveBadge()),
             Positioned(
-              top: 14,
-              right: 14,
-              child: SizedBox(width: 150, child: _statsPanel()),
-            ),
-            Positioned(
               left: 16,
-              right: 170,
-              bottom: 16,
+              right: 16,
+              bottom: 20,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -105,10 +90,10 @@ class TournamentHero extends StatelessWidget {
                         letterSpacing: 0.5,
                       ),
                     ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     tournament.title,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
@@ -211,79 +196,68 @@ class TournamentHero extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _statsPanel() {
+/// Prize / Entry Fee / Entries / Time Left, laid out horizontally in
+/// one full-width glass bar -- same transparent glass look the panel
+/// used to have on the banner, just moved below the Join button (full
+/// width, same footprint as that button) so the banner itself stays
+/// clean and uncluttered.
+class TournamentStatsBar extends StatelessWidget {
+  const TournamentStatsBar({super.key, required this.tournament});
+
+  final TournamentDetailModel tournament;
+
+  String _timeLeftLabel() {
+    final d = tournament.timeLeft;
+    if (d == null) return '—';
+    if (d == Duration.zero) return 'Ending';
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    if (h > 0) return '${h}h ${m}m';
+    return '${m}m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GlassContainer(
-      borderRadius: 14,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      // Lighter blur + more transparent fill so the banner image stays
-      // visible behind the prize pool / entries / time-left panel
-      // instead of being washed out by a heavy frosted-glass blur.
-      blurSigma: 4,
-      fillColor: Colors.black.withValues(alpha: 0.22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      borderRadius: 16,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      child: Row(
         children: [
-          _ShadowedLabel(tournament.prizeBadgeLabel),
-          const SizedBox(height: 2),
-          Text(
-            tournament.prizeType == 'per_kill'
-                ? '${formatRupees(tournament.prizeBadgeAmount)}/kill'
-                : formatRupees(tournament.prizeBadgeAmount),
-            style: const TextStyle(
-              color: AppColors.gold,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-              shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
+          Expanded(
+            child: _StatItem(
+              label: tournament.prizeBadgeLabel.toUpperCase(),
+              value: tournament.prizeType == 'per_kill'
+                  ? '${formatRupees(tournament.prizeBadgeAmount)}/kill'
+                  : formatRupees(tournament.prizeBadgeAmount),
+              valueColor: AppColors.gold,
             ),
           ),
-          const SizedBox(height: 10),
-          const _ShadowedLabel('ENTRY FEE'),
-          const SizedBox(height: 2),
-          Text(
-            tournament.isFree ? 'FREE' : formatRupees(tournament.entryFee),
-            style: TextStyle(
-              color: tournament.isFree ? AppColors.success : Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              shadows: const [Shadow(color: Colors.black87, blurRadius: 6)],
+          _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              label: 'ENTRY FEE',
+              value: tournament.isFree ? 'FREE' : formatRupees(tournament.entryFee),
+              valueColor: tournament.isFree ? AppColors.success : AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 10),
-          const _ShadowedLabel('ENTRIES'),
-          const SizedBox(height: 2),
-          Text(
-            '${tournament.currentPlayers} / ${tournament.maxPlayers}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
+          _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              label: 'ENTRIES',
+              value: '${tournament.currentPlayers}/${tournament.maxPlayers}',
+              valueColor: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 10),
-          const _ShadowedLabel('TIME LEFT'),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              const Icon(
-                Icons.access_time_rounded,
-                size: 13,
-                color: Colors.white,
-                shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
-              ),
-              const SizedBox(width: 4),
-              Text(
-                _timeLeftLabel(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
-                ),
-              ),
-            ],
+          _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              label: 'TIME LEFT',
+              value: _timeLeftLabel(),
+              valueColor: AppColors.textPrimary,
+              icon: Icons.access_time_rounded,
+            ),
           ),
         ],
       ),
@@ -291,20 +265,69 @@ class TournamentHero extends StatelessWidget {
   }
 }
 
-class _ShadowedLabel extends StatelessWidget {
-  const _ShadowedLabel(this.text);
-  final String text;
+class _StatDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 32,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: AppColors.glassBorder,
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+    this.icon,
+  });
+
+  final String label;
+  final String value;
+  final Color valueColor;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: Colors.white70,
-        fontSize: 9,
-        fontWeight: FontWeight.w700,
-        shadows: [Shadow(color: Colors.black87, blurRadius: 6)],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            fontSize: 9,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 12, color: valueColor),
+              const SizedBox(width: 3),
+            ],
+            Flexible(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: valueColor,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

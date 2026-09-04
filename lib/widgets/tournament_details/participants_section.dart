@@ -11,7 +11,11 @@ import 'report_player_dialog.dart';
 /// Any participant can see every other participant's in-game
 /// nickname/uid here, which is intentional (needed to actually find
 /// each other in-game), not just their own.
-class ParticipantsSection extends StatelessWidget {
+///
+/// Shows the first 4 by default with a "View All Participants" toggle
+/// (mirrors TournamentRulesSection's "View All Rules" pattern) once
+/// there are more than that.
+class ParticipantsSection extends StatefulWidget {
   const ParticipantsSection({
     super.key,
     required this.participants,
@@ -27,7 +31,17 @@ class ParticipantsSection extends StatelessWidget {
   final String? currentUserId;
 
   @override
+  State<ParticipantsSection> createState() => _ParticipantsSectionState();
+}
+
+class _ParticipantsSectionState extends State<ParticipantsSection> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final participants = widget.participants;
+    final visible = _expanded ? participants : participants.take(4).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -49,7 +63,7 @@ class ParticipantsSection extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              '$totalCount',
+              '${widget.totalCount}',
               style: const TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 13,
@@ -67,26 +81,55 @@ class ParticipantsSection extends StatelessWidget {
               style: TextStyle(color: AppColors.textMuted, fontSize: 13),
             ),
           )
-        else
+        else ...[
           Column(
             children: [
-              for (int i = 0; i < participants.length; i++)
+              for (int i = 0; i < visible.length; i++)
                 Padding(
                   padding: EdgeInsets.only(
-                    bottom: i == participants.length - 1 ? 0 : 10,
+                    bottom: i == visible.length - 1 ? 0 : 10,
                   ),
                   child: _ParticipantTile(
-                    participant: participants[i],
+                    participant: visible[i],
                     canReport:
-                        currentUserId != null &&
-                        currentUserId != participants[i].userId,
+                        widget.currentUserId != null &&
+                        widget.currentUserId != visible[i].userId,
                     isMe:
-                        currentUserId != null &&
-                        currentUserId == participants[i].userId,
+                        widget.currentUserId != null &&
+                        widget.currentUserId == visible[i].userId,
                   ),
                 ),
             ],
           ),
+          if (participants.length > 4)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => setState(() => _expanded = !_expanded),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _expanded ? 'Show Less' : 'View All Participants',
+                        style: const TextStyle(
+                          color: AppColors.purpleSoft,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Icon(
+                        _expanded ? Icons.expand_less : Icons.chevron_right,
+                        size: 16,
+                        color: AppColors.purpleSoft,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ],
     );
   }
