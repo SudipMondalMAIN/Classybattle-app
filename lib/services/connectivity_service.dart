@@ -52,10 +52,30 @@ class ConnectivityService {
   }
 
   Future<void> _verifyAndEmit() async {
-    final online = await _hasRealInternet();
-    if (online == _lastStatus) return;
-    _lastStatus = online;
-    _controller.add(online);
+    // Right after a reconnect event, the OS often reports "connected"
+    // before the interface actually has a working route -- a single
+    // DNS check can fail even though the connection recovers a moment
+    // later. Retry a couple of times before believing "still offline",
+    // rather than latching onto the first (possibly premature) result.
+    const attempts = [
+      Duration.zero,
+      Duration(seconds: 1),
+      Duration(seconds: 2),
+    ];
+    for (final delay in attempts) {
+      if (delay > Duration.zero) await Future.delayed(delay);
+      if (await _hasRealInternet()) {
+        if (_lastStatus != true) {
+          _lastStatus = true;
+          _controller.add(true);
+        }
+        return;
+      }
+    }
+    if (_lastStatus != false) {
+      _lastStatus = false;
+      _controller.add(false);
+    }
   }
 
   Future<bool> _hasRealInternet() async {
