@@ -94,9 +94,9 @@ class _SplashScreenState extends State<SplashScreen> {
     // Guest mode: always land on Home whether or not the user is
     // logged in. Login/signup is reachable from the Profile tab.
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => HomeScreen(versionInfo: versionInfo)),
+    );
   }
 
   @override

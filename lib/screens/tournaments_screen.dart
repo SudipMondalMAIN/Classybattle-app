@@ -20,13 +20,23 @@ import 'tournament_details_screen.dart';
 import 'wallet_screen.dart';
 
 class TournamentsScreen extends ConsumerStatefulWidget {
-  const TournamentsScreen({super.key, this.initialGameId, this.initialCategory});
+  const TournamentsScreen({
+    super.key,
+    this.initialGameId,
+    this.initialCategory,
+    this.initialTab,
+  });
 
   /// Pre-applied game/category filter when arriving from a home-screen
   /// category box (e.g. "Free Fire Solo") -- null means no filter, the
   /// normal entry point from the bottom nav.
   final String? initialGameId;
   final String? initialCategory;
+
+  /// Tab to select on open (e.g. TournamentTab.mine when arriving from
+  /// the bottom nav's "My Tournaments" tap) -- null keeps whatever tab
+  /// was already selected (defaults to All).
+  final TournamentTab? initialTab;
 
   @override
   ConsumerState<TournamentsScreen> createState() => _TournamentsScreenState();
@@ -36,6 +46,12 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialTab != null) {
+      // Set synchronously (not post-frame) so the first build already
+      // shows the right tab instead of flashing "All" for a frame.
+      ref.read(selectedTournamentTabProvider.notifier).state =
+          widget.initialTab!;
+    }
     if (widget.initialGameId != null || widget.initialCategory != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -53,10 +69,15 @@ class _TournamentsScreenState extends ConsumerState<TournamentsScreen> {
 
   @override
   void dispose() {
-    // Don't leak a category-box filter into the next time Tournaments is
-    // opened normally (e.g. from the bottom nav).
+    // Don't leak a category-box filter, or a forced initial tab (e.g.
+    // "mine" from the bottom nav), into the next time Tournaments is
+    // opened normally.
     ref.read(tournamentGameFilterProvider.notifier).state = null;
     ref.read(tournamentCategoryFilterProvider.notifier).state = null;
+    if (widget.initialTab != null) {
+      ref.read(selectedTournamentTabProvider.notifier).state =
+          TournamentTab.all;
+    }
     super.dispose();
   }
 
@@ -263,7 +284,7 @@ class _TitleBlock extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tournaments',
+          'My Tournaments',
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 28,

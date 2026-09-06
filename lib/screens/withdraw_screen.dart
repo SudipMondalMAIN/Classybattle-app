@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/formatters.dart';
@@ -83,6 +84,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
         return;
       }
     }
+    final available = ref.read(walletProvider).valueOrNull?.winningsBalance;
+    if (available != null && amount > available) {
+      setState(() => _error =
+          'Insufficient winnings balance. You can withdraw up to ${formatRupees(available)}.');
+      return;
+    }
     setState(() {
       _error = null;
       _submitting = true;
@@ -101,6 +108,10 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
       }
     } on UnauthenticatedException {
       setState(() => _error = 'Please log in to withdraw.');
+    } on DioException catch (e) {
+      final detail = e.response?.data is Map ? e.response?.data['detail'] : null;
+      setState(() => _error =
+          detail?.toString() ?? 'Could not submit. Check the amount and try again.');
     } catch (e) {
       setState(() => _error = 'Could not submit. Check the amount and try again.');
     } finally {
@@ -111,7 +122,12 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
   @override
   Widget build(BuildContext context) {
     final walletAsync = ref.watch(walletProvider);
-    final available = walletAsync.valueOrNull?.availableBalance;
+    // Only winnings_balance is withdrawable -- deposit_balance can be
+    // used to join tournaments but can't be cashed out. availableBalance
+    // (deposit + winnings, per the backend's WalletRead schema) is the
+    // wrong figure to show here; it overstates what the user can
+    // actually pull out.
+    final available = walletAsync.valueOrNull?.winningsBalance;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -154,7 +170,7 @@ class _WithdrawScreenState extends ConsumerState<WithdrawScreen> {
                     children: [
                       if (available != null) ...[
                         Text(
-                          'Available: ${formatRupees(available)}',
+                          'Available to withdraw: ${formatRupees(available)}',
                           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
                         ),
                         const SizedBox(height: 16),

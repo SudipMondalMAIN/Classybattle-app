@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
 import '../providers/tournament_providers.dart';
 import '../theme/app_theme.dart';
-import '../widgets/common/glass_container.dart';
+import '../widgets/home/format_page_banner.dart';
 import '../widgets/home/header_bar.dart';
 import '../widgets/home/upcoming_tournament_row.dart';
 import 'notifications_screen.dart';
@@ -23,16 +23,8 @@ class SoloTournamentsScreen extends ConsumerStatefulWidget {
 }
 
 class _SoloTournamentsScreenState extends ConsumerState<SoloTournamentsScreen> {
-  final _searchController = TextEditingController();
-  String _query = '';
 
   static const String _format = 'solo';
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
 
   Future<void> _refresh() async {
     ref.invalidate(formatTournamentsProvider(_format));
@@ -103,43 +95,8 @@ class _SoloTournamentsScreenState extends ConsumerState<SoloTournamentsScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverToBoxAdapter(
-                    child: GlassContainer(
-                      borderRadius: 16,
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.search,
-                            size: 20,
-                            color: AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 14,
-                              ),
-                              decoration: const InputDecoration(
-                                hintText: 'Search Solo tournaments...',
-                                hintStyle: TextStyle(
-                                  color: AppColors.textMuted,
-                                  fontSize: 14,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                              ),
-                              onChanged: (v) => setState(
-                                () => _query = v.trim().toLowerCase(),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    child: FormatPageBanner(
+                      assetPath: 'assets/banners/solo_tournaments_banner.jpg',
                     ),
                   ),
                 ),
@@ -172,22 +129,14 @@ class _SoloTournamentsScreenState extends ConsumerState<SoloTournamentsScreen> {
                       ),
                     ),
                     data: (tournaments) {
-                      final filtered = _query.isEmpty
-                          ? tournaments
-                          : tournaments
-                                .where(
-                                  (t) => t.title.toLowerCase().contains(_query),
-                                )
-                                .toList();
+                      final filtered = tournaments;
                       if (filtered.isEmpty) {
                         return SliverToBoxAdapter(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 40),
                             child: Center(
                               child: Text(
-                                tournaments.isEmpty
-                                    ? 'No Solo tournaments yet'
-                                    : 'No matches found',
+                                'No Solo tournaments yet',
                                 style: const TextStyle(
                                   color: AppColors.textMuted,
                                   fontSize: 13,

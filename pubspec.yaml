@@ -54,3 +54,14 @@ flutter:
     - assets/avatars/avatar_4.png
     - assets/avatars/avatar_5.png
     - assets/avatars/avatar_6.png
+    - assets/banners/free_tournaments_banner.jpg
+    - assets/banners/solo_tournaments_banner.jpg
+    - assets/banners/duo_tournaments_banner.jpg
+    - assets/banners/squad_tournaments_banner.jpg
+    - assets/banners/cs_1v1_banner.jpg
+    - assets/banners/cs_head_banner.jpg
+    - assets/banners/cs_4v4_banner.jpg
+    - assets/banners/lw_1v1_banner.jpg
+    - assets/banners/lw_head_banner.jpg
+    - assets/banners/br_survive_banner.jpg
+    - assets/banners/refer_earn_banner.jpg

@@ -2,14 +2,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
+import '../providers/tournament_providers.dart' show TournamentTab;
+import '../models/app_version_check.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/home/header_bar.dart';
-import '../widgets/home/custom_tournament_box.dart';
 import '../widgets/home/hero_banner_carousel.dart';
 import '../widgets/home/home_category_boxes_section.dart';
-import '../widgets/home/live_tournaments_section.dart';
-import '../widgets/home/upcoming_tournaments_section.dart';
+import '../widgets/home/refer_earn_banner.dart';
+import '../widgets/home/soft_update_dialog.dart';
 import 'custom_tournaments_screen.dart';
 import 'free_tournaments_screen.dart';
 import 'solo_tournaments_screen.dart';
@@ -23,12 +24,19 @@ import 'lw_head_tournaments_screen.dart';
 import 'br_survive_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
+import 'refer_earn_screen.dart';
 import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
 import 'wallet_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, this.versionInfo});
+
+  /// Non-null only when the splash screen's version check found an
+  /// optional update (update_available=true, force_update=false).
+  /// force_update=true never reaches here -- that goes to
+  /// ForceUpdateScreen instead, before Home is ever built.
+  final AppVersionCheck? versionInfo;
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -50,10 +58,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // live-status-sensitive providers while the home screen is visible.
     _liveStatusTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       if (!mounted) return;
-      ref.invalidate(liveTournamentsProvider);
       ref.invalidate(featuredLiveTournamentProvider);
-      ref.invalidate(upcomingTournamentsProvider);
     });
+
+    final info = widget.versionInfo;
+    if (info != null && info.updateAvailable && !info.forceUpdate) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showSoftUpdateDialog(context, info);
+      });
+    }
   }
 
   @override
@@ -65,8 +79,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _refresh() async {
     ref.invalidate(bannersProvider);
     ref.invalidate(gamesByIdProvider);
-    ref.invalidate(liveTournamentsProvider);
-    ref.invalidate(upcomingTournamentsProvider);
     ref.invalidate(featuredLiveTournamentProvider);
     ref.invalidate(walletProvider);
     ref.invalidate(currentUserProvider);
@@ -75,27 +87,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _openTournaments() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const TournamentsScreen()));
+  }
+
+  /// Bottom nav's "My Tournaments" tap -- opens straight into the "mine"
+  /// tab (the user's own joined/hosted tournaments), not the generic
+  /// All/Live/Upcoming browse view that _openTournaments() opens.
+  void _openMyTournaments() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+      MaterialPageRoute(
+        builder: (_) => const TournamentsScreen(initialTab: TournamentTab.mine),
+      ),
     );
   }
 
   void _openTournamentDetails(String id) {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => TournamentDetailsScreen(tournamentId: id)),
+      MaterialPageRoute(
+        builder: (_) => TournamentDetailsScreen(tournamentId: id),
+      ),
     );
   }
 
   void _openWallet() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const WalletScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const WalletScreen()));
   }
 
   void _openProfile() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
+  }
+
+  void _openReferEarn() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ReferEarnScreen()));
   }
 
   /// Every non-Custom home-category box opens its own dedicated
@@ -125,9 +156,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// needed). Creating one's own is still one tap away via the "Host
   /// One" button on that page.
   void _openCustomTournaments() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const CustomTournamentsScreen()),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const CustomTournamentsScreen()));
   }
 
   @override
@@ -161,7 +192,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: HeaderBar(
                         onNotificationsTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const NotificationsScreen()),
+                            builder: (_) => const NotificationsScreen(),
+                          ),
                         ),
                         onWalletTap: _openWallet,
                         onProfileTap: _openProfile,
@@ -182,15 +214,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 18)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: CustomTournamentBox(
-                          onTap: _openCustomTournaments,
-                        ),
-                      ),
-                    ),
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),
                     SliverToBoxAdapter(
                       child: HomeCategoryBoxesSection(
@@ -198,21 +221,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onCustomTap: _openCustomTournaments,
                       ),
                     ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 26)),
-                    SliverToBoxAdapter(
-                      child: LiveTournamentsSection(
-                        onViewAll: () => _openTournaments(),
-                        onJoinTap: (id) => _openTournamentDetails(id),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 26)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 22)),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverToBoxAdapter(
-                        child: UpcomingTournamentsSection(
-                          onViewAll: () => _openTournaments(),
-                          onJoinTap: (id) => _openTournamentDetails(id),
-                        ),
+                        child: ReferEarnBanner(onTap: _openReferEarn),
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 110)),
@@ -228,7 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onTap: (i) {
           if (i == _navIndex) return;
           if (i == 1) {
-            _openTournaments();
+            _openMyTournaments();
             return;
           }
           if (i == 2) {

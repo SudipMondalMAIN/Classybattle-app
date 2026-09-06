@@ -11,8 +11,6 @@ import '../widgets/common/skeleton.dart';
 import '../widgets/profile/profile_card.dart';
 import '../widgets/profile/profile_header_bar.dart';
 import '../widgets/profile/profile_stats_card.dart';
-import '../widgets/profile/profile_tournament_card.dart';
-import '../widgets/profile/profile_tournament_tabs.dart';
 import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'game_profiles_screen.dart';
@@ -21,7 +19,6 @@ import 'notifications_screen.dart';
 import 'refer_earn_screen.dart';
 import 'settings_screen.dart';
 import 'support_chat_screen.dart';
-import 'tournament_details_screen.dart';
 import 'tournaments_screen.dart';
 import 'transactions_screen.dart';
 import 'wallet_screen.dart';
@@ -44,7 +41,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     ref.invalidate(currentUserProvider);
     ref.invalidate(walletProvider);
     ref.invalidate(myTournamentStatsProvider);
-    ref.invalidate(myTournamentEntriesProvider);
     ref.invalidate(gamesByIdProvider);
     await Future.delayed(const Duration(milliseconds: 300));
   }
@@ -170,168 +166,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                     const SliverToBoxAdapter(child: SizedBox(height: 26)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'My Tournaments',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                ref
-                                    .read(
-                                      selectedTournamentTabProvider.notifier,
-                                    )
-                                    .state = TournamentTab
-                                    .mine;
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const TournamentsScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'View All',
-                                    style: TextStyle(
-                                      color: AppColors.purpleSoft,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.chevron_right_rounded,
-                                    size: 16,
-                                    color: AppColors.purpleSoft,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            final tab = ref.watch(profileTournamentTabProvider);
-                            return ProfileTournamentTabs(
-                              selected: tab,
-                              onSelect: (t) =>
-                                  ref
-                                          .read(
-                                            profileTournamentTabProvider
-                                                .notifier,
-                                          )
-                                          .state =
-                                      t,
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 14)),
-                    SliverToBoxAdapter(
-                      child: Consumer(
-                        builder: (context, ref, _) {
-                          final entriesAsync = ref.watch(
-                            myTournamentsForTabProvider,
-                          );
-                          final gamesAsync = ref.watch(gamesByIdProvider);
-                          return entriesAsync.when(
-                            loading: () => Column(
-                              children: List.generate(
-                                3,
-                                (i) => const Padding(
-                                  padding: EdgeInsets.only(bottom: 12),
-                                  child: SkeletonBox(
-                                    height: 84,
-                                    borderRadius: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            error: (_, __) => const Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 20,
-                              ),
-                              child: Text(
-                                'Could not load your tournaments.',
-                                style: TextStyle(color: AppColors.textMuted),
-                              ),
-                            ),
-                            data: (entries) {
-                              if (entries.isEmpty) {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 20),
-                                  child: Center(
-                                    child: Text(
-                                      'Nothing here yet.',
-                                      style: TextStyle(
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }
-                              final games = gamesAsync.valueOrNull ?? const {};
-                              // Horizontal swipe instead of a long vertical
-                              // scroll — one card-width peek of the next
-                              // card signals there's more to swipe to.
-                              return SizedBox(
-                                height: 96,
-                                child: ListView.separated(
-                                  scrollDirection: Axis.horizontal,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                  ),
-                                  physics: const BouncingScrollPhysics(),
-                                  itemCount: entries.length,
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(width: 10),
-                                  itemBuilder: (context, i) {
-                                    final e = entries[i];
-                                    return SizedBox(
-                                      width:
-                                          MediaQuery.of(context).size.width -
-                                          64,
-                                      child: ProfileTournamentCard(
-                                        tournament: e.tournament,
-                                        game: games[e.tournament.gameId],
-                                        participantStatus: e.participantStatus,
-                                        onTap: () => Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                TournamentDetailsScreen(
-                                                  tournamentId: e.tournament.id,
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 28)),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverToBoxAdapter(
@@ -483,7 +317,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Navigator.of(context).popUntil((route) => route.isFirst);
           } else if (i == 1) {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+              MaterialPageRoute(
+                builder: (_) =>
+                    const TournamentsScreen(initialTab: TournamentTab.mine),
+              ),
             );
           } else if (i == 2) {
             Navigator.of(

@@ -20,7 +20,7 @@ class BottomNavBar extends StatelessWidget {
 
   static const _items = [
     _NavItem(Icons.home_rounded, 'Home'),
-    _NavItem(Icons.emoji_events_rounded, 'Tournaments'),
+    _NavItem(Icons.emoji_events_rounded, 'My Tournaments'),
     _NavItem(Icons.account_balance_wallet_rounded, 'Wallet'),
     _NavItem(Icons.person_rounded, 'Profile'),
   ];

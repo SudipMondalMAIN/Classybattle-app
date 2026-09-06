@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
+import '../providers/tournament_providers.dart' show TournamentTab;
 import '../providers/wallet_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
@@ -137,7 +138,10 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
             );
           } else if (i == 1) {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+              MaterialPageRoute(
+                builder: (_) =>
+                    const TournamentsScreen(initialTab: TournamentTab.mine),
+              ),
             );
           } else {
             Navigator.of(context).push(

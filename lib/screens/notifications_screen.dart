@@ -378,7 +378,7 @@ class _BottomNav extends StatelessWidget {
               ),
               _NavIcon(
                 icon: Icons.emoji_events_rounded,
-                label: 'Tournaments',
+                label: 'My Tournaments',
                 active: false,
                 onTap: () => Navigator.pushReplacement(
                   context,
