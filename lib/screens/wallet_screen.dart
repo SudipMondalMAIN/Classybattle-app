@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
-import '../providers/tournament_providers.dart' show TournamentTab;
 import '../providers/wallet_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common/glass_container.dart';
@@ -11,11 +10,11 @@ import '../widgets/wallet/wallet_balance_card.dart';
 import '../widgets/wallet/wallet_header_bar.dart';
 import 'add_money_screen.dart';
 import 'home_screen.dart';
+import 'my_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'transactions_screen.dart';
 import 'transaction_details_screen.dart';
-import 'tournaments_screen.dart';
 import 'withdraw_screen.dart';
 
 class WalletScreen extends ConsumerStatefulWidget {
@@ -138,10 +137,7 @@ class _WalletScreenState extends ConsumerState<WalletScreen> {
             );
           } else if (i == 1) {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) =>
-                    const TournamentsScreen(initialTab: TournamentTab.mine),
-              ),
+              MaterialPageRoute(builder: (_) => const MyTournamentsScreen()),
             );
           } else {
             Navigator.of(context).push(

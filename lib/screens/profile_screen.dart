@@ -16,11 +16,11 @@ import 'auth/login_screen.dart';
 import 'edit_profile_screen.dart';
 import 'game_profiles_screen.dart';
 import 'leaderboard_screen.dart';
+import 'my_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'refer_earn_screen.dart';
 import 'settings_screen.dart';
 import 'support_chat_screen.dart';
-import 'tournaments_screen.dart';
 import 'transactions_screen.dart';
 import 'wallet_screen.dart';
 
@@ -320,10 +320,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Navigator.of(context).popUntil((route) => route.isFirst);
           } else if (i == 1) {
             Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) =>
-                    const TournamentsScreen(initialTab: TournamentTab.mine),
-              ),
+              MaterialPageRoute(builder: (_) => const MyTournamentsScreen()),
             );
           } else if (i == 2) {
             Navigator.of(
