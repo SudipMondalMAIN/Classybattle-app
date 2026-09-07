@@ -1,12 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../models/notification_model.dart';
 import '../../screens/settings_screen.dart';
+import '../../screens/support_chat_screen.dart';
 import '../../screens/tournament_details_screen.dart';
 import '../../screens/wallet_screen.dart';
 
 /// Decides where a notification tap should navigate, based on real
 /// backend event_type + meta_data — never text-matching the body.
 void navigateForNotification(BuildContext context, NotificationModel n) {
+  // Support chat messages dispatch as event_type GENERAL (see
+  // support_chat_service.py) with meta_data.session_id -- checked
+  // first, independent of eventType, since GENERAL otherwise means
+  // "no destination" below. SupportChatScreen doesn't take a session
+  // id itself; it always resolves to the user's own open session.
+  if (n.supportSessionId != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SupportChatScreen()),
+    );
+    return;
+  }
+
   switch (n.eventType) {
     // Tournament-linked events: open the exact tournament if we have an id.
     case NotificationEventType.tournamentCreated:

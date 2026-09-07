@@ -103,6 +103,16 @@ class NotificationModel {
     return v == null ? null : v.toString();
   }
 
+  /// Support chat session id, when this notification is a support-chat
+  /// message (see support_chat_service.py post_agent_message /
+  /// post_agent_media_message -- both stamp meta_data.session_id).
+  /// These currently dispatch as event_type GENERAL, so this has to be
+  /// checked independently of eventType rather than as its own case.
+  String? get supportSessionId {
+    final v = metaData?['session_id'];
+    return v == null ? null : v.toString();
+  }
+
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'].toString(),
