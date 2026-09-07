@@ -158,6 +158,29 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
   },
 );
 
+/// Tournaments the current user has actually joined -- powers the
+/// dedicated My Tournaments screen (bottom nav). Resolves via the
+/// user's real registration history, same approach as the "mine" tab
+/// on the Tournaments screen: resolving each registered tournament
+/// directly by ID (rather than matching against the bulk `/tournaments`
+/// list) because that list hides PRIVATE tournaments for non-admin
+/// callers, and Custom Tournaments default to visibility=PRIVATE.
+final myJoinedTournamentsProvider = FutureProvider<List<TournamentModel>>((
+  ref,
+) async {
+  try {
+    final regs = await tournamentService.fetchMyRegistrations();
+    final active = regs.items.where((r) => r.isActive).toList();
+    if (active.isEmpty) return [];
+    final tournaments = await Future.wait(
+      active.map((r) => tournamentService.fetchTournamentById(r.tournamentId)),
+    );
+    return tournaments.whereType<TournamentModel>().toList();
+  } on UnauthenticatedException {
+    return [];
+  }
+});
+
 /// Real "Your Tournaments" stats: joined / won / total winnings / win
 /// rate, sourced from GET /users/me/stats (backend PlayerStatistics),
 /// which covers wins from both the admin-run and custom 1v1 payout

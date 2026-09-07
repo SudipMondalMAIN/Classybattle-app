@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/home_providers.dart';
-import '../providers/tournament_providers.dart' show TournamentTab;
 import '../models/app_version_check.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home/bottom_nav_bar.dart';
@@ -22,6 +21,7 @@ import 'cs_4v4_tournaments_screen.dart';
 import 'lw_1v1_tournaments_screen.dart';
 import 'lw_head_tournaments_screen.dart';
 import 'br_survive_tournaments_screen.dart';
+import 'my_tournaments_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'refer_earn_screen.dart';
@@ -92,15 +92,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ).push(MaterialPageRoute(builder: (_) => const TournamentsScreen()));
   }
 
-  /// Bottom nav's "My Tournaments" tap -- opens straight into the "mine"
-  /// tab (the user's own joined/hosted tournaments), not the generic
-  /// All/Live/Upcoming browse view that _openTournaments() opens.
+  /// Bottom nav's "My Tournaments" tap -- opens the dedicated screen
+  /// that shows only tournaments the user has actually joined. No
+  /// tabs, no search, no Live/Upcoming/All browse sections -- just
+  /// the user's own list.
   void _openMyTournaments() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const TournamentsScreen(initialTab: TournamentTab.mine),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const MyTournamentsScreen()));
   }
 
   void _openTournamentDetails(String id) {
@@ -221,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         onCustomTap: _openCustomTournaments,
                       ),
                     ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 22)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       sliver: SliverToBoxAdapter(

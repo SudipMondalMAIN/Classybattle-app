@@ -56,7 +56,7 @@ class HomeCategoryBoxesSection extends ConsumerWidget {
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.82,
+                childAspectRatio: 1.0,
               ),
               itemBuilder: (context, i) => const SkeletonBox(
                 height: double.infinity,
@@ -83,7 +83,7 @@ class HomeCategoryBoxesSection extends ConsumerWidget {
                   crossAxisCount: 3,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
-                  childAspectRatio: 0.82,
+                  childAspectRatio: 1.0,
                 ),
                 itemBuilder: (context, i) {
                   final box = boxes[i];

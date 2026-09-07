@@ -7,6 +7,7 @@ import '../providers/tournament_providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/home/bottom_nav_bar.dart';
 import '../widgets/profile/account_section.dart';
+import '../widgets/profile/floating_community_icons.dart';
 import '../widgets/common/skeleton.dart';
 import '../widgets/profile/profile_card.dart';
 import '../widgets/profile/profile_header_bar.dart';
@@ -52,7 +53,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       extendBody: true,
-      body: DecoratedBox(
+      body: FloatingCommunityIcons(
+        child: DecoratedBox(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -308,6 +310,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
         ),
+      ),
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: 3,
