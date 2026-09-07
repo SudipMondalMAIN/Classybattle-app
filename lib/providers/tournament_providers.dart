@@ -90,11 +90,10 @@ final formatTournamentsProvider =
     FutureProvider.family<List<TournamentModel>, String>((ref, format) async {
       final result = await tournamentService.fetchTournaments(
         format: format,
+        status: 'active',
         pageSize: 100,
       );
-      return result.items
-          .where((t) => t.status != 'completed' && t.status != 'cancelled')
-          .toList();
+      return result.items;
     });
 
 /// Live tournament count for the "Live" tab badge -- real count, not
@@ -132,7 +131,9 @@ final tournamentsForSelectedTabProvider = FutureProvider<List<TournamentModel>>(
         // Tournaments default to visibility=PRIVATE, so matching against
         // it silently dropped every custom tournament from this tab.
         final tournaments = await Future.wait(
-          active.map((r) => tournamentService.fetchTournamentById(r.tournamentId)),
+          active.map(
+            (r) => tournamentService.fetchTournamentById(r.tournamentId),
+          ),
         );
         var mine = tournaments.whereType<TournamentModel>().toList();
         if (gameId != null)
@@ -262,6 +263,9 @@ final tournamentParticipantsProvider =
 /// if this isn't an eligible custom 1v1 tournament, or the user isn't a
 /// participant, or nothing's been submitted / room isn't live yet).
 final customMatchClaimProvider =
-    FutureProvider.family<CustomMatchClaimPairModel?, String>((ref, tournamentId) {
+    FutureProvider.family<CustomMatchClaimPairModel?, String>((
+      ref,
+      tournamentId,
+    ) {
       return tournamentService.fetchCustomResult(tournamentId);
     });
