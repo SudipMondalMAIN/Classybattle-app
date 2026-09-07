@@ -16,7 +16,8 @@ class ReferEarnScreen extends ConsumerStatefulWidget {
   ConsumerState<ReferEarnScreen> createState() => _ReferEarnScreenState();
 }
 
-class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _applyCtrl = TextEditingController();
+class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {
+  final _applyCtrl = TextEditingController();
   bool _applying = false;
   String? _applyError;
   String? _applySuccess;
@@ -30,15 +31,16 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
   Future<void> _copyCode(String code) async {
     await Clipboard.setData(ClipboardData(text: code));
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Referral code copied')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Referral code copied')));
   }
 
   Future<void> _shareCode(String code) async {
+    final link = 'https://classybattle.online/?ref=$code';
     final message = Uri.encodeComponent(
       'Join me on ClassyBattle! Use my referral code $code when you sign up '
-      'and we both earn rewards. 🎮',
+      'and we both earn rewards. 🎮\n$link',
     );
     final uri = Uri.parse('whatsapp://send?text=$message');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
@@ -46,6 +48,16 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
       // into whichever app they actually want to share through.
       await _copyCode(code);
     }
+  }
+
+  Future<void> _copyLink(String code) async {
+    await Clipboard.setData(
+      ClipboardData(text: 'https://classybattle.online/?ref=$code'),
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Referral link copied')));
   }
 
   Future<void> _applyCode() async {
@@ -96,6 +108,7 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
           ),
         ),
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Padding(
@@ -131,11 +144,14 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
                   child: ListView(
                     padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
                     children: [
+                      const _ReferralBanner(),
+                      const SizedBox(height: 20),
                       codeAsync.when(
                         data: (data) => _CodeCard(
                           data: data,
                           onCopy: () => _copyCode(data.referralCode),
                           onShare: () => _shareCode(data.referralCode),
+                          onCopyLink: () => _copyLink(data.referralCode),
                         ),
                         loading: () => const _CardSkeleton(height: 220),
                         error: (e, __) => _ErrorNotice(
@@ -158,96 +174,98 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
                       if (codeAsync.value?.hasAppliedReferralCode ?? false)
                         const _ReferralAppliedNotice()
                       else
-                      GlassContainer(
-                        borderRadius: 18,
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _applyCtrl,
-                                    textCapitalization:
-                                        TextCapitalization.characters,
-                                    style: const TextStyle(
-                                      color: AppColors.textPrimary,
-                                    ),
-                                    decoration: const InputDecoration(
-                                      border: InputBorder.none,
-                                      isDense: true,
-                                      hintText: 'Enter referral code',
-                                      hintStyle: TextStyle(
-                                        color: AppColors.textMuted,
+                        GlassContainer(
+                          borderRadius: 18,
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _applyCtrl,
+                                      textCapitalization:
+                                          TextCapitalization.characters,
+                                      style: const TextStyle(
+                                        color: AppColors.textPrimary,
+                                      ),
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        isDense: true,
+                                        hintText: 'Enter referral code',
+                                        hintStyle: TextStyle(
+                                          color: AppColors.textMuted,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                SizedBox(
-                                  height: 40,
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      gradient: AppColors.purpleButton,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: ElevatedButton(
-                                      onPressed:
-                                          _applying ? null : _applyCode,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.transparent,
-                                        shadowColor: Colors.transparent,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
+                                  const SizedBox(width: 8),
+                                  SizedBox(
+                                    height: 40,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        gradient: AppColors.purpleButton,
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: _applying
-                                          ? const SizedBox(
-                                              width: 16,
-                                              height: 16,
-                                              child:
-                                                  CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white,
-                                              ),
-                                            )
-                                          : const Text(
-                                              'Apply',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w700,
-                                              ),
+                                      child: ElevatedButton(
+                                        onPressed: _applying
+                                            ? null
+                                            : _applyCode,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.transparent,
+                                          shadowColor: Colors.transparent,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
                                             ),
+                                          ),
+                                        ),
+                                        child: _applying
+                                            ? const SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: Colors.white,
+                                                    ),
+                                              )
+                                            : const Text(
+                                                'Apply',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                      ),
                                     ),
+                                  ),
+                                ],
+                              ),
+                              if (_applyError != null) ...[
+                                const SizedBox(height: 10),
+                                Text(
+                                  _applyError!,
+                                  style: const TextStyle(
+                                    color: AppColors.live,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
-                            ),
-                            if (_applyError != null) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                _applyError!,
-                                style: const TextStyle(
-                                  color: AppColors.live,
-                                  fontSize: 12,
+                              if (_applySuccess != null) ...[
+                                const SizedBox(height: 10),
+                                Text(
+                                  _applySuccess!,
+                                  style: const TextStyle(
+                                    color: AppColors.success,
+                                    fontSize: 12,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
-                            if (_applySuccess != null) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                _applySuccess!,
-                                style: const TextStyle(
-                                  color: AppColors.success,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ],
+                          ),
                         ),
-                      ),
                       const SizedBox(height: 24),
                       const _SectionLabel('Your Referrals'),
                       historyAsync.when(
@@ -273,6 +291,36 @@ class _ReferEarnScreenState extends ConsumerState<ReferEarnScreen> {  final _app
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReferralBanner extends StatelessWidget {
+  const _ReferralBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: AspectRatio(
+        // Matches the banner asset's own aspect ratio so the full
+        // artwork shows edge-to-edge instead of being cropped.
+        aspectRatio: 1774 / 887,
+        child: Image.asset(
+          'assets/banners/refer_earn_banner.jpg',
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: AppColors.glassFillStrong,
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.card_giftcard_rounded,
+              color: AppColors.textMuted,
+              size: 32,
+            ),
           ),
         ),
       ),
@@ -404,11 +452,13 @@ class _CodeCard extends StatelessWidget {
     required this.data,
     required this.onCopy,
     required this.onShare,
+    required this.onCopyLink,
   });
 
   final MyReferralCodeModel data;
   final VoidCallback onCopy;
   final VoidCallback onShare;
+  final VoidCallback onCopyLink;
 
   @override
   Widget build(BuildContext context) {
@@ -453,7 +503,46 @@ class _CodeCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
+          GestureDetector(
+            onTap: onCopyLink,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.glassFillStrong,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.glassBorder),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.link_rounded,
+                    color: AppColors.purpleSoft,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'classybattle.online/?ref=${data.referralCode}',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.copy_rounded,
+                    color: AppColors.textMuted,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               _StatChip(label: 'Referred', value: '${data.totalReferred}'),
@@ -515,10 +604,7 @@ class _StatChip extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textMuted,
-                fontSize: 10,
-              ),
+              style: const TextStyle(color: AppColors.textMuted, fontSize: 10),
             ),
           ],
         ),

@@ -43,6 +43,8 @@ class AuthService {
     required String phoneNumber,
     required String password,
     String? captchaToken,
+    String? referralCode,
+    String? deviceId,
   }) async {
     try {
       await _dio.post(
@@ -53,6 +55,9 @@ class AuthService {
           'phone_number': phoneNumber,
           'password': password,
           if (captchaToken != null) 'captcha_token': captchaToken,
+          if (referralCode != null && referralCode.trim().isNotEmpty)
+            'referral_code': referralCode.trim(),
+          if (deviceId != null) 'device_id': deviceId,
         },
       );
     } on DioException catch (e) {

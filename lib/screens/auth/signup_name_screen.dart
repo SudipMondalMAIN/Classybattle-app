@@ -31,6 +31,7 @@ class SignupNameScreen extends StatefulWidget {
 
 class _SignupNameScreenState extends State<SignupNameScreen> {
   final _nameCtrl = TextEditingController();
+  final _referralCtrl = TextEditingController();
   final _captchaKey = GlobalKey<CaptchaGateState>();
   bool _loading = false;
   String? _error;
@@ -38,6 +39,7 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _referralCtrl.dispose();
     super.dispose();
   }
 
@@ -68,6 +70,9 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
         phoneNumber: widget.phone,
         password: widget.password,
         captchaToken: token,
+        referralCode: _referralCtrl.text.trim().isEmpty
+            ? null
+            : _referralCtrl.text.trim(),
       );
       if (!mounted) return;
       Navigator.push(
@@ -95,8 +100,17 @@ class _SignupNameScreenState extends State<SignupNameScreen> {
           label: 'Full name',
           hint: 'Your name',
           autofocus: true,
-          textInputAction: TextInputAction.done,
+          textInputAction: TextInputAction.next,
           prefixIcon: Icons.person_outline_rounded,
+          onSubmitted: (_) => _submit(),
+        ),
+        const SizedBox(height: 16),
+        AuthTextField(
+          controller: _referralCtrl,
+          label: 'Referral code (optional)',
+          hint: 'Enter code if you have one',
+          textInputAction: TextInputAction.done,
+          prefixIcon: Icons.card_giftcard_rounded,
           onSubmitted: (_) => _submit(),
         ),
         if (_error != null) ...[

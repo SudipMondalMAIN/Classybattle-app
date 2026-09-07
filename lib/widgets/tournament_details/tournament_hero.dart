@@ -30,125 +30,133 @@ class TournamentHero extends StatelessWidget {
       if (map != null) map!.name,
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.purple.withValues(alpha: 0.16),
-            blurRadius: 30,
-            spreadRadius: 1,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          children: [
-            SizedBox(
-              height: 340,
-              width: double.infinity,
-              child: NetworkImageBox(
-                url: tournament.bannerUrl ?? tournament.coverUrl ?? game?.iconUrl,
-                fit: BoxFit.cover,
-                cacheWidth: 800,
-                cacheHeight: 680,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.purple.withValues(alpha: 0.16),
+                blurRadius: 30,
+                spreadRadius: 1,
               ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.02),
-                      Colors.black.withValues(alpha: 0.28),
-                      Colors.black.withValues(alpha: 0.62),
-                    ],
-                    stops: const [0.0, 0.55, 1.0],
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: AspectRatio(
+                    aspectRatio: 16 / 9,
+                    child: ColoredBox(
+                      color: AppColors.glassBorder.withValues(alpha: 0.08),
+                      child: NetworkImageBox(
+                        url:
+                            tournament.bannerUrl ??
+                            tournament.coverUrl ??
+                            game?.iconUrl,
+                        fit: BoxFit.contain,
+                        cacheWidth: 800,
+                      ),
+                    ),
                   ),
                 ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.0),
+                          Colors.black.withValues(alpha: 0.0),
+                          Colors.black.withValues(alpha: 0.35),
+                        ],
+                        stops: const [0.0, 0.6, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(top: 14, left: 14, child: _liveBadge()),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (game != null)
+              Text(
+                game!.name.toUpperCase(),
+                style: const TextStyle(
+                  color: AppColors.purpleSoft,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            const SizedBox(height: 6),
+            Text(
+              tournament.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                height: 1.15,
               ),
             ),
-            Positioned(top: 14, left: 14, child: _liveBadge()),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 20,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (game != null)
-                    Text(
-                      game!.name.toUpperCase(),
-                      style: const TextStyle(
-                        color: AppColors.purpleSoft,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  const SizedBox(height: 6),
-                  Text(
-                    tournament.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      height: 1.15,
-                    ),
-                  ),
-                  if (tournament.description != null &&
-                      tournament.description!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      tournament.description!,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: chips
-                        .map(
-                          (c) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.45),
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: AppColors.glassBorder),
-                            ),
-                            child: Text(
-                              c,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ],
+            if (tournament.description != null &&
+                tournament.description!.trim().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                tournament.description!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 13,
+                ),
               ),
+            ],
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: chips
+                  .map(
+                    (c) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.glassBorder.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: AppColors.glassBorder),
+                      ),
+                      child: Text(
+                        c,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 
@@ -238,8 +246,12 @@ class TournamentStatsBar extends StatelessWidget {
           Expanded(
             child: _StatItem(
               label: 'ENTRY FEE',
-              value: tournament.isFree ? 'FREE' : formatRupees(tournament.entryFee),
-              valueColor: tournament.isFree ? AppColors.success : AppColors.textPrimary,
+              value: tournament.isFree
+                  ? 'FREE'
+                  : formatRupees(tournament.entryFee),
+              valueColor: tournament.isFree
+                  ? AppColors.success
+                  : AppColors.textPrimary,
             ),
           ),
           _StatDivider(),
